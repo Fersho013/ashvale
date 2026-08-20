@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=none">
+<title>Ashvale — Mapa Tutorial / Sandbox de Pruebas</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ================= MENÚ PRINCIPAL ================= -->
+<div id="main-menu-screen" class="screen active">
+    <h1>ASHVALE</h1>
+    <div class="menu-buttons">
+        <button id="btn-new-game">Iniciar Partida</button>
+        <button id="btn-load-game">Cargar Partida</button>
+        <button id="btn-tutorial">Tutorial</button>
+        <button id="btn-settings">Configuración</button>
+    </div>
+</div>
+
+<!-- ================= CONFIGURACIÓN ================= -->
+<div id="settings-screen" class="screen">
+    <h2>Configuración</h2>
+    <div id="settings-panel-body">
+        <div class="settings-row">
+            <label for="resolution-select">Resolución</label>
+            <select id="resolution-select">
+                <option value="960x540">960 x 540</option>
+                <option value="1280x720">1280 x 720</option>
+                <option value="1920x1080">1920 x 1080</option>
+            </select>
+        </div>
+        <div class="settings-row">
+            <label for="aspect-ratio-check">Mantener proporción (bandas negras)</label>
+            <input type="checkbox" id="aspect-ratio-check">
+        </div>
+        <div class="settings-row" style="justify-content:center;">
+            <button id="btn-toggle-fullscreen" style="width:100%;">🎮 Modo Móvil / Pantalla Completa</button>
+        </div>
+    </div>
+    <button id="btn-settings-back">← Volver</button>
+</div>
+
+<!-- ================= PRÓXIMAMENTE (Iniciar / Cargar Partida) ================= -->
+<div id="coming-soon-screen" class="screen">
+    <h2>Próximamente</h2>
+    <p>Esta sección todavía no está disponible: aquí vivirá el juego completo.<br>Mientras tanto, puedes probar el contenido en desarrollo desde <strong style="color:#f1c40f;">Tutorial</strong> en el menú principal.</p>
+    <button id="btn-coming-soon-back" style="width:220px;">← Volver al Menú</button>
+</div>
+
+<div id="game-container">
+    <canvas id="gameCanvas" width="960" height="540"></canvas>
+
+    <div id="zone-label">Zona 1: Centro de Mando</div>
+
+    <div id="ui-overlay">
+        <div><strong>HP:</strong> <div class="stat-bar"><div id="hp-fill" class="stat-fill" style="background:#2ecc71;"></div></div> <span id="hp-text">100/100</span></div>
+        <div><strong>ESTADO:</strong> <span id="status-text" style="color:#2ecc71;">NORMAL</span></div>
+        <div><strong>ARMA:</strong> <span id="weapon-text">Desarmado</span></div>
+        <div><strong>ORO:</strong> <span id="gold-text">0</span></div>
+        <div><strong>Barras de Habilidad:</strong></div>
+        <div id="skill-gauge"></div>
+        <div style="margin-top:4px;"><strong>MANDOS:</strong> <span id="gamepad-status" style="color:#e74c3c;">Desconectado</span></div>
+    </div>
+
+    <div id="buffs-panel"></div>
+
+    <div id="quickbar"></div>
+
+    <div id="controls-hint">
+        <strong>Mover:</strong> WASD / Pad / Stick &nbsp; <strong>Atacar:</strong> Click Derecho / RT / ATK<br>
+        <strong>Parry:</strong> Click Izquierdo / LT / DEF &nbsp; <strong>Interactuar:</strong> [E] / X / 👆<br>
+        <strong>Habilidad 1:</strong> [Q] / RB / ⭐ &nbsp; <strong>Habilidad 2:</strong> [R] / LB / 🌙<br>
+        <strong>Inventario:</strong> [I] / Y / 🎒 &nbsp; <strong>Pausa:</strong> [P][Esc] / Options / ⏸<br>
+        <strong>Debug:</strong> [~] / [F2]
+    </div>
+
+    <div id="interaction-prompt">Presiona [E]</div>
+
+    <div id="dialog-box"><div class="name">Anciano</div><div id="dialog-text"></div></div>
+
+    <div id="escape-bar-container">
+        <div id="escape-bar-bg"><div id="escape-bar-fill"></div></div>
+        <div id="escape-label">Canalizando Bocina del Vigía...</div>
+    </div>
+
+    <!-- CONTROLES TÁCTILES OVERLAY -->
+    <div id="touch-controls">
+        <div id="left-joy-base" class="joy-base">
+            <div id="left-joy-stick" class="joy-stick"></div>
+        </div>
+        <div id="touch-buttons">
+            <button id="btn-atk" class="t-btn" aria-label="Ataque">⚔️</button>
+            <button id="btn-blk" class="t-btn" aria-label="Parry">🛡️</button>
+            <button id="btn-q" class="t-btn" aria-label="Habilidad 1">⭐</button>
+            <button id="btn-r" class="t-btn" aria-label="Habilidad 2">🌙</button>
+            <button id="btn-inv" class="t-btn" aria-label="Inventario">🎒</button>
+        </div>
+        <!-- Botón contextual que aparece sobre el NPC/objeto interactuable al acercarse -->
+        <button id="touch-interact-dynamic" class="t-btn" aria-label="Interactuar">E</button>
+        <!-- Botón de pausa -->
+        <button id="touch-pause-btn" class="t-btn" aria-label="Pausa">⏸</button>
+    </div>
+
+    <!-- ================= MENÚ DE PAUSA ================= -->
+    <div id="pause-overlay">
+        <h2>PAUSA</h2>
+        <div class="pause-buttons">
+            <button id="btn-resume">Reanudar</button>
+            <button id="btn-pause-exit">Salir al Menú Principal</button>
+        </div>
+        <p class="pause-hint">[P] / [Esc] para reanudar</p>
+    </div>
+
+    <!-- Inventario / Equipamiento -->
+    <div id="inventory-panel" class="modal-panel">
+        <span class="close-modal" data-close="inventory-panel">[X]</span>
+        <h3>Menú de Equipamiento</h3>
+        <p style="font-size: 10px; color: #aaa; margin-bottom: 6px;">Haz clic en un arma de tu inventario para equiparla. Haz clic sobre el slot de equipamiento para desequiparla.</p>
+        <div id="equip-slots">
+            <div class="equip-slot" id="eq-weapon">Arma<br>Desarmado</div>
+            <div class="equip-slot" id="eq-armor">Armadura<br>Ninguna</div>
+            <div class="equip-slot" id="eq-accessory">Amuleto<br>Ninguno</div>
+        </div>
+        <h3>Inventario Global (100 Slots) — Arrastra o haz clic para usar</h3>
+        <div id="inv-grid" class="grid-10"></div>
+    </div>
+
+    <!-- Cofre (Arrastrar y Soltar) -->
+    <div id="chest-panel" class="modal-panel">
+        <span class="close-modal" data-close="chest-panel">[X]</span>
+        <h3>Cofre (40 Slots) — Arrastra o Click Derecho para pasar al instante</h3>
+        <div id="chest-grid" class="grid-10"></div>
+        <h3>Tu Inventario — Arrastra o Click Derecho para pasar al instante</h3>
+        <div id="chest-player-grid" class="grid-10"></div>
+    </div>
+
+    <!-- Crafting: Hoguera / Máquina de Pociones -->
+    <div id="craft-panel" class="modal-panel">
+        <span class="close-modal" data-close="craft-panel">[X]</span>
+        <h3 id="craft-title">Hoguera — Cocinar</h3>
+        <div id="craft-slots">
+            <div class="craft-slot" data-idx="0">(vacío)</div>
+            <div class="craft-slot" data-idx="1">(vacío)</div>
+            <div class="craft-slot" data-idx="2">(vacío)</div>
+        </div>
+        <button id="craft-action-btn">Cocinar</button>
+        <div id="craft-msg"></div>
+        <h4>Tu Inventario (click para colocar un ingrediente)</h4>
+        <div id="craft-inv-grid" class="grid-10"></div>
+    </div>
+
+    <div id="debug-panel">
+        <h3>PANEL DE DEBUG</h3>
+        <label><input type="checkbox" id="dbg-god"> Modo Dios (Invencibilidad)</label>
+        <label><input type="checkbox" id="dbg-hitboxes"> Ver Hitboxes / Grid</label>
+        <button id="dbg-spawn-slime">Spawn Slime</button>
+        <button id="dbg-spawn-wolf">Spawn Lobo</button>
+        <button id="dbg-spawn-goblin">Spawn Goblin</button>
+        <button id="dbg-spawn-deer">Spawn Ciervo</button>
+        <button id="dbg-spawn-dummy">Spawn Dummy</button>
+        <button id="dbg-add-gold">+100 Oro / Materiales</button>
+        <button id="dbg-reset">Reset de Stats</button>
+    </div>
+</div>
+
+<script type="module" src="js/main.js"></script>
+
+</body>
+</html>
