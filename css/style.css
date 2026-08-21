@@ -104,6 +104,10 @@
     .inv-slot.dragging { opacity: 0.4; border: 1px dashed #f1c40f; }
     .inv-slot.drag-over { background: #332d15; border-color: #f39c12; }
     .inv-slot .qty { position: absolute; bottom: 0; right: 2px; font-size: 8px; color: #f1c40f; pointer-events: none; }
+    .drag-ghost {
+        position: fixed; width: 46px; height: 46px; pointer-events: none; z-index: 1000;
+        opacity: 0.85; border-color: #f1c40f; box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+    }
     
     #equip-slots { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
     .equip-slot {
