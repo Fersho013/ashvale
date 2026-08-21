@@ -1,45 +1,85 @@
 /* =====================================================================
-   10. LÓGICA DRAG & DROP COFRE Y INTERFAZ DE USUARIO (UI) — Inventario
+   10. INTERFAZ DE USUARIO (UI) — Inventario, Cofre y Drag & Drop
+   Nota: el arrastre usa eventos de mouse propios (no el Drag & Drop
+   nativo del navegador), porque ese API es poco confiable en PC —
+   falla según navegador y no siempre dispara dragstart de forma
+   consistente. Este sistema sigue el cursor con un "fantasma" y
+   resuelve el destino con elementFromPoint al soltar.
    ===================================================================== */
 import { Inventory, tryConsumeItem } from '../systems/inventory.js';
 import { WEAPONS } from '../data/weapons.js';
 
-let draggedSlotInfo = null;
+let dragState = null; // { source, index, ghostEl, sourceEl }
 
-export function handleDragStart(e, source, index) {
-    draggedSlotInfo = { source, index };
-    e.dataTransfer.setData('text/plain', JSON.stringify(draggedSlotInfo));
-    e.target.classList.add('dragging');
+function makeGhost(item) {
+    const ghost = document.createElement('div');
+    ghost.className = 'inv-slot drag-ghost';
+    ghost.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
+    document.body.appendChild(ghost);
+    return ghost;
 }
 
-export function handleDragEnd(e) {
-    e.target.classList.remove('dragging');
-    draggedSlotInfo = null;
+function positionGhost(clientX, clientY) {
+    if (!dragState) return;
+    dragState.ghostEl.style.left = (clientX - 23) + 'px';
+    dragState.ghostEl.style.top = (clientY - 23) + 'px';
 }
 
-export function handleDragOver(e) {
+function clearDragOverHighlight() {
+    document.querySelectorAll('.inv-slot.drag-over').forEach(el => el.classList.remove('drag-over'));
+}
+
+function slotUnderPoint(clientX, clientY) {
+    const el = document.elementFromPoint(clientX, clientY);
+    return el ? el.closest('[data-drop-source]') : null;
+}
+
+function onDragMove(e) {
+    if (!dragState) return;
+    positionGhost(e.clientX, e.clientY);
+    clearDragOverHighlight();
+    const slot = slotUnderPoint(e.clientX, e.clientY);
+    if (slot) slot.classList.add('drag-over');
+}
+
+function onDragEnd(e) {
+    document.removeEventListener('mousemove', onDragMove);
+    document.removeEventListener('mouseup', onDragEnd);
+    if (!dragState) return;
+
+    clearDragOverHighlight();
+    dragState.sourceEl.classList.remove('dragging');
+    dragState.ghostEl.remove();
+
+    const slot = slotUnderPoint(e.clientX, e.clientY);
+    if (slot) {
+        const targetSource = slot.dataset.dropSource;
+        const targetIndex = parseInt(slot.dataset.dropIndex, 10);
+        performMove(dragState.source, dragState.index, targetSource, targetIndex);
+    }
+    dragState = null;
+}
+
+function startDrag(e, source, index, item, sourceEl) {
+    if (e.button !== 0) return; // solo click izquierdo arrastra
     e.preventDefault();
-    e.currentTarget.classList.add('drag-over');
+    sourceEl.classList.add('dragging');
+    dragState = { source, index, ghostEl: makeGhost(item), sourceEl };
+    positionGhost(e.clientX, e.clientY);
+    document.addEventListener('mousemove', onDragMove);
+    document.addEventListener('mouseup', onDragEnd);
 }
 
-export function handleDragLeave(e) {
-    e.currentTarget.classList.remove('drag-over');
-}
-
-export function handleDrop(e, targetSource, targetIndex) {
-    e.preventDefault();
-    e.currentTarget.classList.remove('drag-over');
-    if (!draggedSlotInfo) return;
-
-    const fromArr = draggedSlotInfo.source === 'chest' ? Inventory.chest : Inventory.global;
+function performMove(fromSource, fromIndex, targetSource, targetIndex) {
+    const fromArr = fromSource === 'chest' ? Inventory.chest : Inventory.global;
     const toArr = targetSource === 'chest' ? Inventory.chest : Inventory.global;
-    const fromIdx = draggedSlotInfo.index;
-    const toIdx = targetIndex;
+    const fromIdx = fromIndex, toIdx = targetIndex;
 
     const sourceItem = fromArr[fromIdx];
     if (!sourceItem) return;
+    if (fromSource === targetSource && fromIdx === toIdx) return;
 
-    if (draggedSlotInfo.source === targetSource) {
+    if (fromSource === targetSource) {
         // Intercambiar dentro del mismo contenedor
         const temp = fromArr[fromIdx];
         fromArr[fromIdx] = fromArr[toIdx];
@@ -94,17 +134,14 @@ export function refreshChestUI() {
     Inventory.chest.forEach((item, i) => {
         const div = document.createElement('div');
         div.className = 'inv-slot';
+        div.dataset.dropSource = 'chest';
+        div.dataset.dropIndex = i;
         if (item) {
-            div.draggable = true;
             div.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
-            div.ondragstart = (e) => handleDragStart(e, 'chest', i);
-            div.ondragend = handleDragEnd;
+            div.addEventListener('mousedown', (e) => startDrag(e, 'chest', i, item, div));
             // Click derecho: mover el stack completo al inventario al instante
             div.oncontextmenu = (e) => { e.preventDefault(); Inventory.quickMoveToPlayer(i); refreshChestUI(); };
         }
-        div.ondragover = handleDragOver;
-        div.ondragleave = handleDragLeave;
-        div.ondrop = (e) => handleDrop(e, 'chest', i);
         chestGrid.appendChild(div);
     });
 
@@ -113,17 +150,14 @@ export function refreshChestUI() {
     Inventory.global.forEach((item, i) => {
         const div = document.createElement('div');
         div.className = 'inv-slot';
+        div.dataset.dropSource = 'player';
+        div.dataset.dropIndex = i;
         if (item) {
-            div.draggable = true;
             div.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
-            div.ondragstart = (e) => handleDragStart(e, 'player', i);
-            div.ondragend = handleDragEnd;
+            div.addEventListener('mousedown', (e) => startDrag(e, 'player', i, item, div));
             // Click derecho: mover el stack completo al cofre al instante
             div.oncontextmenu = (e) => { e.preventDefault(); Inventory.quickMoveToChest(i); refreshChestUI(); };
         }
-        div.ondragover = handleDragOver;
-        div.ondragleave = handleDragLeave;
-        div.ondrop = (e) => handleDrop(e, 'player', i);
         playerGrid.appendChild(div);
     });
 }
