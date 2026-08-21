@@ -93,15 +93,15 @@ export class Player {
             this.walkAnimTimer = 0; this.walkFrameToggle = false; // quieto = frame base de la última dirección
         }
 
-        // Parry básico: Click Izquierdo / Mando L2-LT / Botón de escudo táctil
-        const blockKeyDown = Input.mouse.down || Input.gamepad.buttons.block || Input.touch.block;
+        // Parry básico: Click Derecho / Mando L2-LT / Botón de escudo táctil
+        const blockKeyDown = Input.mouse.rightDown || Input.gamepad.buttons.block || Input.touch.block;
         if (blockKeyDown && !this.isBlocking) { this.blockStartFrame = 0; }
         if (blockKeyDown) this.blockStartFrame++;
         this.isBlocking = blockKeyDown;
 
         if (this.attackCooldown > 0) this.attackCooldown--;
-        // Ataque básico: Click Derecho / Mando R2-RT / Botón de ataque táctil
-        const atkPressed = Input.mouse.rightDown || Input.gamepad.buttons.attack || Input.touch.attack;
+        // Ataque básico: Click Izquierdo / Mando R2-RT / Botón de ataque táctil
+        const atkPressed = Input.mouse.down || Input.gamepad.buttons.attack || Input.touch.attack;
         if (atkPressed && this.attackCooldown === 0 && !this.isAttacking) {
             this.isAttacking = true;
             this.attackTimer = this.attackDuration;
