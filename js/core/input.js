@@ -27,15 +27,13 @@ export const Input = {
             this.mouse.x = e.clientX - rect.left;
             this.mouse.y = e.clientY - rect.top;
         });
-        
-        // --- CAMBIO DE BOTONES DEL RATÓN ---
         canvas.addEventListener('mousedown', e => {
-            if (e.button === 0) this.mouse.down = true;       // Click Izquierdo -> Ataque
-            if (e.button === 2) this.mouse.rightDown = true;  // Click Derecho -> Parry
+            if (e.button === 0) this.mouse.down = true;
+            if (e.button === 2) this.mouse.rightDown = true;
         });
         canvas.addEventListener('mouseup', e => {
-            if (e.button === 0) this.mouse.down = false;      // Click Izquierdo -> Libera Ataque
-            if (e.button === 2) this.mouse.rightDown = false; // Click Derecho -> Libera Parry
+            if (e.button === 0) this.mouse.down = false;
+            if (e.button === 2) this.mouse.rightDown = false;
         });
         canvas.addEventListener('contextmenu', e => e.preventDefault());
 
@@ -144,7 +142,7 @@ export const Input = {
 
             // Mapa estándar de botones (W3C Standard Gamepad):
             const map = {
-                interact: 2,   // Cuadrado / X    -> Interacción
+                interact: 2,   // Cuadrado / X   -> Interacción
                 inventory: 3,  // Triángulo / Y  -> Inventario
                 ability2: 4,   // L1 / LB        -> Habilidad 2
                 ability1: 5,   // R1 / RB        -> Habilidad 1
