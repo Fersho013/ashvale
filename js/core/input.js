@@ -7,7 +7,7 @@ import { togglePause } from '../ui/pause.js';
 
 export const Input = {
     keys: {}, keysPressed: {},
-    // mouse.down = Click Izquierdo (Parry) · mouse.rightDown = Click Derecho (Ataque básico)
+    // mouse.down = Click Izquierdo (Ataque básico) · mouse.rightDown = Click Derecho (Parry)
     mouse: { x: 0, y: 0, down: false, rightDown: false },
     gamepad: { connected: false, axes: [0, 0], buttons: {}, justPressed: {} },
     _prevGamepadButtons: {},
@@ -27,13 +27,15 @@ export const Input = {
             this.mouse.x = e.clientX - rect.left;
             this.mouse.y = e.clientY - rect.top;
         });
+        
+        // --- CAMBIO DE BOTONES DEL RATÓN ---
         canvas.addEventListener('mousedown', e => {
-            if (e.button === 0) this.mouse.down = true;
-            if (e.button === 2) this.mouse.rightDown = true;
+            if (e.button === 0) this.mouse.down = true;       // Click Izquierdo -> Ataque
+            if (e.button === 2) this.mouse.rightDown = true;  // Click Derecho -> Parry
         });
         canvas.addEventListener('mouseup', e => {
-            if (e.button === 0) this.mouse.down = false;
-            if (e.button === 2) this.mouse.rightDown = false;
+            if (e.button === 0) this.mouse.down = false;      // Click Izquierdo -> Libera Ataque
+            if (e.button === 2) this.mouse.rightDown = false; // Click Derecho -> Libera Parry
         });
         canvas.addEventListener('contextmenu', e => e.preventDefault());
 
@@ -142,7 +144,7 @@ export const Input = {
 
             // Mapa estándar de botones (W3C Standard Gamepad):
             const map = {
-                interact: 2,   // Cuadrado / X   -> Interacción
+                interact: 2,   // Cuadrado / X    -> Interacción
                 inventory: 3,  // Triángulo / Y  -> Inventario
                 ability2: 4,   // L1 / LB        -> Habilidad 2
                 ability1: 5,   // R1 / RB        -> Habilidad 1
