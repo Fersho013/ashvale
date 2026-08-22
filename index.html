@@ -56,7 +56,6 @@
 
     <div id="ui-overlay">
         <div><strong>HP:</strong> <div class="stat-bar"><div id="hp-fill" class="stat-fill" style="background:#2ecc71;"></div></div> <span id="hp-text">100/100</span></div>
-        <div><strong>ESTADO:</strong> <span id="status-text" style="color:#2ecc71;">NORMAL</span></div>
         <div><strong>ARMA:</strong> <span id="weapon-text">Desarmado</span></div>
         <div><strong>ORO:</strong> <span id="gold-text">0</span></div>
         <div><strong>Barras de Habilidad:</strong></div>
@@ -67,14 +66,6 @@
     <div id="buffs-panel"></div>
 
     <div id="quickbar"></div>
-
-    <div id="controls-hint">
-        <strong>Mover:</strong> WASD / Pad / Stick &nbsp; <strong>Atacar:</strong> Click Izquierdo / RT / ATK<br>
-        <strong>Parry:</strong> Click Derecho / LT / DEF &nbsp; <strong>Interactuar:</strong> [E] / X / 👆<br>
-        <strong>Habilidad 1:</strong> [Q] / RB / ⭐ &nbsp; <strong>Habilidad 2:</strong> [R] / LB / 🌙<br>
-        <strong>Inventario:</strong> [I] / Y / 🎒 &nbsp; <strong>Pausa:</strong> [P][Esc] / Options / ⏸<br>
-        <strong>Debug:</strong> [~] / [F2]
-    </div>
 
     <div id="interaction-prompt">Presiona [E]</div>
 
@@ -123,6 +114,8 @@
             <div class="equip-slot" id="eq-armor">Armadura<br>Ninguna</div>
             <div class="equip-slot" id="eq-accessory">Amuleto<br>Ninguno</div>
         </div>
+        <h3>Barra Rápida (10 Slots) — Arrastra armas o pociones aquí; haz clic en la barra inferior del juego para usarlas</h3>
+        <div id="quickbar-panel-grid" class="grid-10"></div>
         <h3>Inventario Global (100 Slots) — Arrastra o haz clic para usar</h3>
         <div id="inv-grid" class="grid-10"></div>
     </div>
