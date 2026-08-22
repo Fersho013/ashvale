@@ -3,6 +3,7 @@
    ===================================================================== */
 import { Inventory, addStackToArray } from '../systems/inventory.js';
 import { COOK_RECIPES, ALCHEMY_RECIPES } from '../data/recipes.js';
+import { openItemActionMenu } from './itemActionMenu.js';
 
 let craftContext = null;
 
@@ -33,11 +34,24 @@ export function renderCraftInvGrid() {
         if (item) {
             div.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
             div.onclick = () => {
-                const emptyIdx = craftContext.slots.findIndex(s => !s);
-                if (emptyIdx === -1) return;
-                craftContext.slots[emptyIdx] = { name: item.name };
-                item.qty--; if (item.qty <= 0) Inventory.global[i] = null;
-                renderCraftSlots(); renderCraftInvGrid();
+                const current = Inventory.global[i];
+                if (!current) return;
+                openItemActionMenu(div, [
+                    {
+                        label: 'Agregar a Ingredientes',
+                        onClick: () => {
+                            const emptyIdx = craftContext.slots.findIndex(s => !s);
+                            if (emptyIdx === -1) return;
+                            craftContext.slots[emptyIdx] = { name: current.name };
+                            current.qty--; if (current.qty <= 0) Inventory.global[i] = null;
+                            renderCraftSlots(); renderCraftInvGrid();
+                        }
+                    },
+                    {
+                        label: 'Eliminar',
+                        onClick: () => { Inventory.global[i] = null; renderCraftInvGrid(); }
+                    }
+                ]);
             };
         }
         grid.appendChild(div);
