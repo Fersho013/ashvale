@@ -1,133 +1,39 @@
 /* =====================================================================
-   10. INTERFAZ DE USUARIO (UI) — Inventario, Barra Rápida, Cofre y Drag & Drop
-   Nota: el arrastre usa eventos de mouse propios (no el Drag & Drop
-   nativo del navegador), porque ese API es poco confiable en PC —
-   falla según navegador y no siempre dispara dragstart de forma
-   consistente. Este sistema sigue el cursor con un "fantasma" y
-   resuelve el destino con elementFromPoint al soltar.
-   Fuentes válidas: 'global' (Inventario, 100 slots), 'quickbar'
-   (Barra Rápida, 10 slots) y 'chest' (Cofre, 40 slots).
+   10. INTERFAZ DE USUARIO (UI) — Inventario, Barra Rápida, Cofre
+   Sistema de selección por toque: tocar/clickear un ítem abre un
+   cuadrito con las acciones disponibles (ver js/ui/itemActionMenu.js).
+   Reemplaza al arrastre, poco confiable en móvil, PC y mando.
    ===================================================================== */
-import { Inventory, tryConsumeItem } from '../systems/inventory.js';
+import { Inventory, tryConsumeItem, isWeaponItem, isConsumableItem } from '../systems/inventory.js';
 import { WEAPONS } from '../data/weapons.js';
+import { openItemActionMenu } from './itemActionMenu.js';
 
-let dragState = null; // { source, index, ghostEl, sourceEl, startX, startY, moved }
-const DRAG_THRESHOLD = 4; // px — por debajo de esto se considera un click, no un arrastre
-
-function getArrayForSource(source) {
-    if (source === 'chest') return Inventory.chest;
-    if (source === 'quickbar') return Inventory.quickbar;
-    return Inventory.global;
-}
-
-function makeGhost(item) {
-    const ghost = document.createElement('div');
-    ghost.className = 'inv-slot drag-ghost';
-    ghost.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
-    document.body.appendChild(ghost);
-    return ghost;
-}
-
-function positionGhost(clientX, clientY) {
-    if (!dragState) return;
-    dragState.ghostEl.style.left = (clientX - 23) + 'px';
-    dragState.ghostEl.style.top = (clientY - 23) + 'px';
-}
-
-function clearDragOverHighlight() {
-    document.querySelectorAll('.inv-slot.drag-over').forEach(el => el.classList.remove('drag-over'));
-}
-
-function slotUnderPoint(clientX, clientY) {
-    const el = document.elementFromPoint(clientX, clientY);
-    return el ? el.closest('[data-drop-source]') : null;
-}
-
-// Si el mouseup de un arrastre real cae sobre un slot, ese slot recibiría
-// también un evento "click" justo después (mousedown y mouseup en el mismo
-// elemento final). Lo interceptamos una sola vez para que no dispare
-// tryConsumeItem/equipar por accidente al soltar.
-function suppressNextClick(e) {
-    e.stopPropagation();
-    e.preventDefault();
-    document.removeEventListener('click', suppressNextClick, true);
-}
-
-function onDragMove(e) {
-    if (!dragState) return;
-    if (!dragState.moved) {
-        const dist = Math.hypot(e.clientX - dragState.startX, e.clientY - dragState.startY);
-        if (dist > DRAG_THRESHOLD) dragState.moved = true;
-    }
-    positionGhost(e.clientX, e.clientY);
-    clearDragOverHighlight();
-    const slot = slotUnderPoint(e.clientX, e.clientY);
-    if (slot) slot.classList.add('drag-over');
-}
-
-function onDragEnd(e) {
-    document.removeEventListener('mousemove', onDragMove);
-    document.removeEventListener('mouseup', onDragEnd);
-    if (!dragState) return;
-
-    clearDragOverHighlight();
-    dragState.sourceEl.classList.remove('dragging');
-    dragState.ghostEl.remove();
-
-    const slot = slotUnderPoint(e.clientX, e.clientY);
-    if (slot && dragState.moved) {
-        const targetSource = slot.dataset.dropSource;
-        const targetIndex = parseInt(slot.dataset.dropIndex, 10);
-        performMove(dragState.source, dragState.index, targetSource, targetIndex);
-        document.addEventListener('click', suppressNextClick, true);
-    }
-    dragState = null;
-}
-
-function startDrag(e, source, index, item, sourceEl) {
-    if (e.button !== 0) return; // solo click izquierdo arrastra
-    e.preventDefault();
-    sourceEl.classList.add('dragging');
-    dragState = { source, index, ghostEl: makeGhost(item), sourceEl, startX: e.clientX, startY: e.clientY, moved: false };
-    positionGhost(e.clientX, e.clientY);
-    document.addEventListener('mousemove', onDragMove);
-    document.addEventListener('mouseup', onDragEnd);
-}
-
-function performMove(fromSource, fromIndex, targetSource, targetIndex) {
-    const fromArr = getArrayForSource(fromSource);
-    const toArr = getArrayForSource(targetSource);
-    const fromIdx = fromIndex, toIdx = targetIndex;
-
-    const sourceItem = fromArr[fromIdx];
-    if (!sourceItem) return;
-    if (fromSource === targetSource && fromIdx === toIdx) return;
-
-    if (fromSource === targetSource) {
-        // Intercambiar dentro del mismo contenedor
-        const temp = fromArr[fromIdx];
-        fromArr[fromIdx] = fromArr[toIdx];
-        fromArr[toIdx] = temp;
-    } else {
-        // Mover/apilar entre contenedores distintos (Inventario / Barra Rápida / Cofre)
-        const targetItem = toArr[toIdx];
-        if (!targetItem) {
-            toArr[toIdx] = sourceItem;
-            fromArr[fromIdx] = null;
-        } else if (targetItem.name === sourceItem.name && targetItem.qty < 64) {
-            const space = 64 - targetItem.qty;
-            const transfer = Math.min(space, sourceItem.qty);
-            targetItem.qty += transfer;
-            sourceItem.qty -= transfer;
-            if (sourceItem.qty <= 0) fromArr[fromIdx] = null;
-        } else {
-            // Intercambiar ítems distintos entre ambos contenedores
-            toArr[toIdx] = sourceItem;
-            fromArr[fromIdx] = targetItem;
-        }
-    }
-    refreshChestUI();
+function refreshAll() {
     refreshInventoryUI();
+    refreshChestUI();
+}
+
+// Acciones base para un ítem que pertenece al jugador (Inventario Global o
+// Barra Rápida): Equipar/Usar (según el tipo de ítem) + una acción de
+// movimiento opcional (a Barra Rápida, a Inventario, o a Cofre) + Eliminar.
+function buildOwnedItemActions(arr, index, item, moveAction) {
+    const actions = [];
+    if (isWeaponItem(item)) {
+        actions.push({ label: 'Equipar', onClick: () => { tryConsumeItem(arr, index); refreshAll(); } });
+    } else if (isConsumableItem(item)) {
+        actions.push({ label: 'Usar', onClick: () => { tryConsumeItem(arr, index); refreshAll(); } });
+    }
+    if (moveAction) actions.push(moveAction);
+    actions.push({ label: 'Eliminar', onClick: () => { arr[index] = null; refreshAll(); } });
+    return actions;
+}
+
+function attachSlotTap(div, arr, index, actionsBuilder) {
+    div.onclick = () => {
+        const item = arr[index];
+        if (!item) return;
+        openItemActionMenu(div, actionsBuilder(item));
+    };
 }
 
 export function refreshInventoryUI() {
@@ -136,12 +42,12 @@ export function refreshInventoryUI() {
     Inventory.global.forEach((item, i) => {
         const div = document.createElement('div');
         div.className = 'inv-slot';
-        div.dataset.dropSource = 'global';
-        div.dataset.dropIndex = i;
         if (item) {
             div.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
-            div.addEventListener('mousedown', (e) => startDrag(e, 'global', i, item, div));
-            div.onclick = () => tryConsumeItem(Inventory.global, i);
+            attachSlotTap(div, Inventory.global, i, (it) => buildOwnedItemActions(
+                Inventory.global, i, it,
+                { label: 'Mover a Barra Rápida', onClick: () => { Inventory.moveGlobalToQuickbar(i); refreshAll(); } }
+            ));
         }
         grid.appendChild(div);
     });
@@ -151,12 +57,12 @@ export function refreshInventoryUI() {
     Inventory.quickbar.forEach((item, i) => {
         const div = document.createElement('div');
         div.className = 'inv-slot';
-        div.dataset.dropSource = 'quickbar';
-        div.dataset.dropIndex = i;
         if (item) {
             div.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
-            div.addEventListener('mousedown', (e) => startDrag(e, 'quickbar', i, item, div));
-            div.onclick = () => tryConsumeItem(Inventory.quickbar, i);
+            attachSlotTap(div, Inventory.quickbar, i, (it) => buildOwnedItemActions(
+                Inventory.quickbar, i, it,
+                { label: 'Quitar de Barra Rápida', onClick: () => { Inventory.moveQuickbarToGlobal(i); refreshAll(); } }
+            ));
         }
         qbGrid.appendChild(div);
     });
@@ -164,10 +70,30 @@ export function refreshInventoryUI() {
     const eqWeapon = document.getElementById('eq-weapon');
     const w = Inventory.equipment.weapon ? WEAPONS[Inventory.equipment.weapon] : WEAPONS.desarmado;
     eqWeapon.innerHTML = `<strong>Arma</strong><br>${w.name}`;
-    eqWeapon.onclick = () => Inventory.unequipWeapon();
+    eqWeapon.onclick = () => {
+        if (!Inventory.equipment.weapon) return; // nada equipado, no hay nada que hacer
+        openItemActionMenu(eqWeapon, [
+            { label: 'Desequipar', onClick: () => { Inventory.unequipWeapon(); refreshAll(); } }
+        ]);
+    };
 
-    document.getElementById('eq-armor').innerText = 'Armadura\n' + (Inventory.equipment.armor || 'Ninguna');
-    document.getElementById('eq-accessory').innerText = 'Amuleto\n' + (Inventory.equipment.accessory || 'Ninguno');
+    const eqArmor = document.getElementById('eq-armor');
+    eqArmor.innerText = 'Armadura\n' + (Inventory.equipment.armor || 'Ninguna');
+    eqArmor.onclick = () => {
+        if (!Inventory.equipment.armor) return;
+        openItemActionMenu(eqArmor, [
+            { label: 'Desequipar', onClick: () => { Inventory.equipment.armor = null; refreshAll(); } }
+        ]);
+    };
+
+    const eqAccessory = document.getElementById('eq-accessory');
+    eqAccessory.innerText = 'Amuleto\n' + (Inventory.equipment.accessory || 'Ninguno');
+    eqAccessory.onclick = () => {
+        if (!Inventory.equipment.accessory) return;
+        openItemActionMenu(eqAccessory, [
+            { label: 'Desequipar', onClick: () => { Inventory.equipment.accessory = null; refreshAll(); } }
+        ]);
+    };
 }
 
 export function refreshChestUI() {
@@ -176,13 +102,12 @@ export function refreshChestUI() {
     Inventory.chest.forEach((item, i) => {
         const div = document.createElement('div');
         div.className = 'inv-slot';
-        div.dataset.dropSource = 'chest';
-        div.dataset.dropIndex = i;
         if (item) {
             div.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
-            div.addEventListener('mousedown', (e) => startDrag(e, 'chest', i, item, div));
-            // Click derecho: mover el stack completo al inventario al instante
-            div.oncontextmenu = (e) => { e.preventDefault(); Inventory.quickMoveToPlayer(i); refreshChestUI(); };
+            attachSlotTap(div, Inventory.chest, i, () => [
+                { label: 'Mover al Inventario', onClick: () => { Inventory.quickMoveToPlayer(i); refreshAll(); } },
+                { label: 'Eliminar', onClick: () => { Inventory.chest[i] = null; refreshAll(); } }
+            ]);
         }
         chestGrid.appendChild(div);
     });
@@ -192,13 +117,12 @@ export function refreshChestUI() {
     Inventory.global.forEach((item, i) => {
         const div = document.createElement('div');
         div.className = 'inv-slot';
-        div.dataset.dropSource = 'global';
-        div.dataset.dropIndex = i;
         if (item) {
             div.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
-            div.addEventListener('mousedown', (e) => startDrag(e, 'global', i, item, div));
-            // Click derecho: mover el stack completo al cofre al instante
-            div.oncontextmenu = (e) => { e.preventDefault(); Inventory.quickMoveToChest(i); refreshChestUI(); };
+            attachSlotTap(div, Inventory.global, i, (it) => buildOwnedItemActions(
+                Inventory.global, i, it,
+                { label: 'Mover al Cofre', onClick: () => { Inventory.quickMoveToChest(i); refreshAll(); } }
+            ));
         }
         playerGrid.appendChild(div);
     });
