@@ -1,15 +1,24 @@
 /* =====================================================================
-   10. INTERFAZ DE USUARIO (UI) — Inventario, Cofre y Drag & Drop
+   10. INTERFAZ DE USUARIO (UI) — Inventario, Barra Rápida, Cofre y Drag & Drop
    Nota: el arrastre usa eventos de mouse propios (no el Drag & Drop
    nativo del navegador), porque ese API es poco confiable en PC —
    falla según navegador y no siempre dispara dragstart de forma
    consistente. Este sistema sigue el cursor con un "fantasma" y
    resuelve el destino con elementFromPoint al soltar.
+   Fuentes válidas: 'global' (Inventario, 100 slots), 'quickbar'
+   (Barra Rápida, 10 slots) y 'chest' (Cofre, 40 slots).
    ===================================================================== */
 import { Inventory, tryConsumeItem } from '../systems/inventory.js';
 import { WEAPONS } from '../data/weapons.js';
 
-let dragState = null; // { source, index, ghostEl, sourceEl }
+let dragState = null; // { source, index, ghostEl, sourceEl, startX, startY, moved }
+const DRAG_THRESHOLD = 4; // px — por debajo de esto se considera un click, no un arrastre
+
+function getArrayForSource(source) {
+    if (source === 'chest') return Inventory.chest;
+    if (source === 'quickbar') return Inventory.quickbar;
+    return Inventory.global;
+}
 
 function makeGhost(item) {
     const ghost = document.createElement('div');
@@ -34,8 +43,22 @@ function slotUnderPoint(clientX, clientY) {
     return el ? el.closest('[data-drop-source]') : null;
 }
 
+// Si el mouseup de un arrastre real cae sobre un slot, ese slot recibiría
+// también un evento "click" justo después (mousedown y mouseup en el mismo
+// elemento final). Lo interceptamos una sola vez para que no dispare
+// tryConsumeItem/equipar por accidente al soltar.
+function suppressNextClick(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    document.removeEventListener('click', suppressNextClick, true);
+}
+
 function onDragMove(e) {
     if (!dragState) return;
+    if (!dragState.moved) {
+        const dist = Math.hypot(e.clientX - dragState.startX, e.clientY - dragState.startY);
+        if (dist > DRAG_THRESHOLD) dragState.moved = true;
+    }
     positionGhost(e.clientX, e.clientY);
     clearDragOverHighlight();
     const slot = slotUnderPoint(e.clientX, e.clientY);
@@ -52,10 +75,11 @@ function onDragEnd(e) {
     dragState.ghostEl.remove();
 
     const slot = slotUnderPoint(e.clientX, e.clientY);
-    if (slot) {
+    if (slot && dragState.moved) {
         const targetSource = slot.dataset.dropSource;
         const targetIndex = parseInt(slot.dataset.dropIndex, 10);
         performMove(dragState.source, dragState.index, targetSource, targetIndex);
+        document.addEventListener('click', suppressNextClick, true);
     }
     dragState = null;
 }
@@ -64,15 +88,15 @@ function startDrag(e, source, index, item, sourceEl) {
     if (e.button !== 0) return; // solo click izquierdo arrastra
     e.preventDefault();
     sourceEl.classList.add('dragging');
-    dragState = { source, index, ghostEl: makeGhost(item), sourceEl };
+    dragState = { source, index, ghostEl: makeGhost(item), sourceEl, startX: e.clientX, startY: e.clientY, moved: false };
     positionGhost(e.clientX, e.clientY);
     document.addEventListener('mousemove', onDragMove);
     document.addEventListener('mouseup', onDragEnd);
 }
 
 function performMove(fromSource, fromIndex, targetSource, targetIndex) {
-    const fromArr = fromSource === 'chest' ? Inventory.chest : Inventory.global;
-    const toArr = targetSource === 'chest' ? Inventory.chest : Inventory.global;
+    const fromArr = getArrayForSource(fromSource);
+    const toArr = getArrayForSource(targetSource);
     const fromIdx = fromIndex, toIdx = targetIndex;
 
     const sourceItem = fromArr[fromIdx];
@@ -85,7 +109,7 @@ function performMove(fromSource, fromIndex, targetSource, targetIndex) {
         fromArr[fromIdx] = fromArr[toIdx];
         fromArr[toIdx] = temp;
     } else {
-        // Mover/apilar entre Cofre e Inventario
+        // Mover/apilar entre contenedores distintos (Inventario / Barra Rápida / Cofre)
         const targetItem = toArr[toIdx];
         if (!targetItem) {
             toArr[toIdx] = sourceItem;
@@ -97,7 +121,7 @@ function performMove(fromSource, fromIndex, targetSource, targetIndex) {
             sourceItem.qty -= transfer;
             if (sourceItem.qty <= 0) fromArr[fromIdx] = null;
         } else {
-            // Intercambiar ítems distintos entre cofre e inventario
+            // Intercambiar ítems distintos entre ambos contenedores
             toArr[toIdx] = sourceItem;
             fromArr[fromIdx] = targetItem;
         }
@@ -112,11 +136,29 @@ export function refreshInventoryUI() {
     Inventory.global.forEach((item, i) => {
         const div = document.createElement('div');
         div.className = 'inv-slot';
+        div.dataset.dropSource = 'global';
+        div.dataset.dropIndex = i;
         if (item) {
             div.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
+            div.addEventListener('mousedown', (e) => startDrag(e, 'global', i, item, div));
             div.onclick = () => tryConsumeItem(Inventory.global, i);
         }
         grid.appendChild(div);
+    });
+
+    const qbGrid = document.getElementById('quickbar-panel-grid');
+    qbGrid.innerHTML = '';
+    Inventory.quickbar.forEach((item, i) => {
+        const div = document.createElement('div');
+        div.className = 'inv-slot';
+        div.dataset.dropSource = 'quickbar';
+        div.dataset.dropIndex = i;
+        if (item) {
+            div.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
+            div.addEventListener('mousedown', (e) => startDrag(e, 'quickbar', i, item, div));
+            div.onclick = () => tryConsumeItem(Inventory.quickbar, i);
+        }
+        qbGrid.appendChild(div);
     });
 
     const eqWeapon = document.getElementById('eq-weapon');
@@ -150,11 +192,11 @@ export function refreshChestUI() {
     Inventory.global.forEach((item, i) => {
         const div = document.createElement('div');
         div.className = 'inv-slot';
-        div.dataset.dropSource = 'player';
+        div.dataset.dropSource = 'global';
         div.dataset.dropIndex = i;
         if (item) {
             div.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
-            div.addEventListener('mousedown', (e) => startDrag(e, 'player', i, item, div));
+            div.addEventListener('mousedown', (e) => startDrag(e, 'global', i, item, div));
             // Click derecho: mover el stack completo al cofre al instante
             div.oncontextmenu = (e) => { e.preventDefault(); Inventory.quickMoveToChest(i); refreshChestUI(); };
         }
