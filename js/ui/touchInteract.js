@@ -9,7 +9,7 @@ import { game } from '../core/gameContext.js';
 const touchInteractBtn = document.getElementById('touch-interact-dynamic');
 
 export function positionTouchInteractButton(target) {
-    if (!state.isTouchDevice || !target) { touchInteractBtn.style.display = 'none'; return; }
+    if (!state.isTouchDevice || !state.touchControlsEnabled || !target) { touchInteractBtn.style.display = 'none'; return; }
     const canvas = game.canvas;
     const camera = game.camera;
     const canvasRect = canvas.getBoundingClientRect();
