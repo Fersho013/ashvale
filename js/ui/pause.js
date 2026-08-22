@@ -11,7 +11,20 @@ export function togglePause(forceState) {
     document.getElementById('pause-overlay').style.display = state.gamePaused ? 'flex' : 'none';
 }
 
+// Muestra/oculta los controles táctiles virtuales según state.touchControlsEnabled
+// y refleja el estado actual en el texto del botón de pausa.
+export function applyTouchControlsVisibility() {
+    document.getElementById('touch-controls').style.display = state.touchControlsEnabled ? 'block' : 'none';
+    const btn = document.getElementById('btn-toggle-touch-controls');
+    btn.innerText = `Controles Táctiles: ${state.touchControlsEnabled ? 'Activados' : 'Desactivados'}`;
+}
+applyTouchControlsVisibility();
+
 document.getElementById('btn-resume').addEventListener('click', () => togglePause(false));
+document.getElementById('btn-toggle-touch-controls').addEventListener('click', () => {
+    state.touchControlsEnabled = !state.touchControlsEnabled;
+    applyTouchControlsVisibility();
+});
 document.getElementById('btn-pause-exit').addEventListener('click', () => {
     togglePause(false);
     if (state.gameStarted) saveGameState();
