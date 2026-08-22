@@ -1,5 +1,7 @@
 /* =====================================================================
-   5. INVENTARIO, COFRE Y SISTEMA DRAG & DROP — Lógica de datos
+   5. INVENTARIO Y COFRE — Lógica de datos
+   (el arrastre fue reemplazado por un sistema de selección por toque;
+   ver js/ui/itemActionMenu.js, js/ui/inventoryUI.js y js/ui/craftingUI.js)
    ===================================================================== */
 import { WEAPONS } from '../data/weapons.js';
 import { CONSUMABLE_EFFECTS } from '../data/recipes.js';
@@ -48,8 +50,8 @@ export const Inventory = {
         this.buffs = this.buffs.filter(b => b.timer > 0);
     },
 
-    equipWeaponFromInventory(globalIdx) {
-        const item = this.global[globalIdx];
+    equipWeaponFromSlot(arr, index) {
+        const item = arr[index];
         if (!item) return;
 
         let foundKey = null;
@@ -65,7 +67,7 @@ export const Inventory = {
         this.equipment.weapon = foundKey;
 
         item.qty--;
-        if (item.qty <= 0) this.global[globalIdx] = null;
+        if (item.qty <= 0) arr[index] = null;
 
         if (currentEquipped && WEAPONS[currentEquipped]) {
             this.addMaterial(WEAPONS[currentEquipped].name, 1);
@@ -104,6 +106,24 @@ export const Inventory = {
         if (leftover > 0) showDialog('Inventario', 'Tu inventario no tiene espacio suficiente para todo el stack.');
     },
 
+    // Mover el stack completo entre Inventario Global y Barra Rápida
+    moveGlobalToQuickbar(globalIdx) {
+        const item = this.global[globalIdx];
+        if (!item) return;
+        const leftover = addStackToArray(this.quickbar, item.name, item.qty, 10);
+        const moved = item.qty - leftover;
+        if (moved > 0) { item.qty -= moved; if (item.qty <= 0) this.global[globalIdx] = null; }
+        if (leftover > 0) showDialog('Barra Rápida', 'No hay espacio suficiente en la Barra Rápida.');
+    },
+    moveQuickbarToGlobal(quickbarIdx) {
+        const item = this.quickbar[quickbarIdx];
+        if (!item) return;
+        const leftover = addStackToArray(this.global, item.name, item.qty, 100);
+        const moved = item.qty - leftover;
+        if (moved > 0) { item.qty -= moved; if (item.qty <= 0) this.quickbar[quickbarIdx] = null; }
+        if (leftover > 0) showDialog('Inventario', 'Tu inventario no tiene espacio suficiente para todo el stack.');
+    },
+
     reset() {
         this.buffs = []; this.gold = 0;
         this.quickbar.fill(null); this.global.fill(null);
@@ -123,7 +143,7 @@ export function tryConsumeItem(arr, index) {
 
     for (const key in WEAPONS) {
         if (WEAPONS[key].name === item.name && key !== 'desarmado') {
-            Inventory.equipWeaponFromInventory(index);
+            Inventory.equipWeaponFromSlot(arr, index);
             return;
         }
     }
@@ -134,4 +154,18 @@ export function tryConsumeItem(arr, index) {
     showDialog('Sistema', `Consumido: ${item.name} — ${effect.msg}`);
     item.qty--; if (item.qty <= 0) arr[index] = null;
     refreshInventoryUI();
+}
+
+// true si el ítem es un arma equipable (aparece en WEAPONS, excluyendo "desarmado")
+export function isWeaponItem(item) {
+    if (!item) return false;
+    for (const key in WEAPONS) {
+        if (key !== 'desarmado' && WEAPONS[key].name === item.name) return true;
+    }
+    return false;
+}
+
+// true si el ítem es un consumible (tiene efecto definido en CONSUMABLE_EFFECTS)
+export function isConsumableItem(item) {
+    return !!(item && CONSUMABLE_EFFECTS[item.name]);
 }
