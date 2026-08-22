@@ -51,12 +51,6 @@ export function updateHUD() {
     document.getElementById('weapon-text').innerText = player.currentWeapon.name;
     document.getElementById('gold-text').innerText = Inventory.gold;
 
-    const statusText = document.getElementById('status-text');
-    if (player.channeling) { statusText.innerText = 'CANALIZANDO'; statusText.style.color = '#f1c40f'; }
-    else if (player.isBlocking) { statusText.innerText = 'COBERTURA ACTIVA'; statusText.style.color = '#3498db'; }
-    else if (player.godMode) { statusText.innerText = 'MODO DIOS'; statusText.style.color = '#e74c3c'; }
-    else { statusText.innerText = 'NORMAL'; statusText.style.color = '#2ecc71'; }
-
     const gaugeEl = document.getElementById('skill-gauge');
     if (gaugeEl.children.length !== player.barCapacity) {
         gaugeEl.innerHTML = '';
