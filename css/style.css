@@ -61,6 +61,14 @@
         background: rgba(40,40,40,0.92); color: #f1c40f; padding: 7px 14px; border-radius: 4px;
         border: 1px solid #f1c40f; font-weight: bold; font-size: 13px; display: none; pointer-events: none; z-index: 10;
     }
+    /* En modo móvil el letrero mismo funciona como botón de interacción
+       (reemplaza al antiguo botón redondo con la "E") — ver
+       js/ui/pause.js -> applyTouchControlsVisibility() */
+    #interaction-prompt.tappable {
+        pointer-events: auto; cursor: pointer; touch-action: manipulation;
+        box-shadow: 0 0 10px rgba(241,196,15,0.6); padding: 10px 18px; font-size: 14px;
+    }
+    #interaction-prompt.tappable::after { content: ' 👆'; }
 
     /* ---------- ESCAPE CHANNEL BAR ---------- */
     #escape-bar-container {
@@ -252,11 +260,6 @@
     .pause-buttons button:hover, #btn-coming-soon-back:hover { background: #f1c40f; color: #111; }
     .menu-buttons button:active, .pause-buttons button:active, #btn-coming-soon-back:active { background: #f1c40f; color: #111; }
 
-    /* ---------- Botón dinámico de interacción (táctil, aparece sobre el objetivo) ---------- */
-    #touch-interact-dynamic {
-        position: absolute; display: none; align-items: center; justify-content: center;
-        width: 40px; height: 40px; transform: translate(-50%, -50%); pointer-events: all; z-index: 21;
-    }
     /* ---------- Botón de pausa táctil (arriba a la derecha) ---------- */
     #touch-pause-btn { position: absolute; top: 15px; right: 15px; pointer-events: all; z-index: 21; }
 
