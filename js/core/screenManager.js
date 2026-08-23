@@ -92,6 +92,17 @@ export const ScreenManager = {
             this.canvas.width = this.virtualWidth; this.canvas.height = this.virtualHeight;
             this.canvas.style.width = ''; this.canvas.style.height = '';
         }
+        // Asignar canvas.width/height (arriba) resetea TODO el estado del
+        // contexto 2D a sus valores por defecto — incluido imageSmoothingEnabled,
+        // que main.js apaga una sola vez al crear el contexto para que el
+        // pixel art no se vea borroso. Sin esta línea, cualquier resize
+        // (ventana, pantalla completa, Modo Móvil, cambio de resolución en
+        // Configuración) lo reactivaría en silencio. getContext('2d') en el
+        // mismo canvas siempre devuelve el mismo objeto de contexto, así que
+        // esto no crea uno nuevo, solo reaplica el ajuste sobre el existente.
+        const ctx = this.canvas.getContext('2d');
+        if (ctx) ctx.imageSmoothingEnabled = false;
+
         if (this.onResize) this.onResize();
     },
 
