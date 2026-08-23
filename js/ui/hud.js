@@ -4,7 +4,6 @@
 import { Inventory, tryConsumeItem } from '../systems/inventory.js';
 import { getCurrentZone } from '../world/map.js';
 import { game } from '../core/gameContext.js';
-import { refreshInventoryUI, refreshChestUI } from './inventoryUI.js';
 
 export function buildQuickbarUI() {
     const bar = document.getElementById('quickbar');
@@ -65,6 +64,11 @@ export function updateHUD() {
 
     refreshBuffsUI();
     refreshQuickbarUI();
-    if (document.getElementById('inventory-panel').style.display === 'block') refreshInventoryUI();
-    if (document.getElementById('chest-panel').style.display === 'block') refreshChestUI();
+    // Nota: NO se refrescan aquí inv-grid/chest-grid en cada frame — hacerlo
+    // reconstruía esos paneles ~60 veces por segundo, lo que podía destruir
+    // el <div> justo entre el mousedown y el mouseup de un click en PC y
+    // cancelar el evento "click" (el mini menú nunca llegaba a abrirse).
+    // Cada acción que modifica el inventario ya llama explícitamente a
+    // refreshInventoryUI()/refreshChestUI() por su cuenta (ver inventoryUI.js,
+    // inventory.js y craftingUI.js), así que no hace falta hacerlo aquí.
 }
