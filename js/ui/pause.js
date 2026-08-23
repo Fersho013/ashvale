@@ -20,6 +20,10 @@ export function applyTouchControlsVisibility() {
     document.getElementById('interaction-prompt').classList.toggle('tappable', state.touchControlsEnabled);
     const btn = document.getElementById('btn-toggle-touch-controls');
     btn.innerText = `Controles Táctiles: ${state.touchControlsEnabled ? 'Activados' : 'Desactivados'}`;
+
+    // El botón de pausa táctil se mantiene visible en dispositivos táctiles
+    // sin importar si el resto de los controles están desactivados.
+    document.getElementById('touch-pause-btn').style.display = state.isTouchDevice ? 'flex' : 'none';
 }
 applyTouchControlsVisibility();
 
