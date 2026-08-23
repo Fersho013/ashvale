@@ -4,6 +4,8 @@
 import { state } from '../state.js';
 import { ScreenManager } from '../core/screenManager.js';
 import { SAVE_KEY } from '../systems/saveLoad.js';
+import { openControlsEditor } from './controlsEditor.js';
+import { applyControlsLayout } from '../systems/controlsLayout.js';
 
 export function anyModalOpen() {
     return document.getElementById('inventory-panel').style.display === 'block'
@@ -27,6 +29,7 @@ export function startGame() {
     document.getElementById('game-container').style.display = 'block';
     state.gameStarted = true;
     ScreenManager.resizeCanvas();
+    applyControlsLayout(); // recién ahora #game-container es visible y se puede medir
 }
 
 export function refreshMenuState() {
@@ -65,3 +68,9 @@ document.getElementById('aspect-ratio-check').addEventListener('change', e => {
 document.getElementById('btn-toggle-fullscreen').addEventListener('click', function () {
     ScreenManager.toggleMobileMode(this);
 });
+
+// Botón exclusivo de Modo Móvil (punto 2): editor de posición/tamaño de controles.
+const btnCustomizeControls = document.getElementById('btn-customize-controls');
+if (btnCustomizeControls) {
+    btnCustomizeControls.addEventListener('click', () => openControlsEditor(false));
+}
