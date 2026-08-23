@@ -12,21 +12,24 @@ export function togglePause(forceState) {
     document.getElementById('pause-overlay').style.display = state.gamePaused ? 'flex' : 'none';
 }
 
-// Muestra/oculta los controles táctiles virtuales según state.touchControlsEnabled
-// y refleja el estado actual en el texto del botón de pausa. También habilita/
-// deshabilita que el letrero de interacción (#interaction-prompt) se pueda
-// tocar directamente, ya que reemplaza al antiguo botón redondo de "E".
+// Muestra/oculta los controles táctiles virtuales. La visibilidad real
+// depende de DOS condiciones combinadas:
+//   1) Modo Móvil debe estar activo (clase "mobile-mode-active" en <body>,
+//      la alterna ScreenManager._refreshMobileOnlyUI() — así en PC no hay
+//      ni rastro de controles táctiles, sin importar esta preferencia).
+//   2) La preferencia del jugador (state.touchControlsEnabled), que se
+//      alterna con el botón de este menú — útil en Modo Móvil si se
+//      conecta un mando y ya no hacen falta los botones.
+// El botón de pausa táctil (#touch-pause-btn) es la excepción: se gestiona
+// puramente por CSS y permanece visible en todo Modo Móvil sin importar
+// el toggle de arriba, para poder revertirlo si hace falta (punto 6).
 export function applyTouchControlsVisibility() {
-    document.getElementById('touch-controls').style.display = state.touchControlsEnabled ? 'block' : 'none';
-    document.getElementById('interaction-prompt').classList.toggle('tappable', state.touchControlsEnabled);
+    const mobileModeActive = document.body.classList.contains('mobile-mode-active');
+    const showTouch = mobileModeActive && state.touchControlsEnabled;
+    document.getElementById('touch-controls').style.display = showTouch ? 'block' : 'none';
+    document.getElementById('interaction-prompt').classList.toggle('tappable', showTouch);
     const btn = document.getElementById('btn-toggle-touch-controls');
     btn.innerText = `Controles Táctiles: ${state.touchControlsEnabled ? 'Activados' : 'Desactivados'}`;
-
-    // El botón de pausa táctil se mantiene visible en dispositivos táctiles
-    // sin importar si el resto de los controles están desactivados, para
-    // que el jugador siempre pueda volver a abrir el menú de Pausa y
-    // revertir el cambio (cambio 1).
-    document.getElementById('touch-pause-btn').style.display = state.isTouchDevice ? 'flex' : 'none';
 }
 applyTouchControlsVisibility();
 
