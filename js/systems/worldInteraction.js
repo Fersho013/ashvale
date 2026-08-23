@@ -12,7 +12,6 @@ import { doors } from '../world/map.js';
 import { npc, respawnBed, campfire, alchemyTable, chestObj, bocinaVigia, weaponRacks, toolRacks } from '../world/worldObjects.js';
 import { WEAPONS } from '../data/weapons.js';
 import { TOOLS } from '../data/tools.js';
-import { MOB_DATA } from '../data/mobs.js';
 import { showDialog, dialogState } from '../ui/dialog.js';
 import { openCraftPanel } from '../ui/craftingUI.js';
 import { refreshChestUI } from '../ui/inventoryUI.js';
@@ -42,24 +41,6 @@ function checkProjectileHit(p) {
     return false;
 }
 
-// Aplica una tabla de loot (ver data/mobs.js): cada entrada tira su propio
-// dado de forma independiente entre sí. Las entradas con "gold" van
-// directo a Inventory.gold; el resto se agrega como material.
-function grantLoot(loot, sourceName) {
-    const gained = [];
-    for (const entry of loot) {
-        if (Math.random() > entry.chance) continue;
-        if (entry.gold) {
-            Inventory.gold += entry.gold;
-            gained.push(`${entry.gold} de oro`);
-        } else {
-            Inventory.addMaterial(entry.name, entry.qty || 1);
-            gained.push(entry.qty > 1 ? `${entry.name} x${entry.qty}` : entry.name);
-        }
-    }
-    if (gained.length) showDialog('Botín', `${sourceName}: ${gained.join(', ')}`);
-}
-
 export function update() {
     const player = game.player;
     const world = game.world;
@@ -70,21 +51,15 @@ export function update() {
 
     world.dummies.forEach(d => d.update());
     world.activeMobs.forEach(m => m.update(player));
-    world.slimes.forEach(s => s.update(world.slimes, player));
+    world.slimes.forEach(s => s.update(world.slimes));
     const fused = world.slimes.filter(s => s.fused);
     if (fused.length >= 2) {
         const [a, b] = fused;
         world.slimes = world.slimes.filter(s => s !== a && s !== b);
         world.slimes.push(new Slime((a.x + b.x)/2, (a.y + b.y)/2, true));
     }
-    // Lobo y Goblin resetean su propia vida al morir DENTRO de su propio
-    // update() (ver entities/mobs.js), así que el loot se concede justo
-    // ANTES de llamarlo: es el único momento en que hp<=0 todavía refleja
-    // la muerte ocurrida en el frame anterior (evita conceder loot 2 veces).
-    world.wolves.forEach(w => { if (w.hp <= 0) grantLoot(MOB_DATA.lobo.loot, MOB_DATA.lobo.name); });
     world.wolves.forEach(w => w.update(player, world.deers));
     world.deers.forEach(d => d.update(player, world.wolves));
-    world.goblins.forEach(g => { if (g.hp <= 0) grantLoot(MOB_DATA.goblin.loot, MOB_DATA.goblin.name); });
     world.goblins.forEach(g => g.update(player));
 
     // Báculo/Arco: Player.update() dejó los datos de disparo en
@@ -117,7 +92,6 @@ export function update() {
         world.wolves.forEach(w => { if (checkRectCollision(box, w) && w.flash === 0) { w.takeHit(dmg); player.bars = Math.min(player.barCapacity, player.bars + 0.5); } });
         world.goblins.forEach(g => { if (checkRectCollision(box, g) && g.flash === 0) { g.takeHit(dmg); player.bars = Math.min(player.barCapacity, player.bars + 0.5); } });
     }
-    world.slimes.forEach(s => { if (s.hp <= 0) grantLoot(MOB_DATA.slime.loot, MOB_DATA.slime.name); });
     world.slimes = world.slimes.filter(s => s.hp > 0);
 
     camera.follow(player);
