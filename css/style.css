@@ -162,8 +162,11 @@
         pointer-events: none;
     }
     #touch-buttons {
-        position: absolute; bottom: 15px; right: 15px; display: flex; gap: 8px; flex-wrap: wrap;
-        max-width: 220px; justify-content: flex-end; pointer-events: all;
+        /* Punto 2: ya no se posiciona por flex. Cada .t-btn usa position:absolute
+           con left/top propios calculados en js/systems/controlsLayout.js, para
+           poder moverse y redimensionarse de forma independiente desde el
+           editor de controles. Este contenedor solo deja pasar los toques. */
+        pointer-events: all;
     }
     .t-btn {
         width: 46px; height: 46px; background: rgba(20, 20, 20, 0.75); border: 1px solid #f1c40f;
@@ -269,3 +272,44 @@
         .t-btn { width: 52px; height: 52px; font-size: 16px; }
         .joy-base { width: 110px; height: 110px; }
     }
+
+    /* ---------- UI EXCLUSIVA DE MODO MÓVIL (punto 2 / punto 3) ----------
+       Oculta por defecto; ScreenManager._refreshMobileOnlyUI() la muestra
+       (display:'') solo cuando ScreenManager.isMobileMode es true. */
+    .mobile-only-ui { display: none; }
+
+    /* ---------- EDITOR DE POSICIÓN/TAMAÑO DE CONTROLES TÁCTILES (punto 2) ---------- */
+    /* Mientras el editor está activo, resalta con un borde punteado los
+       controles arrastrables para que quede claro qué se puede mover. */
+    body.controls-editing .t-btn,
+    body.controls-editing .joy-base {
+        outline: 2px dashed rgba(241, 196, 15, 0.8); outline-offset: 2px;
+    }
+
+    #controls-editor-toolbar {
+        position: fixed; top: 8px; left: 8px; max-width: 230px; z-index: 500;
+        background: rgba(10, 10, 10, 0.95); border: 2px solid #f1c40f; border-radius: 8px;
+        padding: 10px 12px; font-size: 11px; color: #ddd; box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+    }
+    #controls-editor-toolbar p { line-height: 1.5; margin: 0 0 8px; }
+    .controls-editor-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+    .controls-editor-buttons button {
+        flex: 1 1 auto; background: #1e1e1e; border: 1px solid #f1c40f; color: #f1c40f;
+        font-family: inherit; font-size: 10.5px; padding: 7px 6px; border-radius: 4px;
+        cursor: pointer; touch-action: manipulation;
+    }
+    .controls-editor-buttons button:hover,
+    .controls-editor-buttons button:active { background: #f1c40f; color: #111; }
+    #ce-toolbar-msg { font-size: 10px; color: #2ecc71; margin-top: 6px; min-height: 12px; }
+
+    #controls-editor-handles {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        pointer-events: none; z-index: 250;
+    }
+    .ce-resize-handle {
+        position: absolute; width: 22px; height: 22px; background: #f1c40f; border: 2px solid #111;
+        border-radius: 50%; pointer-events: all; cursor: nwse-resize; touch-action: none;
+        box-shadow: 0 0 6px rgba(0,0,0,0.6);
+        display: flex; align-items: center; justify-content: center; font-size: 11px; color: #111;
+    }
+    .ce-resize-handle::after { content: '⤡'; }
