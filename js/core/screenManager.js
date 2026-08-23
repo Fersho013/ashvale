@@ -102,12 +102,12 @@ export const ScreenManager = {
 
     // Muestra/oculta cualquier elemento marcado con la clase ".mobile-only-ui"
     // según el Modo Móvil esté activo o no (punto 3: en PC no debe verse ni
-    // rastro de UI táctil/exclusiva de móvil; en Modo Móvil, sí). Se llama en
-    // init(), toggleMobileMode() y _onFullscreenChange() para mantenerlo
-    // sincronizado en todos los casos en que isMobileMode puede cambiar.
+    // rastro de UI táctil/exclusiva de móvil; en Modo Móvil, sí). En vez de
+    // tocar el "display" de cada elemento (habría que adivinar si es flex,
+    // inline-block, etc. al revelarlo), se alterna una clase en <body> que
+    // el CSS usa para aplicar u omitir la regla ".mobile-only-ui { display:none }"
+    // — así cada elemento vuelve a su display normal, el que sea, al mostrarse.
     _refreshMobileOnlyUI() {
-        document.querySelectorAll('.mobile-only-ui').forEach(el => {
-            el.style.display = this.isMobileMode ? '' : 'none';
-        });
+        document.body.classList.toggle('mobile-mode-active', this.isMobileMode);
     }
 };
