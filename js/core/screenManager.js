@@ -22,6 +22,7 @@ export const ScreenManager = {
         document.addEventListener('webkitfullscreenchange', () => this._onFullscreenChange());
 
         this.resizeCanvas();
+        this._refreshMobileOnlyUI();
     },
 
     async toggleMobileMode(toggleBtn = null) {
@@ -36,6 +37,7 @@ export const ScreenManager = {
             if (toggleBtn) toggleBtn.innerText = "🎮 Modo Móvil / Pantalla Completa";
         }
         this.resizeCanvas();
+        this._refreshMobileOnlyUI();
     },
 
     async enterFullscreen() {
@@ -95,5 +97,17 @@ export const ScreenManager = {
         const isFS = !!(document.fullscreenElement || document.webkitFullscreenElement);
         this.isFullscreen = isFS;
         if (!isFS && this.isMobileMode) { this.isMobileMode = false; this.unlockOrientation(); this.resizeCanvas(); }
+        this._refreshMobileOnlyUI();
+    },
+
+    // Muestra/oculta cualquier elemento marcado con la clase ".mobile-only-ui"
+    // según el Modo Móvil esté activo o no (punto 3: en PC no debe verse ni
+    // rastro de UI táctil/exclusiva de móvil; en Modo Móvil, sí). Se llama en
+    // init(), toggleMobileMode() y _onFullscreenChange() para mantenerlo
+    // sincronizado en todos los casos en que isMobileMode puede cambiar.
+    _refreshMobileOnlyUI() {
+        document.querySelectorAll('.mobile-only-ui').forEach(el => {
+            el.style.display = this.isMobileMode ? '' : 'none';
+        });
     }
 };
