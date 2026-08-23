@@ -57,10 +57,8 @@
     <div id="ui-overlay">
         <div><strong>HP:</strong> <div class="stat-bar"><div id="hp-fill" class="stat-fill" style="background:#2ecc71;"></div></div> <span id="hp-text">100/100</span></div>
         <div><strong>ARMA:</strong> <span id="weapon-text">Desarmado</span></div>
-        <div><strong>ORO:</strong> <span id="gold-text">0</span></div>
         <div><strong>Barras de Habilidad:</strong></div>
         <div id="skill-gauge"></div>
-        <div style="margin-top:4px;"><strong>MANDOS:</strong> <span id="gamepad-status" style="color:#e74c3c;">Desconectado</span></div>
     </div>
 
     <div id="buffs-panel"></div>
@@ -98,17 +96,22 @@
     <div id="pause-overlay">
         <h2>PAUSA</h2>
         <div class="pause-content">
-            <div class="pause-controls-panel">
-                <h3>Controles</h3>
-                <p><strong>Mover:</strong> WASD / Pad / Stick</p>
-                <p><strong>Atacar:</strong> Click Izquierdo / RT / ATK</p>
-                <p><strong>Parry:</strong> Click Derecho / LT / DEF</p>
-                <p><strong>Interactuar:</strong> [E] / X / 👆</p>
-                <p><strong>Habilidad 1:</strong> [Q] / RB / ⭐</p>
-                <p><strong>Habilidad 2:</strong> [R] / LB / 🌙</p>
-                <p><strong>Inventario:</strong> [I] / Y / 🎒</p>
-                <p><strong>Pausa:</strong> [P][Esc] / Options / ⏸</p>
-                <p><strong>Debug:</strong> [~] / [F2]</p>
+            <div class="pause-left-column">
+                <div class="pause-controls-panel">
+                    <h3>Controles</h3>
+                    <p><strong>Mover:</strong> WASD / Pad / Stick</p>
+                    <p><strong>Atacar:</strong> Click Izquierdo / RT / ATK</p>
+                    <p><strong>Parry:</strong> Click Derecho / LT / DEF</p>
+                    <p><strong>Interactuar:</strong> [E] / X / 👆</p>
+                    <p><strong>Habilidad 1:</strong> [Q] / RB / ⭐</p>
+                    <p><strong>Habilidad 2:</strong> [R] / LB / 🌙</p>
+                    <p><strong>Inventario:</strong> [I] / Y / 🎒</p>
+                    <p><strong>Pausa:</strong> [P][Esc] / Options / ⏸</p>
+                    <p><strong>Debug:</strong> [~] / [F2]</p>
+                </div>
+                <div class="pause-gamepad-status">
+                    <strong>MANDOS:</strong> <span id="gamepad-status" style="color:#e74c3c;">Desconectado</span>
+                </div>
             </div>
             <div class="pause-buttons">
                 <button id="btn-resume">Reanudar</button>
@@ -122,16 +125,16 @@
     <!-- Inventario / Equipamiento -->
     <div id="inventory-panel" class="modal-panel">
         <span class="close-modal" data-close="inventory-panel">[X]</span>
-        <h3>Menú de Equipamiento</h3>
-        <p style="font-size: 10px; color: #aaa; margin-bottom: 6px;">Haz clic en un arma de tu inventario para equiparla. Haz clic sobre el slot de equipamiento para desequiparla.</p>
+        <h3 class="panel-title-row"><span>Menú de Equipamiento</span><span id="gold-display">🪙 <span id="gold-text">0</span></span></h3>
+        <p style="font-size: 10px; color: #aaa; margin-bottom: 6px;">Toca un arma de tu inventario para equiparla. Toca el slot de equipamiento para desequiparla.</p>
         <div id="equip-slots">
             <div class="equip-slot" id="eq-weapon">Arma<br>Desarmado</div>
             <div class="equip-slot" id="eq-armor">Armadura<br>Ninguna</div>
             <div class="equip-slot" id="eq-accessory">Amuleto<br>Ninguno</div>
         </div>
-        <h3>Barra Rápida (10 Slots) — Arrastra armas o pociones aquí; haz clic en la barra inferior del juego para usarlas</h3>
+        <h3>Barra Rápida (10 Slots) — Toca un ítem para ver sus opciones</h3>
         <div id="quickbar-panel-grid" class="grid-10"></div>
-        <h3>Inventario Global (100 Slots) — Arrastra o haz clic para usar</h3>
+        <h3>Inventario Global (100 Slots) — Toca un ítem para ver sus opciones</h3>
         <div id="inv-grid" class="grid-10"></div>
     </div>
 
