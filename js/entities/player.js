@@ -27,6 +27,11 @@ export class Player {
         this.attackTimer = 0;
         this.attackDuration = 15;
         this.attackCooldown = 0;
+        // Cuando el arma equipada es a distancia (ranged), el ataque no usa
+        // getAttackHitbox(): en vez de eso deja aquí los datos de disparo un
+        // frame para que worldInteraction.js cree el Projectile real. Así
+        // Player no depende de game/world (ver core/gameContext.js).
+        this.pendingProjectile = null;
 
         this.isBlocking = false;
         this.blockStartFrame = 0;
@@ -103,9 +108,17 @@ export class Player {
         // Ataque básico: Click Izquierdo / Mando R2-RT / Botón de ataque táctil
         const atkPressed = Input.mouse.down || Input.gamepad.buttons.attack || Input.touch.attack;
         if (atkPressed && this.attackCooldown === 0 && !this.isAttacking) {
+            const weapon = this.currentWeapon;
             this.isAttacking = true;
             this.attackTimer = this.attackDuration;
-            this.attackCooldown = 25;
+            this.attackCooldown = weapon.attackCooldown;
+            if (weapon.ranged) {
+                this.pendingProjectile = {
+                    x: this.x + this.w / 2, y: this.y + this.h / 2,
+                    dirX: this.facing.x, dirY: this.facing.y,
+                    dmg: this.attackDamage, weaponKey: Inventory.equipment.weapon || 'desarmado'
+                };
+            }
         }
         if (this.isAttacking) {
             this.attackTimer--;
@@ -198,7 +211,8 @@ export class Player {
     }
 
     getAttackHitbox() {
-        const reach = 38, size = 34;
+        const weapon = this.currentWeapon;
+        const reach = weapon.meleeReach ?? 38, size = weapon.meleeSize ?? 34;
         return {
             x: this.x + this.w/2 + this.facing.x * reach - size/2,
             y: this.y + this.h/2 + this.facing.y * reach - size/2,
@@ -216,7 +230,7 @@ export class Player {
         const spriteKey = (this.isMoving && this.walkFrameToggle) ? dirSprites.walk : dirSprites.idle;
         drawEntity(ctx, spriteKey, this.x, this.y, this.w, this.h, color, 'rect', null, CHARACTER_SPRITE_SIZE);
 
-        if (this.isAttacking) {
+        if (this.isAttacking && !weapon.ranged) {
             const box = this.getAttackHitbox();
             ctx.fillStyle = 'rgba(255,255,255,0.35)';
             ctx.strokeStyle = weapon.color;
