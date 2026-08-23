@@ -6,7 +6,7 @@ import { game } from './core/gameContext.js';
 import { Input } from './core/input.js';
 import { ScreenManager } from './core/screenManager.js';
 import { Camera } from './core/camera.js';
-import { drawEntity } from './core/assets.js';
+import { drawEntity, CHARACTER_SPRITE_SIZE } from './core/assets.js';
 import { Player } from './entities/player.js';
 import { DummyMob, ActiveMob, Slime, Wolf, Deer, GoblinExplorer } from './entities/mobs.js';
 import { setupDebugPanel, DEBUG } from './systems/debug.js';
@@ -23,6 +23,10 @@ import './ui/craftingUI.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+// Pixel art: sin suavizado, o los sprites (incluso a su tamaño nativo) se
+// ven borrosos/con halos al reescalar el canvas (resolución, pantalla
+// completa, etc.).
+ctx.imageSmoothingEnabled = false;
 
 const player = new Player(150, 150);
 const camera = new Camera(canvas.width, canvas.height);
@@ -82,7 +86,7 @@ function render() {
     }
 
     workTables.forEach(t => drawEntity(ctx, 'work_table', t.x, t.y, t.w, t.h, '#8d6e4f', 'rect'));
-    drawEntity(ctx, 'npc_elder', npc.x, npc.y, npc.w, npc.h, '#f1c40f', 'rect', 'A');
+    drawEntity(ctx, 'npc_elder', npc.x, npc.y, npc.w, npc.h, '#f1c40f', 'rect', 'A', CHARACTER_SPRITE_SIZE);
     drawEntity(ctx, 'bed', respawnBed.x, respawnBed.y, respawnBed.w, respawnBed.h, '#ffffff', 'rect');
     drawEntity(ctx, 'campfire', campfire.x, campfire.y, campfire.w, campfire.h, '#e67e22', 'circle');
     drawEntity(ctx, 'alchemy_table', alchemyTable.x, alchemyTable.y, alchemyTable.w, alchemyTable.h, '#2980b9', 'rect');
