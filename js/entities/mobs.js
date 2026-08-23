@@ -4,7 +4,6 @@
 import { checkRectCollision, dist } from '../core/physics.js';
 import { drawEntity } from '../core/assets.js';
 import { getActiveWalls, MAP_W, MAP_H, clampToZone3 } from '../world/map.js';
-import { MOB_DATA } from '../data/mobs.js';
 
 export class DummyMob {
     constructor(x, y) {
@@ -83,35 +82,18 @@ export class Slime {
     constructor(x, y, big = false) {
         this.x = x; this.y = y; this.big = big;
         this.w = big ? 30 : 18; this.h = big ? 30 : 18;
-        this.speed = 0.6; this.hp = big ? MOB_DATA.slime.baseHp * 2 : MOB_DATA.slime.baseHp; this.maxHp = this.hp;
+        this.speed = 0.6; this.hp = big ? 20 : 10; this.maxHp = this.hp;
         this.flash = 0; this.mergeTimer = 0; this.wanderAngle = Math.random() * Math.PI * 2;
         this.fused = false;
-        // Hostil: persigue al jugador dentro de aggroRadius y lo golpea al
-        // contacto (antes el Slime era pasivo y solo vagaba/se fusionaba).
-        this.aggroRadius = 140; this.atk = 4; this.attackCooldown = 0;
     }
     takeHit(dmg) { this.flash = 10; this.hp -= dmg; this.mergeTimer = 0; }
-    update(allSlimes, player) {
+    update(allSlimes) {
         if (this.flash > 0) this.flash--;
-
-        if (player && dist(this, player) < this.aggroRadius) {
-            const dx = (player.x + player.w/2) - (this.x + this.w/2);
-            const dy = (player.y + player.h/2) - (this.y + this.h/2);
-            const d = Math.hypot(dx, dy) || 1;
-            this.x += (dx/d) * this.speed; this.y += (dy/d) * this.speed;
-        } else {
-            this.wanderAngle += (Math.random() - 0.5) * 0.2;
-            this.x += Math.cos(this.wanderAngle) * this.speed;
-            this.y += Math.sin(this.wanderAngle) * this.speed;
-        }
+        this.wanderAngle += (Math.random() - 0.5) * 0.2;
+        this.x += Math.cos(this.wanderAngle) * this.speed;
+        this.y += Math.sin(this.wanderAngle) * this.speed;
         this.x = Math.max(30, Math.min(MAP_W - 60, this.x));
         this.y = Math.max(310, Math.min(MAP_H - 60, this.y));
-
-        if (player && checkRectCollision(this, player) && this.attackCooldown === 0) {
-            player.takeDamage(this.atk, this);
-            this.attackCooldown = 50;
-        }
-        if (this.attackCooldown > 0) this.attackCooldown--;
 
         if (!this.big) {
             for (const other of allSlimes) {
@@ -133,7 +115,7 @@ export class Slime {
 export class Wolf {
     constructor(x, y) {
         this.x = x; this.y = y; this.w = 32; this.h = 32; this.speed = 1.9;
-        this.hp = MOB_DATA.lobo.baseHp; this.maxHp = this.hp; this.flash = 0;
+        this.hp = 25; this.maxHp = 25; this.flash = 0;
     }
     takeHit(dmg) { this.flash = 10; this.hp -= dmg; }
     update(player, deerList) {
@@ -181,7 +163,7 @@ export class Deer {
 export class GoblinExplorer {
     constructor(x, y) {
         this.x = x; this.y = y; this.w = 30; this.h = 30; this.speed = 1.5;
-        this.hp = MOB_DATA.goblin.baseHp; this.maxHp = this.hp; this.flash = 0; this.attackCooldown = 0;
+        this.hp = 20; this.maxHp = 20; this.flash = 0; this.attackCooldown = 0;
     }
     takeHit(dmg) { this.flash = 10; this.hp -= dmg; }
     update(player) {
