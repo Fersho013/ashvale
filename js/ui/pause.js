@@ -12,9 +12,12 @@ export function togglePause(forceState) {
 }
 
 // Muestra/oculta los controles táctiles virtuales según state.touchControlsEnabled
-// y refleja el estado actual en el texto del botón de pausa.
+// y refleja el estado actual en el texto del botón de pausa. También habilita/
+// deshabilita que el letrero de interacción (#interaction-prompt) se pueda
+// tocar directamente, ya que reemplaza al antiguo botón redondo de "E".
 export function applyTouchControlsVisibility() {
     document.getElementById('touch-controls').style.display = state.touchControlsEnabled ? 'block' : 'none';
+    document.getElementById('interaction-prompt').classList.toggle('tappable', state.touchControlsEnabled);
     const btn = document.getElementById('btn-toggle-touch-controls');
     btn.innerText = `Controles Táctiles: ${state.touchControlsEnabled ? 'Activados' : 'Desactivados'}`;
 }
