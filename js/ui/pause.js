@@ -4,6 +4,7 @@
 import { state } from '../state.js';
 import { saveGameState } from '../systems/saveLoad.js';
 import { closeAllModals, showScreen, refreshMenuState } from './menu.js';
+import { openControlsEditor } from './controlsEditor.js';
 
 export function togglePause(forceState) {
     if (!state.gameStarted) return;
@@ -22,7 +23,9 @@ export function applyTouchControlsVisibility() {
     btn.innerText = `Controles Táctiles: ${state.touchControlsEnabled ? 'Activados' : 'Desactivados'}`;
 
     // El botón de pausa táctil se mantiene visible en dispositivos táctiles
-    // sin importar si el resto de los controles están desactivados.
+    // sin importar si el resto de los controles están desactivados, para
+    // que el jugador siempre pueda volver a abrir el menú de Pausa y
+    // revertir el cambio (cambio 1).
     document.getElementById('touch-pause-btn').style.display = state.isTouchDevice ? 'flex' : 'none';
 }
 applyTouchControlsVisibility();
@@ -32,6 +35,14 @@ document.getElementById('btn-toggle-touch-controls').addEventListener('click', (
     state.touchControlsEnabled = !state.touchControlsEnabled;
     applyTouchControlsVisibility();
 });
+
+// Botón exclusivo de Modo Móvil (punto 2): abre el editor de posición/tamaño
+// de los controles táctiles sin salir de la partida en curso.
+const btnCustomizeControlsPause = document.getElementById('btn-customize-controls-pause');
+if (btnCustomizeControlsPause) {
+    btnCustomizeControlsPause.addEventListener('click', () => openControlsEditor(true));
+}
+
 document.getElementById('btn-pause-exit').addEventListener('click', () => {
     togglePause(false);
     if (state.gameStarted) saveGameState();
