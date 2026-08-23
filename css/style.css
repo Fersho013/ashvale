@@ -274,9 +274,13 @@
     }
 
     /* ---------- UI EXCLUSIVA DE MODO MÓVIL (punto 2 / punto 3) ----------
-       Oculta por defecto; ScreenManager._refreshMobileOnlyUI() la muestra
-       (display:'') solo cuando ScreenManager.isMobileMode es true. */
-    .mobile-only-ui { display: none; }
+       Oculta salvo que <body> tenga la clase "mobile-mode-active" (la
+       alterna ScreenManager._refreshMobileOnlyUI()). Se usa un selector
+       sobre <body> — en vez de "display:none" directo en la clase — para
+       no tener que adivinar el display original de cada elemento (flex,
+       inline-block, etc.): al ocultarse la regla, cada uno vuelve a su
+       display normal según su propio CSS, sin necesitar un valor fijo. */
+    body:not(.mobile-mode-active) .mobile-only-ui { display: none; }
 
     /* ---------- EDITOR DE POSICIÓN/TAMAÑO DE CONTROLES TÁCTILES (punto 2) ---------- */
     /* Mientras el editor está activo, resalta con un borde punteado los
