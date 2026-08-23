@@ -16,7 +16,7 @@ export const npc = {
         "¡Bienvenido al Sandbox de Ashvale! Usa WASD o los controles táctiles para moverte.",
         "Zona 2 (este): Galería de Armas. Acércate y presiona [E] para tomar armas como ítems.",
         "Abre tu inventario con [I] para equiparte las armas o usar consumibles.",
-        "En el Cofre puedes mantener pulsado y arrastrar los ítems libremente hacia tu inventario."
+        "En el Cofre, toca un ítem para ver sus opciones y moverlo hacia tu inventario."
     ],
     msgIndex: 0
 };
