@@ -14,7 +14,6 @@ import { showDialog, dialogState } from '../ui/dialog.js';
 import { openCraftPanel } from '../ui/craftingUI.js';
 import { refreshChestUI } from '../ui/inventoryUI.js';
 import { anyModalOpen } from '../ui/menu.js';
-import { positionTouchInteractButton } from '../ui/touchInteract.js';
 import { updateHUD } from '../ui/hud.js';
 
 export function update() {
@@ -109,8 +108,6 @@ export function update() {
     const promptEl = document.getElementById('interaction-prompt');
     if (promptText && !modalOpen) { promptEl.style.display = 'block'; promptEl.innerText = promptText; }
     else promptEl.style.display = 'none';
-
-    positionTouchInteractButton(interactTarget && !modalOpen ? interactTarget : null);
 
     if (dialogState.timer > 0) { dialogState.timer--; if (dialogState.timer === 0) document.getElementById('dialog-box').style.display = 'none'; }
 
