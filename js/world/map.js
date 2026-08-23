@@ -2,6 +2,9 @@
    3. MAPA Y ZONAS (1200x900)
    ===================================================================== */
 export const MAP_W = 1200, MAP_H = 900;
+// Unidad de "bloque" usada para alcances (ver data/weapons.js -> projectile.rangeBlocks)
+// y para la grilla de depuración (coincide con el paso de 60px ya usado en main.js).
+export const BLOCK_SIZE = 60;
 
 export const ZONES = [
     { id: 1, name: 'Zona 1: Centro de Mando y Spawn', x: 0,   y: 0,   w: 400, h: 300, color: 'rgba(46,204,113,0.05)' },
