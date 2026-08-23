@@ -3,6 +3,14 @@
    ===================================================================== */
 export const ASSET_PATH = 'assets/';
 
+// Tamaño de dibujo estándar para sprites de personaje (jugador, NPCs).
+// Coincide con la resolución nativa de esos assets (48x64) para que se
+// dibujen SIN escalar ni deformar. Se pasa como "spriteSize" a drawEntity(),
+// que ancla el sprite por los pies sobre el hitbox de colisión — así el
+// personaje puede lucir más alto que su hitbox real sin aplastarse dentro
+// de él. Si en el futuro cambian de resolución, solo hay que ajustar esto.
+export const CHARACTER_SPRITE_SIZE = { w: 48, h: 64 };
+
 export const ASSET_MANIFEST = {
     player:            'player.png',
     // Sprites direccionales del jugador (4 direcciones x 2 frames = caminar)
@@ -58,10 +66,21 @@ export const Assets = {
 };
 Assets.loadAll();
 
-export function drawEntity(ctx, assetKey, x, y, w, h, fallbackColor, shape = 'rect', label = null) {
+export function drawEntity(ctx, assetKey, x, y, w, h, fallbackColor, shape = 'rect', label = null, spriteSize = null) {
     const img = Assets.get(assetKey);
     if (img) {
-        ctx.drawImage(img, x, y, w, h);
+        if (spriteSize) {
+            // Dibuja al tamaño real del sprite (no al tamaño del hitbox),
+            // centrado horizontalmente y apoyado por su base ("pies") sobre
+            // el hitbox de colisión. Evita deformar sprites verticales
+            // (ej. 48x64) al forzarlos dentro de un hitbox más pequeño.
+            const dw = spriteSize.w, dh = spriteSize.h;
+            const dx = x + w / 2 - dw / 2;
+            const dy = y + h - dh;
+            ctx.drawImage(img, dx, dy, dw, dh);
+        } else {
+            ctx.drawImage(img, x, y, w, h);
+        }
     } else {
         ctx.fillStyle = fallbackColor;
         if (shape === 'circle') {
