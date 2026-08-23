@@ -282,6 +282,20 @@
        display normal según su propio CSS, sin necesitar un valor fijo. */
     body:not(.mobile-mode-active) .mobile-only-ui { display: none; }
 
+    /* ---------- CANDADO DE CONTROLES TÁCTILES FUERA DE MODO MÓVIL (punto 8) ----------
+       Refuerzo con !important sobre la clase de <body>: garantiza que en PC
+       (Modo Móvil desactivado) no quede NINGÚN rastro de controles táctiles
+       —joystick, botones de acción, ni el botón de pausa táctil— sin importar
+       lo que digan state.touchControlsEnabled u otros estados en JS. Es el
+       mismo mecanismo que ".mobile-only-ui" arriba, pero endurecido porque
+       estos dos elementos también reciben "display" desde JS (ver
+       applyTouchControlsVisibility() en js/ui/pause.js) y no deben depender
+       solo de esa lógica para quedar ocultos en PC. */
+    body:not(.mobile-mode-active) #touch-controls,
+    body:not(.mobile-mode-active) #touch-pause-btn {
+        display: none !important;
+    }
+
     /* ---------- EDITOR DE POSICIÓN/TAMAÑO DE CONTROLES TÁCTILES (punto 2) ---------- */
     /* Mientras el editor está activo, resalta con un borde punteado los
        controles arrastrables para que quede claro qué se puede mover. */
