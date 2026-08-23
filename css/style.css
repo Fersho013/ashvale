@@ -17,7 +17,16 @@
         background-color: #1a1a1a;
         touch-action: none;
     }
-    canvas { display: block; background-color: #222; }
+    canvas {
+        display: block; background-color: #222;
+        /* Pixel art: evita que el navegador difumine el canvas al reescalarlo
+           por CSS (pantalla completa / Modo Móvil, ver ScreenManager.resizeCanvas()).
+           El orden importa: los navegadores usan el último valor que entiendan. */
+        image-rendering: -moz-crisp-edges;
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+        image-rendering: pixelated;
+    }
 
     /* ---------- UI OVERLAY (HP / Skill Gauge / Zone) ---------- */
     #ui-overlay {
