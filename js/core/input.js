@@ -112,7 +112,7 @@ export const Input = {
 
         bindBtn('btn-atk', 'attack');
         bindBtn('btn-blk', 'block');
-        bindBtn('touch-interact-dynamic', 'interact');
+        bindBtn('interaction-prompt', 'interact'); // el letrero de interacción hace de botón (ver applyTouchControlsVisibility)
         bindBtn('btn-q', 'q');
         bindBtn('btn-r', 'r');
 
