@@ -3,6 +3,7 @@
    ===================================================================== */
 import { Slime, Wolf, GoblinExplorer, Deer, DummyMob } from '../entities/mobs.js';
 import { Inventory } from './inventory.js';
+import { refreshInventoryUI, refreshChestUI } from '../ui/inventoryUI.js';
 
 export const DEBUG = { panelOpen: false, showHitboxes: false };
 
@@ -20,6 +21,7 @@ export function setupDebugPanel(player, world) {
         Inventory.gold += 100;
         Inventory.addMaterial('Mineral de Hierro', 10);
         Inventory.addMaterial('Agua', 10);
+        refreshInventoryUI(); refreshChestUI();
     };
     document.getElementById('dbg-reset').onclick = () => {
         player.hp = player.maxHp; player.bars = player.barCapacity; Inventory.buffs = [];
