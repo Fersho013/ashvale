@@ -46,10 +46,6 @@ export function renderCraftInvGrid() {
                             current.qty--; if (current.qty <= 0) Inventory.global[i] = null;
                             renderCraftSlots(); renderCraftInvGrid();
                         }
-                    },
-                    {
-                        label: 'Eliminar',
-                        onClick: () => { Inventory.global[i] = null; renderCraftInvGrid(); }
                     }
                 ]);
             };
