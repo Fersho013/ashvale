@@ -86,9 +86,15 @@
             <button id="btn-r" class="t-btn" aria-label="Habilidad 2">🌙</button>
             <button id="btn-inv" class="t-btn" aria-label="Inventario">🎒</button>
         </div>
-        <!-- Botón de pausa -->
-        <button id="touch-pause-btn" class="t-btn" aria-label="Pausa">⏸</button>
     </div>
+
+    <!-- Botón de pausa táctil: vive FUERA de #touch-controls a propósito.
+         Si el jugador desactiva "Controles Táctiles" desde el menú de
+         Pausa, el resto de los controles se ocultan, pero este botón debe
+         seguir visible en dispositivos táctiles para poder volver a abrir
+         el menú de Pausa y reactivarlos (ver applyTouchControlsVisibility()
+         en js/ui/pause.js). -->
+    <button id="touch-pause-btn" class="t-btn" aria-label="Pausa">⏸</button>
 
     <!-- ================= MENÚ DE PAUSA ================= -->
     <div id="pause-overlay">
@@ -136,12 +142,12 @@
         <div id="inv-grid" class="grid-10"></div>
     </div>
 
-    <!-- Cofre (Arrastrar y Soltar) -->
+    <!-- Cofre (menú de acciones por toque) -->
     <div id="chest-panel" class="modal-panel">
         <span class="close-modal" data-close="chest-panel">[X]</span>
-        <h3>Cofre (40 Slots) — Arrastra o Click Derecho para pasar al instante</h3>
+        <h3>Cofre (40 Slots) — Toca un ítem para ver sus opciones</h3>
         <div id="chest-grid" class="grid-10"></div>
-        <h3>Tu Inventario — Arrastra o Click Derecho para pasar al instante</h3>
+        <h3>Tu Inventario — Toca un ítem para ver sus opciones</h3>
         <div id="chest-player-grid" class="grid-10"></div>
     </div>
 
