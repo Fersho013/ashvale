@@ -7,7 +7,15 @@ export const weaponRacks = [
     { x: 600, y: 40,  w: 34, h: 34, weapon: 'dagas' },
     { x: 440, y: 200, w: 34, h: 34, weapon: 'arco' },
     { x: 520, y: 200, w: 34, h: 34, weapon: 'lanza' },
-    { x: 600, y: 200, w: 34, h: 34, weapon: 'especial' }
+    { x: 600, y: 200, w: 34, h: 34, weapon: 'baculo' }
+];
+
+// Cofre de Herramientas: mismo patrón de "tomar item" que weaponRacks, pero
+// para herramientas de recolección (ver data/tools.js). Ubicado en Zona 1,
+// junto a las mesas de trabajo, sin invadir muros ni la puerta D12.
+export const toolRacks = [
+    { x: 250, y: 110, w: 34, h: 34, tool: 'hacha' },
+    { x: 310, y: 110, w: 34, h: 34, tool: 'pico' }
 ];
 
 export const npc = {
