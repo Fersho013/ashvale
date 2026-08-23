@@ -7,14 +7,39 @@ import { Input } from '../core/input.js';
 import { checkRectCollision, dist } from '../core/physics.js';
 import { Inventory } from './inventory.js';
 import { Slime } from '../entities/mobs.js';
+import { Projectile } from '../entities/projectile.js';
 import { doors } from '../world/map.js';
-import { npc, respawnBed, campfire, alchemyTable, chestObj, bocinaVigia, weaponRacks } from '../world/worldObjects.js';
+import { npc, respawnBed, campfire, alchemyTable, chestObj, bocinaVigia, weaponRacks, toolRacks } from '../world/worldObjects.js';
 import { WEAPONS } from '../data/weapons.js';
+import { TOOLS } from '../data/tools.js';
 import { showDialog, dialogState } from '../ui/dialog.js';
 import { openCraftPanel } from '../ui/craftingUI.js';
 import { refreshChestUI } from '../ui/inventoryUI.js';
 import { anyModalOpen } from '../ui/menu.js';
 import { updateHUD } from '../ui/hud.js';
+
+// Un proyectil solo puede golpear al PRIMER enemigo con el que colisiona
+// (Báculo/Arco, ver data/weapons.js). Recorre los grupos de mobs en orden
+// y se detiene en el primer impacto.
+function checkProjectileHit(p) {
+    const world = game.world;
+    const groups = [
+        { list: world.dummies,    parry: false },
+        { list: world.activeMobs, parry: true },
+        { list: world.slimes,     parry: false },
+        { list: world.wolves,     parry: false },
+        { list: world.goblins,    parry: false }
+    ];
+    for (const { list, parry } of groups) {
+        for (const m of list) {
+            if (checkRectCollision(p, m)) {
+                if (parry) m.takeHit(p.dmg, false); else m.takeHit(p.dmg);
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
 export function update() {
     const player = game.player;
@@ -37,7 +62,28 @@ export function update() {
     world.deers.forEach(d => d.update(player, world.wolves));
     world.goblins.forEach(g => g.update(player));
 
-    if (player.isAttacking) {
+    // Báculo/Arco: Player.update() dejó los datos de disparo en
+    // pendingProjectile (ver entities/player.js); aquí se crea el
+    // Projectile real usando la config del arma equipada.
+    if (player.pendingProjectile) {
+        const pp = player.pendingProjectile;
+        const cfg = WEAPONS[pp.weaponKey].projectile;
+        world.projectiles.push(new Projectile({
+            x: pp.x, y: pp.y, dirX: pp.dirX, dirY: pp.dirY, dmg: pp.dmg,
+            speed: cfg.speed, size: cfg.size, color: cfg.color, rangeBlocks: cfg.rangeBlocks
+        }));
+        player.pendingProjectile = null;
+    }
+    world.projectiles.forEach(p => {
+        p.update();
+        if (!p.hasHit && checkProjectileHit(p)) {
+            p.hasHit = true;
+            player.bars = Math.min(player.barCapacity, player.bars + 0.5);
+        }
+    });
+    world.projectiles = world.projectiles.filter(p => !p.expired);
+
+    if (player.isAttacking && !player.currentWeapon.ranged) {
         const box = player.getAttackHitbox();
         const dmg = player.attackDamage;
         world.dummies.forEach(d => { if (checkRectCollision(box, d) && d.flash === 0) { d.takeHit(dmg); player.bars = Math.min(player.barCapacity, player.bars + 0.5); } });
@@ -88,6 +134,22 @@ export function update() {
                         }
                     }
                     found = true; break;
+                }
+            }
+            if (!found) {
+                for (const rack of toolRacks) {
+                    if (dist(player, rack) < 50) {
+                        const t = TOOLS[rack.tool];
+                        promptText = `Tomar ${t.name} [E]`; interactTarget = rack;
+                        if (eDown && !state.actionHeld) {
+                            if (Inventory.addMaterial(t.name, 1)) {
+                                showDialog('Cofre de Herramientas', `Has obtenido: ${t.name}.`);
+                            } else {
+                                showDialog('Inventario', `¡Inventario lleno! No puedes llevar el/la ${t.name}.`);
+                            }
+                        }
+                        found = true; break;
+                    }
                 }
             }
             if (!found) {
