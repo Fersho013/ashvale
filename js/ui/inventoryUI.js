@@ -15,8 +15,10 @@ function refreshAll() {
 
 // Acciones base para un ítem que pertenece al jugador (Inventario Global o
 // Barra Rápida): Equipar/Usar (según el tipo de ítem) + una acción de
-// movimiento opcional (a Barra Rápida, a Inventario, o a Cofre) + Eliminar.
-function buildOwnedItemActions(arr, index, item, moveAction) {
+// movimiento opcional (a Barra Rápida, a Inventario, o a Cofre).
+// "Eliminar" es exclusivo del Inventario Global (includeDelete=true) — en
+// ningún otro lugar (Barra Rápida, Cofre, vista del Cofre) se puede borrar.
+function buildOwnedItemActions(arr, index, item, moveAction, includeDelete = false) {
     const actions = [];
     if (isWeaponItem(item)) {
         actions.push({ label: 'Equipar', onClick: () => { tryConsumeItem(arr, index); refreshAll(); } });
@@ -24,7 +26,7 @@ function buildOwnedItemActions(arr, index, item, moveAction) {
         actions.push({ label: 'Usar', onClick: () => { tryConsumeItem(arr, index); refreshAll(); } });
     }
     if (moveAction) actions.push(moveAction);
-    actions.push({ label: 'Eliminar', onClick: () => { arr[index] = null; refreshAll(); } });
+    if (includeDelete) actions.push({ label: 'Eliminar', onClick: () => { arr[index] = null; refreshAll(); } });
     return actions;
 }
 
@@ -46,7 +48,8 @@ export function refreshInventoryUI() {
             div.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
             attachSlotTap(div, Inventory.global, i, (it) => buildOwnedItemActions(
                 Inventory.global, i, it,
-                { label: 'Mover a Barra Rápida', onClick: () => { Inventory.moveGlobalToQuickbar(i); refreshAll(); } }
+                { label: 'Mover a Barra Rápida', onClick: () => { Inventory.moveGlobalToQuickbar(i); refreshAll(); } },
+                true // único lugar donde se puede eliminar ítems
             ));
         }
         grid.appendChild(div);
@@ -105,8 +108,7 @@ export function refreshChestUI() {
         if (item) {
             div.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
             attachSlotTap(div, Inventory.chest, i, () => [
-                { label: 'Mover al Inventario', onClick: () => { Inventory.quickMoveToPlayer(i); refreshAll(); } },
-                { label: 'Eliminar', onClick: () => { Inventory.chest[i] = null; refreshAll(); } }
+                { label: 'Mover al Inventario', onClick: () => { Inventory.quickMoveToPlayer(i); refreshAll(); } }
             ]);
         }
         chestGrid.appendChild(div);
