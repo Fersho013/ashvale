@@ -14,6 +14,11 @@ export const state = {
     // solo si el dispositivo es táctil. El jugador puede apagarlos/prenderlos
     // manualmente desde el menú de Pausa (ver js/ui/pause.js) — útil en
     // móvil cuando se conecta un mando y ya no se necesitan los botones.
-    touchControlsEnabled: false
+    touchControlsEnabled: false,
+    // true mientras el editor de posición/tamaño de controles táctiles está
+    // abierto (ver js/ui/controlsEditor.js) — se usa para que el input táctil
+    // normal (js/core/input.js) no interprete los arrastres de edición como
+    // movimiento/ataques del jugador.
+    controlsEditMode: false
 };
 state.touchControlsEnabled = state.isTouchDevice;
