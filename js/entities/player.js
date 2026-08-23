@@ -2,7 +2,7 @@
    6. JUGADOR
    ===================================================================== */
 import { Input } from '../core/input.js';
-import { drawEntity } from '../core/assets.js';
+import { drawEntity, CHARACTER_SPRITE_SIZE } from '../core/assets.js';
 import { checkRectCollision } from '../core/physics.js';
 import { getActiveWalls } from '../world/map.js';
 import { WEAPONS, PLAYER_SPRITE_KEYS } from '../data/weapons.js';
@@ -214,7 +214,7 @@ export class Player {
 
         const dirSprites = PLAYER_SPRITE_KEYS[this.facingDir] || PLAYER_SPRITE_KEYS.centro;
         const spriteKey = (this.isMoving && this.walkFrameToggle) ? dirSprites.walk : dirSprites.idle;
-        drawEntity(ctx, spriteKey, this.x, this.y, this.w, this.h, color, 'rect');
+        drawEntity(ctx, spriteKey, this.x, this.y, this.w, this.h, color, 'rect', null, CHARACTER_SPRITE_SIZE);
 
         if (this.isAttacking) {
             const box = this.getAttackHitbox();
