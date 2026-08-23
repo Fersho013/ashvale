@@ -16,8 +16,9 @@ import { toggleInventory } from './ui/inventoryUI.js';
 import { togglePause } from './ui/pause.js';
 import { anyModalOpen, closeAllModals } from './ui/menu.js';
 import { ZONES, MAP_W, MAP_H, walls, doors } from './world/map.js';
-import { npc, respawnBed, campfire, alchemyTable, chestObj, workTables, weaponRacks, bocinaVigia } from './world/worldObjects.js';
+import { npc, respawnBed, campfire, alchemyTable, chestObj, workTables, weaponRacks, toolRacks, bocinaVigia } from './world/worldObjects.js';
 import { WEAPONS } from './data/weapons.js';
+import { TOOLS } from './data/tools.js';
 import './systems/saveLoad.js';
 import './ui/craftingUI.js';
 
@@ -37,7 +38,8 @@ const world = {
     slimes: [ new Slime(150, 380), new Slime(190, 400) ],
     wolves: [ new Wolf(400, 500) ],
     deers: [ new Deer(500, 600) ],
-    goblins: [ new GoblinExplorer(650, 450) ]
+    goblins: [ new GoblinExplorer(650, 450) ],
+    projectiles: [] // proyectiles activos de Báculo/Arco (ver systems/worldInteraction.js)
 };
 
 game.canvas = canvas; game.ctx = ctx; game.player = player; game.camera = camera; game.world = world;
@@ -96,6 +98,10 @@ function render() {
         const w = WEAPONS[rack.weapon];
         drawEntity(ctx, w.asset, rack.x, rack.y, rack.w, rack.h, w.color, 'rect', w.name[0]);
     }
+    for (const rack of toolRacks) {
+        const t = TOOLS[rack.tool];
+        drawEntity(ctx, t.asset, rack.x, rack.y, rack.w, rack.h, t.color, 'rect', t.name[0]);
+    }
 
     world.dummies.forEach(d => d.draw(ctx));
     world.activeMobs.forEach(m => m.draw(ctx));
@@ -105,6 +111,8 @@ function render() {
     world.goblins.forEach(g => g.draw(ctx));
 
     drawEntity(ctx, 'horn', bocinaVigia.x, bocinaVigia.y, bocinaVigia.w, bocinaVigia.h, '#9b59b6', 'circle', 'B');
+
+    world.projectiles.forEach(p => p.draw(ctx));
 
     player.draw(ctx);
 
