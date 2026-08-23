@@ -42,6 +42,8 @@ export const ASSET_MANIFEST = {
     weapon_lanza:      'weapon_lanza.png',
     weapon_especial:   'weapon_especial.png',
     horn:              'bocina_vigia.png',
+    tool_hacha:        'tool_hacha.png',
+    tool_pico:         'tool_pico.png',
     tile_grass:        'tile_grass.png',
     tile_stone:        'tile_stone.png'
 };
