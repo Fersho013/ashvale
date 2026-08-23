@@ -49,6 +49,14 @@ export const WEAPONS = {
         dmg: 10, attackCooldown: 60, ranged: true,
         projectile: { rangeBlocks: 4, speed: 11, size: 8, color: '#2ecc71' },
         ability1: 'Disparo Perforante', ability2: 'Lluvia de Flechas'
+    },
+    // Botín raro del Goblin (5% de probabilidad, ver data/mobs.js). Se
+    // registra aquí (y no solo como material) porque tiene daño propio y
+    // debe poder equiparse igual que cualquier otra arma.
+    espada_goblin: {
+        id: 'espada_goblin', name: 'Espada Corta de Goblin', color: '#7f8c8d', asset: 'weapon_espada', // TODO: sprite propio cuando exista arte dedicado
+        dmg: 15, attackCooldown: 60, meleeReach: 38, meleeSize: 34,
+        ability1: 'Estocada Veloz', ability2: 'Filo Tormentoso'
     }
 };
 
