@@ -9,16 +9,20 @@ export const state = {
     actionHeld: false,
     gameStarted: false,
     gamePaused: false,
+    // Ya no gobierna la visibilidad de los controles táctiles (eso ahora es
+    // exclusivamente Modo Móvil, ver ScreenManager.isMobileMode / clase
+    // "mobile-mode-active" en <body>) — se conserva por si sirve a futuro.
     isTouchDevice: ('ontouchstart' in window) || navigator.maxTouchPoints > 0,
-    // Visibilidad de los botones táctiles virtuales: activados por defecto
-    // solo si el dispositivo es táctil. El jugador puede apagarlos/prenderlos
-    // manualmente desde el menú de Pausa (ver js/ui/pause.js) — útil en
-    // móvil cuando se conecta un mando y ya no se necesitan los botones.
-    touchControlsEnabled: false,
+    // Preferencia del jugador de mostrar u ocultar los botones táctiles
+    // MIENTRAS esté en Modo Móvil (toggle en el menú de Pausa) — útil si
+    // se conecta un mando y ya no hacen falta. En PC (Modo Móvil apagado)
+    // esta bandera no importa: el CSS oculta los controles táctiles sin
+    // excepción (ver "body:not(.mobile-mode-active)" en style.css).
+    touchControlsEnabled: true,
     // true mientras el editor de posición/tamaño de controles táctiles está
     // abierto (ver js/ui/controlsEditor.js) — se usa para que el input táctil
     // normal (js/core/input.js) no interprete los arrastres de edición como
     // movimiento/ataques del jugador.
     controlsEditMode: false
 };
-state.touchControlsEnabled = state.isTouchDevice;
+
