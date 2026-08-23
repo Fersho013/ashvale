@@ -95,7 +95,11 @@
         user-select: none;
     }
     .inv-slot:hover { border-color: #f1c40f; }
-    .inv-slot.selected { background: #332d15; border-color: #f39c12; box-shadow: 0 0 0 2px rgba(243,156,18,0.5); }    .inv-slot .qty { position: absolute; bottom: 0; right: 2px; font-size: 8px; color: #f1c40f; pointer-events: none; }
+    .inv-slot.selected { background: #332d15; border-color: #f39c12; box-shadow: 0 0 0 2px rgba(243,156,18,0.5); }
+    .inv-slot .qty { position: absolute; bottom: 0; right: 2px; font-size: 8px; color: #f1c40f; pointer-events: none; }
+
+    .panel-title-row { display: flex; align-items: center; justify-content: space-between; }
+    #gold-display { color: #f1c40f; font-size: 13px; font-weight: normal; }
 
     /* ---------- MENÚ CONTEXTUAL DE ACCIONES DE ÍTEM ---------- */
     .item-action-menu {
@@ -217,15 +221,22 @@
     #pause-overlay h2 { font-size: 30px; color: #f1c40f; letter-spacing: 5px; margin-bottom: 30px; text-shadow: 0 0 15px rgba(241,196,15,0.5); }
     #pause-overlay .pause-hint { margin-top: 22px; font-size: 11px; color: #888; }
     .pause-content { display: flex; flex-direction: row; align-items: flex-start; gap: 40px; }
+    .pause-left-column { display: flex; flex-direction: column; gap: 10px; width: 240px; }
     .pause-buttons { display: flex; flex-direction: column; gap: 14px; width: 240px; }
 
     .pause-controls-panel {
-        width: 240px; background: rgba(0,0,0,0.4); border: 1px solid #444; border-radius: 6px;
-        padding: 12px 14px; text-align: left;
+        width: 100%; background: rgba(0,0,0,0.4); border: 1px solid #444; border-radius: 6px;
+        padding: 12px 14px; text-align: left; box-sizing: border-box;
     }
     .pause-controls-panel h3 { color: #f1c40f; font-size: 13px; letter-spacing: 1px; margin-bottom: 8px; border-bottom: 1px solid #444; padding-bottom: 5px; }
     .pause-controls-panel p { font-size: 10.5px; color: #ccc; line-height: 1.6; margin: 0 0 4px; }
     .pause-controls-panel p strong { color: #f1c40f; }
+
+    .pause-gamepad-status {
+        width: 100%; background: rgba(0,0,0,0.4); border: 1px solid #444; border-radius: 6px;
+        padding: 10px 14px; text-align: left; font-size: 11px; color: #ccc; box-sizing: border-box;
+    }
+    .pause-gamepad-status strong { color: #f1c40f; }
 
     @media (max-width: 640px) {
         .pause-content { flex-direction: column; align-items: center; }
