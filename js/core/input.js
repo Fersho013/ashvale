@@ -60,16 +60,18 @@ export const Input = {
         if (!joyBase) return;
 
         joyBase.addEventListener('touchstart', e => {
+            if (state.controlsEditMode) return; // el editor de controles gestiona sus propios arrastres
             e.preventDefault();
             if (touchId !== null) return;
             const touch = e.changedTouches[0];
             touchId = touch.identifier;
             const rect = joyBase.getBoundingClientRect();
-            center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+            center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, radius: rect.width / 2 };
             updateJoy(touch);
         }, { passive: false });
 
         joyBase.addEventListener('touchmove', e => {
+            if (state.controlsEditMode) return;
             e.preventDefault();
             for (let t of e.changedTouches) {
                 if (t.identifier === touchId) { updateJoy(t); break; }
@@ -77,6 +79,7 @@ export const Input = {
         }, { passive: false });
 
         const endTouch = e => {
+            if (state.controlsEditMode) return;
             e.preventDefault();
             for (let t of e.changedTouches) {
                 if (t.identifier === touchId) {
@@ -96,7 +99,10 @@ export const Input = {
             let dx = touch.clientX - center.x;
             let dy = touch.clientY - center.y;
             let dist = Math.hypot(dx, dy);
-            let maxDist = 40;
+            // El radio máximo de arrastre escala junto con el tamaño real del
+            // joystick (personalizable desde el editor de controles, punto 2).
+            // Con el tamaño por defecto (100px) equivale a los 40px originales.
+            let maxDist = (center.radius || 50) * 0.8;
             if (dist > maxDist) { dx = (dx / dist) * maxDist; dy = (dy / dist) * maxDist; }
             joyStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
             self.touch.moveX = dx / maxDist;
@@ -106,8 +112,14 @@ export const Input = {
         const bindBtn = (id, prop) => {
             const btn = document.getElementById(id);
             if (!btn) return;
-            btn.addEventListener('touchstart', e => { e.preventDefault(); this.touch[prop] = true; }, { passive: false });
-            btn.addEventListener('touchend', e => { e.preventDefault(); this.touch[prop] = false; }, { passive: false });
+            btn.addEventListener('touchstart', e => {
+                if (state.controlsEditMode) return;
+                e.preventDefault(); this.touch[prop] = true;
+            }, { passive: false });
+            btn.addEventListener('touchend', e => {
+                if (state.controlsEditMode) return;
+                e.preventDefault(); this.touch[prop] = false;
+            }, { passive: false });
         };
 
         bindBtn('btn-atk', 'attack');
@@ -119,6 +131,7 @@ export const Input = {
         const invBtn = document.getElementById('btn-inv');
         if (invBtn) {
             invBtn.addEventListener('touchstart', e => {
+                if (state.controlsEditMode) return;
                 e.preventDefault();
                 if (state.gamePaused) return;
                 toggleInventory();
@@ -127,7 +140,10 @@ export const Input = {
 
         const pauseBtn = document.getElementById('touch-pause-btn');
         if (pauseBtn) {
-            pauseBtn.addEventListener('touchstart', e => { e.preventDefault(); togglePause(); }, { passive: false });
+            pauseBtn.addEventListener('touchstart', e => {
+                if (state.controlsEditMode) return;
+                e.preventDefault(); togglePause();
+            }, { passive: false });
         }
     },
 
