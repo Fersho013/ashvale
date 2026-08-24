@@ -16,7 +16,7 @@ import { toggleInventory } from './ui/inventoryUI.js';
 import { togglePause } from './ui/pause.js';
 import { anyModalOpen, closeAllModals } from './ui/menu.js';
 import { ZONES, MAP_W, MAP_H, walls, doors } from './world/map.js';
-import { npc, respawnBed, campfire, alchemyTable, chestObj, workTables, weaponRacks, toolRacks, bocinaVigia } from './world/worldObjects.js';
+import { npc, respawnBed, campfire, alchemyTable, buildTable, chestObj, workTables, weaponRacks, toolRacks, bocinaVigia } from './world/worldObjects.js';
 import { WEAPONS } from './data/weapons.js';
 import { TOOLS } from './data/tools.js';
 import './systems/saveLoad.js';
@@ -92,6 +92,7 @@ function render() {
     drawEntity(ctx, 'bed', respawnBed.x, respawnBed.y, respawnBed.w, respawnBed.h, '#ffffff', 'rect');
     drawEntity(ctx, 'campfire', campfire.x, campfire.y, campfire.w, campfire.h, '#e67e22', 'circle');
     drawEntity(ctx, 'alchemy_table', alchemyTable.x, alchemyTable.y, alchemyTable.w, alchemyTable.h, '#2980b9', 'rect');
+    drawEntity(ctx, 'build_table', buildTable.x, buildTable.y, buildTable.w, buildTable.h, '#8d6e4f', 'rect', 'M');
     drawEntity(ctx, 'chest', chestObj.x, chestObj.y, chestObj.w, chestObj.h, '#a0642f', 'rect', 'C');
 
     for (const rack of weaponRacks) {
