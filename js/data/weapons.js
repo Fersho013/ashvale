@@ -58,6 +58,13 @@ export const WEAPONS = {
         id: 'goblin_espada_corta', name: 'Espada Corta de Goblin', color: '#7f8c8d', asset: 'weapon_espada', // TODO: sprite propio
         dmg: 15, attackCooldown: 60, meleeReach: 38, meleeSize: 34,
         ability1: 'Estocada Veloz', ability2: 'Guardia'
+    },
+    // Craftable en la Mesa Constructora: Madera + Metal Oxidado (ver
+    // data/recipes.js -> BUILD_RECIPES). No se consigue en las armerías.
+    espada_oxidada: {
+        id: 'espada_oxidada', name: 'Espada Oxidada', color: '#a07b52', asset: 'weapon_espada', // TODO: sprite propio
+        dmg: 20, attackCooldown: 60, meleeReach: 38, meleeSize: 34,
+        ability1: 'Estocada Veloz', ability2: 'Filo Tormentoso'
     }
 };
 
