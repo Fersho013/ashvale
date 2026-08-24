@@ -58,8 +58,16 @@ export class Player {
     get currentWeapon() {
         return Inventory.equipment.weapon ? WEAPONS[Inventory.equipment.weapon] : WEAPONS.desarmado;
     }
-    get speed() { return this.baseSpeed + (Inventory.hasBuff('Velocidad') ? 1.5 : 0); }
-    get attackDamage() { return this.currentWeapon.dmg + (Inventory.hasBuff('Fuerza') ? 5 : 0); }
+    get speed() {
+        const b = Inventory.getBuff('Velocidad');
+        return this.baseSpeed + (b ? b.value : 0);
+    }
+    get attackDamage() {
+        const b = Inventory.getBuff('Fuerza');
+        // Math.max(0, ...): con la Masa Extraña (data/recipes.js) la Fuerza
+        // puede ser negativa (debuff) — nunca debe bajar el daño de 0.
+        return Math.max(0, this.currentWeapon.dmg + (b ? b.value : 0));
+    }
 
     update() {
         let dx = 0, dy = 0;
@@ -199,10 +207,19 @@ export class Player {
 
         if (this.isBlocking) amount = Math.floor(amount * 0.3);
         if (this.mitigationPct > 0) amount = Math.floor(amount * (1 - this.mitigationPct));
-        if (Inventory.hasBuff('Resistencia')) amount = Math.max(0, amount - 10);
 
-        if (Inventory.hasBuff('Espinas') && attacker && typeof attacker.hp === 'number') {
-            attacker.hp -= Math.floor(amount * 0.5);
+        const resistencia = Inventory.getBuff('Resistencia');
+        if (resistencia) amount = Math.max(0, amount - resistencia.value);
+
+        // Poción de Defensa (data/recipes.js): reduce el daño un %
+        // (20/10/30 según la variante), a diferencia de Resistencia que
+        // resta un valor plano fijo.
+        const defensa = Inventory.getBuff('Defensa');
+        if (defensa) amount = Math.floor(amount * (1 - defensa.value));
+
+        const espinas = Inventory.getBuff('Espinas');
+        if (espinas && attacker && typeof attacker.hp === 'number') {
+            attacker.hp -= Math.floor(amount * espinas.value);
         }
 
         this.hp -= amount;
