@@ -8,6 +8,7 @@ import { CONSUMABLE_EFFECTS } from '../data/recipes.js';
 import { rollLoot } from '../data/mobs.js';
 import { showDialog } from '../ui/dialog.js';
 import { refreshInventoryUI } from '../ui/inventoryUI.js';
+import { game } from '../core/gameContext.js';
 
 export function addStackToArray(arr, name, qty, maxSlots) {
     for (let i = 0; i < maxSlots && qty > 0; i++) {
@@ -46,6 +47,10 @@ export const Inventory = {
         this.buffs.push({ ...buff, timer: buff.duration });
     },
     hasBuff(name) { return this.buffs.some(b => b.name === name); },
+    // A diferencia de hasBuff() (solo true/false), devuelve el buff completo
+    // — necesario para leer su "value" (ej. cuánta Fuerza da exactamente
+    // esta Fuerza en particular: +5, -5, +20... ver data/recipes.js).
+    getBuff(name) { return this.buffs.find(b => b.name === name) || null; },
     updateBuffs() {
         for (const b of this.buffs) b.timer--;
         this.buffs = this.buffs.filter(b => b.timer > 0);
@@ -137,6 +142,11 @@ Inventory.chest[1] = { name: 'Huevo', qty: 10 };
 Inventory.chest[2] = { name: 'Botella', qty: 10 };
 Inventory.chest[3] = { name: 'Cactus', qty: 10 };
 Inventory.chest[4] = { name: 'Mineral de Hierro', qty: 10 };
+// La Hacha (data/tools.js) aún no tiene función de tala implementada, así
+// que no hay forma real de conseguir Madera todavía. Se siembra aquí para
+// poder probar la Mesa Constructora (Espada Oxidada, ver data/recipes.js)
+// mientras esa mecánica no exista.
+Inventory.chest[5] = { name: 'Madera', qty: 10 };
 
 export function tryConsumeItem(arr, index) {
     const item = arr[index];
@@ -151,10 +161,41 @@ export function tryConsumeItem(arr, index) {
 
     const effect = CONSUMABLE_EFFECTS[item.name];
     if (!effect) return;
-    Inventory.addBuff({ name: effect.buffName, duration: effect.duration, color: effect.color });
-    showDialog('Sistema', `Consumido: ${item.name} — ${effect.msg}`);
+
+    let msg = effect.msg;
+    if (effect.kind === 'buff') {
+        effect.buffs.forEach(b => Inventory.addBuff(b));
+    } else if (effect.kind === 'heal') {
+        applyInstantHp(effect.amount);
+    } else if (effect.kind === 'random') {
+        // Ruleta ponderada (ver data/recipes.js -> MASA_EXTRANA_NAME): las
+        // probabilidades no necesariamente suman 1 exacto por redondeo del
+        // diseño original, así que se recorre en orden y se usa la primera
+        // que "cae" — si por algún error de datos no cae ninguna, se toma
+        // la última como resultado por defecto.
+        let roll = Math.random();
+        let outcome = effect.outcomes[effect.outcomes.length - 1];
+        for (const o of effect.outcomes) {
+            if (roll < o.chance) { outcome = o; break; }
+            roll -= o.chance;
+        }
+        if (outcome.hp) applyInstantHp(outcome.hp);
+        if (outcome.buffs) outcome.buffs.forEach(b => Inventory.addBuff(b));
+        msg = outcome.msg;
+    }
+
+    showDialog('Sistema', `Consumido: ${item.name} — ${msg}`);
     item.qty--; if (item.qty <= 0) arr[index] = null;
     refreshInventoryUI();
+}
+
+// Cambia el HP del jugador al instante (positivo o negativo), clampeado
+// entre 0 y su máximo. Usado por los consumibles kind:'heal' y por los
+// resultados de kind:'random' (ver data/recipes.js).
+function applyInstantHp(amount) {
+    const player = game.player;
+    if (!player) return;
+    player.hp = Math.max(0, Math.min(player.maxHp, player.hp + amount));
 }
 
 // true si el ítem es un arma equipable (aparece en WEAPONS, excluyendo "desarmado")
