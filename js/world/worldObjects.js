@@ -32,6 +32,11 @@ export const respawnBed   = { x: 160, y: 60,  w: 30, h: 24, interactionRadius: 5
 export const campfire     = { x: 80,  y: 160, w: 30, h: 30, interactionRadius: 50 };
 export const alchemyTable = { x: 160, y: 160, w: 30, h: 30, interactionRadius: 50 };
 export const chestObj      = { x: 250, y: 160, w: 32, h: 26, interactionRadius: 50 };
+// Mesa Constructora (punto 2): arma craftable a partir de materiales de
+// mob-loot (ver data/mobs.js) — espadas, herramientas y armaduras (ver
+// data/recipes.js -> BUILD_RECIPES). Ubicada junto al resto de estaciones
+// de crafteo, en un hueco libre de muros de la Zona 1.
+export const buildTable    = { x: 320, y: 160, w: 30, h: 30, interactionRadius: 50 };
 export const workTables = [ { x: 250, y: 40, w: 40, h: 26 }, { x: 310, y: 40, w: 40, h: 26 }, { x: 60, y: 230, w: 40, h: 26 } ];
 
 export const bocinaVigia = { x: 950, y: 750, w: 34, h: 34, interactionRadius: 55 };
