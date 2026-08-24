@@ -9,7 +9,7 @@ import { Inventory } from './inventory.js';
 import { Slime } from '../entities/mobs.js';
 import { Projectile } from '../entities/projectile.js';
 import { doors } from '../world/map.js';
-import { npc, respawnBed, campfire, alchemyTable, chestObj, bocinaVigia, weaponRacks, toolRacks } from '../world/worldObjects.js';
+import { npc, respawnBed, campfire, alchemyTable, buildTable, chestObj, bocinaVigia, weaponRacks, toolRacks } from '../world/worldObjects.js';
 import { WEAPONS } from '../data/weapons.js';
 import { TOOLS } from '../data/tools.js';
 import { showDialog, dialogState } from '../ui/dialog.js';
@@ -114,6 +114,9 @@ export function update() {
         } else if (dist(player, alchemyTable) < alchemyTable.interactionRadius) {
             promptText = 'Usar la Máquina de Pociones [E]'; interactTarget = alchemyTable;
             if (eDown && !state.actionHeld) openCraftPanel('alchemy');
+        } else if (dist(player, buildTable) < buildTable.interactionRadius) {
+            promptText = 'Usar la Mesa Constructora [E]'; interactTarget = buildTable;
+            if (eDown && !state.actionHeld) openCraftPanel('build');
         } else if (dist(player, chestObj) < chestObj.interactionRadius) {
             promptText = 'Abrir Cofre [E]'; interactTarget = chestObj;
             if (eDown && !state.actionHeld) { refreshChestUI(); document.getElementById('chest-panel').style.display = 'block'; }
