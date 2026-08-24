@@ -5,6 +5,7 @@
    ===================================================================== */
 import { WEAPONS } from '../data/weapons.js';
 import { CONSUMABLE_EFFECTS } from '../data/recipes.js';
+import { rollLoot } from '../data/mobs.js';
 import { showDialog } from '../ui/dialog.js';
 import { refreshInventoryUI } from '../ui/inventoryUI.js';
 
@@ -168,4 +169,27 @@ export function isWeaponItem(item) {
 // true si el ítem es un consumible (tiene efecto definido en CONSUMABLE_EFFECTS)
 export function isConsumableItem(item) {
     return !!(item && CONSUMABLE_EFFECTS[item.name]);
+}
+
+// Se llama al morir un enemigo (ver entities/mobs.js y systems/worldInteraction.js)
+// para resolver y aplicar su tabla de loot (ver data/mobs.js): el oro se
+// suma directo a Inventory.gold, el resto entra como material al inventario
+// global. Si el inventario está lleno para algún material, ese drop en
+// particular se pierde (mismo comportamiento que el resto de pickups del
+// mundo, ver worldInteraction.js) pero no bloquea los demás.
+export function grantMobLoot(mobKey) {
+    const drops = rollLoot(mobKey);
+    if (drops.length === 0) return;
+
+    const parts = [];
+    for (const drop of drops) {
+        if (drop.name === 'Oro') {
+            Inventory.gold += drop.qty;
+            parts.push(`${drop.qty} de Oro`);
+        } else if (Inventory.addMaterial(drop.name, drop.qty)) {
+            parts.push(`${drop.name} x${drop.qty}`);
+        }
+    }
+    if (parts.length > 0) showDialog('Botín', `Has obtenido: ${parts.join(', ')}.`);
+    refreshInventoryUI();
 }
