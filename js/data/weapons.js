@@ -49,6 +49,15 @@ export const WEAPONS = {
         dmg: 10, attackCooldown: 60, ranged: true,
         projectile: { rangeBlocks: 4, speed: 11, size: 8, color: '#2ecc71' },
         ability1: 'Disparo Perforante', ability2: 'Lluvia de Flechas'
+    },
+    // Loot de baja probabilidad del Goblin (5%, ver data/mobs.js). No se
+    // consigue en las armerías del mapa (weaponRacks) — solo cae al matar
+    // un Goblin. El nombre debe coincidir EXACTO con el del loot para que
+    // el sistema de equipamiento la reconozca (ver systems/inventory.js).
+    goblin_espada_corta: {
+        id: 'goblin_espada_corta', name: 'Espada Corta de Goblin', color: '#7f8c8d', asset: 'weapon_espada', // TODO: sprite propio
+        dmg: 15, attackCooldown: 60, meleeReach: 38, meleeSize: 34,
+        ability1: 'Estocada Veloz', ability2: 'Guardia'
     }
 };
 
