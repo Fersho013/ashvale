@@ -4,6 +4,8 @@
 import { checkRectCollision, dist } from '../core/physics.js';
 import { drawEntity } from '../core/assets.js';
 import { getActiveWalls, MAP_W, MAP_H, clampToZone3 } from '../world/map.js';
+import { MOBS } from '../data/mobs.js';
+import { grantMobLoot } from '../systems/inventory.js';
 
 export class DummyMob {
     constructor(x, y) {
@@ -82,12 +84,19 @@ export class Slime {
     constructor(x, y, big = false) {
         this.x = x; this.y = y; this.big = big;
         this.w = big ? 30 : 18; this.h = big ? 30 : 18;
-        this.speed = 0.6; this.hp = big ? 20 : 10; this.maxHp = this.hp;
+        this.speed = 0.6;
+        // Vida base desde el registro de datos (data/mobs.js); el Slime
+        // "grande" (fusión de dos pequeños) conserva el x2 que ya tenía.
+        const baseHp = MOBS.slime.baseHp;
+        this.hp = big ? baseHp * 2 : baseHp; this.maxHp = this.hp;
         this.flash = 0; this.mergeTimer = 0; this.wanderAngle = Math.random() * Math.PI * 2;
         this.fused = false;
+        // Hostil contra el jugador (antes el Slime no atacaba): daño de
+        // contacto bajo, acorde a ser el enemigo más débil del juego.
+        this.attackCooldown = 0; this.attackDamage = 4;
     }
     takeHit(dmg) { this.flash = 10; this.hp -= dmg; this.mergeTimer = 0; }
-    update(allSlimes) {
+    update(allSlimes, player) {
         if (this.flash > 0) this.flash--;
         this.wanderAngle += (Math.random() - 0.5) * 0.2;
         this.x += Math.cos(this.wanderAngle) * this.speed;
@@ -105,6 +114,19 @@ export class Slime {
                 } else { this.mergeTimer = 0; }
             }
         }
+
+        if (player) {
+            if (checkRectCollision(this, player) && this.attackCooldown === 0) {
+                player.takeDamage(this.attackDamage, this);
+                this.attackCooldown = 50;
+            }
+            if (this.attackCooldown > 0) this.attackCooldown--;
+        }
+
+        // El propio Slime dispara la entrega del loot al morir: la
+        // eliminación del array (world.slimes) la sigue haciendo
+        // worldInteraction.js con el filtro de hp>0 de siempre.
+        if (this.hp <= 0 && !this.lootGranted) { this.lootGranted = true; grantMobLoot('slime'); }
     }
     draw(ctx) {
         drawEntity(ctx, 'slime_green', this.x, this.y, this.w, this.h,
@@ -115,7 +137,7 @@ export class Slime {
 export class Wolf {
     constructor(x, y) {
         this.x = x; this.y = y; this.w = 32; this.h = 32; this.speed = 1.9;
-        this.hp = 25; this.maxHp = 25; this.flash = 0;
+        this.hp = MOBS.lobo.baseHp; this.maxHp = this.hp; this.flash = 0;
     }
     takeHit(dmg) { this.flash = 10; this.hp -= dmg; }
     update(player, deerList) {
@@ -136,7 +158,10 @@ export class Wolf {
         this.y = Math.max(310, Math.min(880, this.y));
 
         if (target === player && checkRectCollision(this, player)) player.takeDamage(6, this);
-        if (this.hp <= 0) { this.hp = this.maxHp; this.x = 60 + Math.random()*200; this.y = 340 + Math.random()*200; }
+        if (this.hp <= 0) {
+            grantMobLoot('lobo');
+            this.hp = this.maxHp; this.x = 60 + Math.random()*200; this.y = 340 + Math.random()*200;
+        }
     }
     draw(ctx) { drawEntity(ctx, 'wolf', this.x, this.y, this.w, this.h, this.flash > 0 ? '#fff' : '#7f8c8d', 'rect', 'L'); }
 }
@@ -163,7 +188,7 @@ export class Deer {
 export class GoblinExplorer {
     constructor(x, y) {
         this.x = x; this.y = y; this.w = 30; this.h = 30; this.speed = 1.5;
-        this.hp = 20; this.maxHp = 20; this.flash = 0; this.attackCooldown = 0;
+        this.hp = MOBS.goblin.baseHp; this.maxHp = this.hp; this.flash = 0; this.attackCooldown = 0;
     }
     takeHit(dmg) { this.flash = 10; this.hp -= dmg; }
     update(player) {
@@ -184,7 +209,10 @@ export class GoblinExplorer {
         if (this.attackCooldown > 0) this.attackCooldown--;
         this.x = Math.max(30, Math.min(770, this.x));
         this.y = Math.max(310, Math.min(880, this.y));
-        if (this.hp <= 0) { this.hp = this.maxHp; this.x = 60 + Math.random()*200; this.y = 340 + Math.random()*200; }
+        if (this.hp <= 0) {
+            grantMobLoot('goblin');
+            this.hp = this.maxHp; this.x = 60 + Math.random()*200; this.y = 340 + Math.random()*200;
+        }
     }
     draw(ctx) {
         const color = this.flash > 0 ? '#fff' : (this.hp/this.maxHp < 0.2 ? '#f39c12' : '#27ae60');
