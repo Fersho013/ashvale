@@ -51,7 +51,7 @@ export function update() {
 
     world.dummies.forEach(d => d.update());
     world.activeMobs.forEach(m => m.update(player));
-    world.slimes.forEach(s => s.update(world.slimes));
+    world.slimes.forEach(s => s.update(world.slimes, player));
     const fused = world.slimes.filter(s => s.fused);
     if (fused.length >= 2) {
         const [a, b] = fused;
