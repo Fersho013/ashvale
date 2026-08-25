@@ -16,7 +16,7 @@ import { toggleInventory } from './ui/inventoryUI.js';
 import { togglePause } from './ui/pause.js';
 import { anyModalOpen, closeAllModals } from './ui/menu.js';
 import { ZONES, MAP_W, MAP_H, walls, doors } from './world/map.js';
-import { npc, respawnBed, campfire, alchemyTable, buildTable, chestObj, workTables, weaponsChestObj, toolsChestObj, weaponRacks, toolRacks, bocinaVigia } from './world/worldObjects.js';
+import { npc, respawnBed, campfire, alchemyTable, buildTable, chestObj, workTables, weaponsChestObj, toolsChestObj, weaponRacks, toolRacks, bocinaVigia, harvestNodes } from './world/worldObjects.js';
 import { WEAPONS } from './data/weapons.js';
 import { TOOLS } from './data/tools.js';
 import './systems/saveLoad.js';
@@ -104,6 +104,24 @@ function render() {
     for (const rack of toolRacks) {
         const t = TOOLS[rack.tool];
         drawEntity(ctx, t.asset, rack.x, rack.y, rack.w, rack.h, t.color, 'rect', t.name[0]);
+    }
+
+    // Recursos del Ecosistema y Bioma Vivo. Se dibujan con formas simples
+    // para no requerir assets adicionales y poder distinguirlos claramente.
+    for (const node of harvestNodes) {
+        const recovering = Date.now() < node.recoveryUntil;
+        ctx.globalAlpha = recovering ? 0.35 : 1;
+        if (node.type === 'tree') {
+            ctx.fillStyle = '#6e4b2a';
+            ctx.fillRect(node.x + 18, node.y + 30, 12, 34);
+            ctx.fillStyle = '#238b45';
+            ctx.beginPath(); ctx.arc(node.x + 24, node.y + 23, 23, 0, Math.PI * 2); ctx.fill();
+        } else {
+            ctx.fillStyle = node.type === 'ironOre' ? '#7f8c8d' : '#9aa0a6';
+            ctx.beginPath(); ctx.moveTo(node.x + 4, node.y + node.h); ctx.lineTo(node.x + 10, node.y + 8); ctx.lineTo(node.x + 32, node.y + 2); ctx.lineTo(node.x + node.w, node.y + 20); ctx.lineTo(node.x + 36, node.y + node.h); ctx.closePath(); ctx.fill();
+            if (node.type === 'ironOre') { ctx.fillStyle = '#d35400'; ctx.fillRect(node.x + 17, node.y + 16, 8, 8); }
+        }
+        ctx.globalAlpha = 1;
     }
 
     world.dummies.forEach(d => d.draw(ctx));
