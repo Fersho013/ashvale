@@ -6,6 +6,7 @@
    ===================================================================== */
 import { Inventory, tryConsumeItem, isWeaponItem, isConsumableItem } from '../systems/inventory.js';
 import { WEAPONS } from '../data/weapons.js';
+import { TOOLS } from '../data/tools.js';
 import { openItemActionMenu } from './itemActionMenu.js';
 
 // Varios cofres (punto 2): cuál está abierto ahora mismo en #chest-panel.
@@ -32,6 +33,8 @@ function buildOwnedItemActions(arr, index, item, moveAction, includeDelete = fal
     const actions = [];
     if (isWeaponItem(item)) {
         actions.push({ label: 'Equipar', onClick: () => { tryConsumeItem(arr, index); refreshAll(); } });
+    } else if (isToolItem(item)) {
+        actions.push({ label: 'Equipar herramienta', onClick: () => { tryConsumeItem(arr, index); refreshAll(); } });
     } else if (isConsumableItem(item)) {
         actions.push({ label: 'Usar', onClick: () => { tryConsumeItem(arr, index); refreshAll(); } });
     }
@@ -87,6 +90,16 @@ export function refreshInventoryUI() {
         if (!Inventory.equipment.weapon) return; // nada equipado, no hay nada que hacer
         openItemActionMenu(eqWeapon, [
             { label: 'Desequipar', onClick: () => { Inventory.unequipWeapon(); refreshAll(); } }
+        ]);
+    };
+
+    const eqTool = document.getElementById('eq-tool');
+    const tool = Inventory.equipment.tool ? TOOLS[Inventory.equipment.tool] : null;
+    eqTool.innerHTML = `<strong>Herramienta</strong><br>${tool ? tool.name : 'Ninguna'}`;
+    eqTool.onclick = () => {
+        if (!Inventory.equipment.tool) return;
+        openItemActionMenu(eqTool, [
+            { label: 'Desequipar', onClick: () => { Inventory.unequipTool(); refreshAll(); } }
         ]);
     };
 
@@ -157,4 +170,8 @@ export function toggleInventory() {
     const open = panel.style.display === 'block';
     panel.style.display = open ? 'none' : 'block';
     if (!open) refreshInventoryUI();
+}
+
+function isToolItem(item) {
+    return !!(item && Object.values(TOOLS).some(tool => tool.name === item.name));
 }
