@@ -9,7 +9,7 @@ import { Inventory } from './inventory.js';
 import { Slime } from '../entities/mobs.js';
 import { Projectile } from '../entities/projectile.js';
 import { doors } from '../world/map.js';
-import { npc, respawnBed, campfire, alchemyTable, buildTable, chestObj, weaponsChestObj, toolsChestObj, weaponRacks, toolRacks, bocinaVigia } from '../world/worldObjects.js';
+import { npc, respawnBed, campfire, alchemyTable, buildTable, chestObj, weaponsChestObj, toolsChestObj, weaponRacks, toolRacks, bocinaVigia, harvestNodes } from '../world/worldObjects.js';
 import { WEAPONS } from '../data/weapons.js';
 import { TOOLS } from '../data/tools.js';
 import { showDialog, dialogState } from '../ui/dialog.js';
@@ -17,6 +17,44 @@ import { openCraftPanel } from '../ui/craftingUI.js';
 import { openChestPanel } from '../ui/inventoryUI.js';
 import { anyModalOpen } from '../ui/menu.js';
 import { updateHUD } from '../ui/hud.js';
+
+const HARVEST_DURATION_MS = 3 * 1000;
+const HARVEST_RECOVERY_MS = 3 * 60 * 1000;
+let activeHarvest = null;
+
+function setHarvestBar(visible, label = '', progress = 0) {
+    document.getElementById('harvest-bar-container').style.display = visible ? 'block' : 'none';
+    document.getElementById('harvest-label').innerText = label;
+    document.getElementById('harvest-bar-fill').style.width = `${Math.min(100, Math.max(0, progress * 100))}%`;
+}
+
+function updateActiveHarvest() {
+    if (!activeHarvest) return false;
+    const now = Date.now();
+    const elapsed = now - activeHarvest.startedAt;
+    setHarvestBar(true, `${activeHarvest.node.action}...`, elapsed / HARVEST_DURATION_MS);
+    if (elapsed < HARVEST_DURATION_MS) return true;
+
+    const node = activeHarvest.node;
+    if (Inventory.addMaterial(node.drop, 1)) {
+        node.uses++;
+        if (node.uses >= node.maxUses) {
+            node.uses = 0;
+            node.recoveryUntil = now + HARVEST_RECOVERY_MS;
+        }
+        showDialog('Botín', `Has obtenido: ${node.drop} x1.`);
+    } else {
+        showDialog('Inventario', `¡Inventario lleno! No puedes guardar ${node.drop}.`);
+    }
+    activeHarvest = null;
+    setHarvestBar(false);
+    return false;
+}
+
+function startHarvest(node) {
+    activeHarvest = { node, startedAt: Date.now() };
+    setHarvestBar(true, `${node.action}...`, 0);
+}
 
 // Un proyectil solo puede golpear al PRIMER enemigo con el que colisiona
 // (Báculo/Arco, ver data/weapons.js). Recorre los grupos de mobs en orden
@@ -96,13 +134,37 @@ export function update() {
 
     camera.follow(player);
 
+    // La acción de recolección usa tiempo real (no frames): tarda 3 s aun
+    // si el navegador reduce temporalmente la frecuencia de actualización.
+    if (updateActiveHarvest()) {
+        document.getElementById('interaction-prompt').style.display = 'none';
+        updateHUD();
+        return;
+    }
+
     const eDown = Input.isDown(['KeyE']) || Input.gamepad.buttons.interact || Input.touch.interact;
     let promptText = null;
     let interactTarget = null;
     const modalOpen = anyModalOpen();
 
     if (!modalOpen) {
-        if (dist(player, npc) < npc.interactionRadius) {
+        const harvestNode = harvestNodes.find(node => dist(player, node) < node.interactionRadius);
+        if (harvestNode) {
+            const requiredToolName = harvestNode.requiredTool === 'hacha' ? 'hacha' : 'pico';
+            if (Date.now() < harvestNode.recoveryUntil) {
+                promptText = `${harvestNode.label} en recuperación [E]`;
+                if (eDown && !state.actionHeld) showDialog('Recolección', 'Vuelve más tarde.');
+            } else if (Inventory.equipment.tool !== harvestNode.requiredTool) {
+                const verb = harvestNode.requiredTool === 'hacha' ? 'talar' : 'picar';
+                promptText = `Requieres ${requiredToolName} para ${verb} [E]`;
+                if (eDown && !state.actionHeld) showDialog('Recolección', `Requieres ${requiredToolName} para ${verb}.`);
+            } else {
+                const verb = harvestNode.requiredTool === 'hacha' ? 'Talar' : 'Picar';
+                promptText = `${verb} ${harvestNode.label} [E] (3s)`;
+                if (eDown && !state.actionHeld) startHarvest(harvestNode);
+            }
+            interactTarget = harvestNode;
+        } else if (dist(player, npc) < npc.interactionRadius) {
             promptText = 'Hablar con el Anciano [E]'; interactTarget = npc;
             if (eDown && !state.actionHeld) { showDialog('Anciano', npc.messages[npc.msgIndex]); npc.msgIndex = (npc.msgIndex + 1) % npc.messages.length; }
         } else if (dist(player, respawnBed) < respawnBed.interactionRadius) {
