@@ -2,7 +2,7 @@
    HERRAMIENTAS DE RECOLECCIÓN — Hacha y Pico
    No son armas de combate: no aparecen en WEAPONS, no infligen daño y no
    se equipan como arma. Se obtienen en el nuevo "Cofre de Herramientas"
-   (ver world/worldObjects.js -> toolRacks) y su función real (talar
+   (ver world/worldObjects.js -> toolsChestObj) y su función real (talar
    árboles / picar rocas y minerales) se activará cuando esos objetos del
    mundo se agreguen — por ahora solo quedan disponibles en el inventario.
    ===================================================================== */
