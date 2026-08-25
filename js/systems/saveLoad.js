@@ -3,6 +3,7 @@
    ===================================================================== */
 import { Inventory } from './inventory.js';
 import { doors } from '../world/map.js';
+import { harvestNodes } from '../world/worldObjects.js';
 import { game } from '../core/gameContext.js';
 import { state } from '../state.js';
 
@@ -16,7 +17,8 @@ export function saveGameState() {
             quickbar: Inventory.quickbar, global: Inventory.global, chests: Inventory.chests,
             equipment: Inventory.equipment, gold: Inventory.gold
         },
-        doors: doors.map(d => d.open)
+        doors: doors.map(d => d.open),
+        harvestNodes: harvestNodes.map(node => ({ uses: node.uses, recoveryUntil: node.recoveryUntil }))
     };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch (err) { console.warn('No se pudo guardar la partida:', err); }
 }
@@ -34,8 +36,18 @@ export function loadGameState() {
     // Inventory.chest): si no existe el formato nuevo (chests), se deja el
     // set de 3 cofres recién sembrado por defecto en vez de romper la carga.
     if (data.inventory.chests) Inventory.chests = data.inventory.chests;
-    Inventory.equipment = data.inventory.equipment; Inventory.gold = data.inventory.gold;
+    Inventory.equipment = data.inventory.equipment; Inventory.equipment.tool ??= null; Inventory.gold = data.inventory.gold;
     doors.forEach((d, i) => { if (data.doors[i] !== undefined) d.open = data.doors[i]; });
+    // Las partidas previas a los recursos renovables no tienen esta sección;
+    // en ese caso los nodos conservan su estado inicial listo para usar.
+    if (Array.isArray(data.harvestNodes)) {
+        harvestNodes.forEach((node, i) => {
+            const saved = data.harvestNodes[i];
+            if (!saved) return;
+            node.uses = Number.isInteger(saved.uses) ? saved.uses : 0;
+            node.recoveryUntil = typeof saved.recoveryUntil === 'number' ? saved.recoveryUntil : 0;
+        });
+    }
     return true;
 }
 
