@@ -128,10 +128,10 @@ export function update() {
             for (const rack of weaponRacks) {
                 if (dist(player, rack) < 50) {
                     const w = WEAPONS[rack.weapon];
-                    promptText = `Tomar ${w.name} [E]`; interactTarget = rack;
+                    promptText = `Tomar ${w.name} del ${rack.name} [E]`; interactTarget = rack;
                     if (eDown && !state.actionHeld) {
                         if (Inventory.addMaterial(w.name, 1)) {
-                            showDialog('Galería', `Has obtenido: ${w.name}. Abre el inventario [I] para equiparla.`);
+                            showDialog(rack.name, `Has obtenido: ${w.name}. Abre el inventario [I] para equiparla.`);
                         } else {
                             showDialog('Inventario', `¡Inventario lleno! No puedes llevar la ${w.name}.`);
                         }
@@ -143,10 +143,10 @@ export function update() {
                 for (const rack of toolRacks) {
                     if (dist(player, rack) < 50) {
                         const t = TOOLS[rack.tool];
-                        promptText = `Tomar ${t.name} [E]`; interactTarget = rack;
+                        promptText = `Tomar ${t.name} del ${rack.name} [E]`; interactTarget = rack;
                         if (eDown && !state.actionHeld) {
                             if (Inventory.addMaterial(t.name, 1)) {
-                                showDialog('Cofre de Herramientas', `Has obtenido: ${t.name}.`);
+                                showDialog(rack.name, `Has obtenido: ${t.name}.`);
                             } else {
                                 showDialog('Inventario', `¡Inventario lleno! No puedes llevar el/la ${t.name}.`);
                             }
