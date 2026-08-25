@@ -51,7 +51,7 @@ export const WEAPONS = {
         ability1: 'Disparo Perforante', ability2: 'Lluvia de Flechas'
     },
     // Loot de baja probabilidad del Goblin (5%, ver data/mobs.js). No se
-    // consigue en las armerías del mapa (weaponRacks) — solo cae al matar
+    // consigue en el Cofre de Armas del mapa (weaponsChestObj) — solo cae al matar
     // un Goblin. El nombre debe coincidir EXACTO con el del loot para que
     // el sistema de equipamiento la reconozca (ver systems/inventory.js).
     goblin_espada_corta: {
