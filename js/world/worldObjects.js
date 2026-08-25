@@ -2,27 +2,27 @@
    OBJETOS DEL MUNDO: NPC, mobiliario interactuable y galería de armas
    ===================================================================== */
 export const weaponRacks = [
-    { x: 440, y: 40,  w: 34, h: 34, weapon: 'espada' },
-    { x: 520, y: 40,  w: 34, h: 34, weapon: 'mandoble' },
-    { x: 600, y: 40,  w: 34, h: 34, weapon: 'dagas' },
-    { x: 440, y: 200, w: 34, h: 34, weapon: 'arco' },
-    { x: 520, y: 200, w: 34, h: 34, weapon: 'lanza' },
-    { x: 600, y: 200, w: 34, h: 34, weapon: 'baculo' }
+    { x: 440, y: 40,  w: 34, h: 34, weapon: 'espada',   name: 'Estante de Espadas' },
+    { x: 520, y: 40,  w: 34, h: 34, weapon: 'mandoble', name: 'Estante de Mandobles' },
+    { x: 600, y: 40,  w: 34, h: 34, weapon: 'dagas',    name: 'Estante de Dagas' },
+    { x: 440, y: 200, w: 34, h: 34, weapon: 'arco',     name: 'Estante de Arcos' },
+    { x: 520, y: 200, w: 34, h: 34, weapon: 'lanza',    name: 'Estante de Lanzas' },
+    { x: 600, y: 200, w: 34, h: 34, weapon: 'baculo',   name: 'Estante de Báculos' }
 ];
 
 // Cofre de Herramientas: mismo patrón de "tomar item" que weaponRacks, pero
-// para herramientas de recolección (ver data/tools.js). Ubicado en Zona 1,
-// junto a las mesas de trabajo, sin invadir muros ni la puerta D12.
+// para herramientas de recolección (ver data/tools.js). Ubicado en la Zona 1
+// (ahora fusionada con la antigua Zona 2), junto a las mesas de trabajo.
 export const toolRacks = [
-    { x: 250, y: 110, w: 34, h: 34, tool: 'hacha' },
-    { x: 310, y: 110, w: 34, h: 34, tool: 'pico' }
+    { x: 250, y: 110, w: 34, h: 34, tool: 'hacha', name: 'Estante de Hachas' },
+    { x: 310, y: 110, w: 34, h: 34, tool: 'pico',  name: 'Estante de Picos' }
 ];
 
 export const npc = {
     x: 80, y: 60, w: 36, h: 36, interactionRadius: 60,
     messages: [
         "¡Bienvenido al Sandbox de Ashvale! Usa WASD o los controles táctiles para moverte.",
-        "Zona 2 (este): Galería de Armas. Acércate y presiona [E] para tomar armas como ítems.",
+        "Al este de esta sala están los Estantes de Armas y Herramientas. Acércate y presiona [E] para tomar lo que necesites.",
         "Abre tu inventario con [I] para equiparte las armas o usar consumibles.",
         "En el Cofre, toca un ítem para ver sus opciones y moverlo hacia tu inventario."
     ],
