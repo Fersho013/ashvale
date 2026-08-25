@@ -16,9 +16,7 @@ import { toggleInventory } from './ui/inventoryUI.js';
 import { togglePause } from './ui/pause.js';
 import { anyModalOpen, closeAllModals } from './ui/menu.js';
 import { ZONES, MAP_W, MAP_H, walls, doors } from './world/map.js';
-import { npc, respawnBed, campfire, alchemyTable, buildTable, chestObj, workTables, weaponRacks, toolRacks, bocinaVigia } from './world/worldObjects.js';
-import { WEAPONS } from './data/weapons.js';
-import { TOOLS } from './data/tools.js';
+import { npc, respawnBed, campfire, alchemyTable, buildTable, chestObj, workTables, weaponsChestObj, toolsChestObj, bocinaVigia } from './world/worldObjects.js';
 import './systems/saveLoad.js';
 import './ui/craftingUI.js';
 
@@ -94,15 +92,8 @@ function render() {
     drawEntity(ctx, 'alchemy_table', alchemyTable.x, alchemyTable.y, alchemyTable.w, alchemyTable.h, '#2980b9', 'rect');
     drawEntity(ctx, 'build_table', buildTable.x, buildTable.y, buildTable.w, buildTable.h, '#8d6e4f', 'rect', 'M');
     drawEntity(ctx, 'chest', chestObj.x, chestObj.y, chestObj.w, chestObj.h, '#a0642f', 'rect', 'C');
-
-    for (const rack of weaponRacks) {
-        const w = WEAPONS[rack.weapon];
-        drawEntity(ctx, w.asset, rack.x, rack.y, rack.w, rack.h, w.color, 'rect', w.name[0]);
-    }
-    for (const rack of toolRacks) {
-        const t = TOOLS[rack.tool];
-        drawEntity(ctx, t.asset, rack.x, rack.y, rack.w, rack.h, t.color, 'rect', t.name[0]);
-    }
+    drawEntity(ctx, 'chest', weaponsChestObj.x, weaponsChestObj.y, weaponsChestObj.w, weaponsChestObj.h, '#c0392b', 'rect', 'A');
+    drawEntity(ctx, 'chest', toolsChestObj.x, toolsChestObj.y, toolsChestObj.w, toolsChestObj.h, '#7f8c8d', 'rect', 'H');
 
     world.dummies.forEach(d => d.draw(ctx));
     world.activeMobs.forEach(m => m.draw(ctx));
