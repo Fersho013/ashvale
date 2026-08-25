@@ -8,6 +8,16 @@ import { Inventory, tryConsumeItem, isWeaponItem, isConsumableItem } from '../sy
 import { WEAPONS } from '../data/weapons.js';
 import { openItemActionMenu } from './itemActionMenu.js';
 
+// Varios cofres (punto 2): cuál está abierto ahora mismo en #chest-panel.
+// Lo fija openChestPanel() al interactuar con cada cofre del mundo (ver
+// systems/worldInteraction.js).
+let currentChestId = 'main';
+const CHEST_TITLES = {
+    main: 'Cofre',
+    weapons: 'Cofre de Armas',
+    tools: 'Cofre de Herramientas'
+};
+
 function refreshAll() {
     refreshInventoryUI();
     refreshChestUI();
@@ -100,15 +110,16 @@ export function refreshInventoryUI() {
 }
 
 export function refreshChestUI() {
+    const chest = Inventory.chests[currentChestId];
     const chestGrid = document.getElementById('chest-grid');
     chestGrid.innerHTML = '';
-    Inventory.chest.forEach((item, i) => {
+    chest.forEach((item, i) => {
         const div = document.createElement('div');
         div.className = 'inv-slot';
         if (item) {
             div.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
-            attachSlotTap(div, Inventory.chest, i, () => [
-                { label: 'Mover al Inventario', onClick: () => { Inventory.quickMoveToPlayer(i); refreshAll(); } }
+            attachSlotTap(div, chest, i, () => [
+                { label: 'Mover al Inventario', onClick: () => { Inventory.quickMoveToPlayer(currentChestId, i); refreshAll(); } }
             ]);
         }
         chestGrid.appendChild(div);
@@ -123,11 +134,22 @@ export function refreshChestUI() {
             div.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
             attachSlotTap(div, Inventory.global, i, (it) => buildOwnedItemActions(
                 Inventory.global, i, it,
-                { label: 'Mover al Cofre', onClick: () => { Inventory.quickMoveToChest(i); refreshAll(); } }
+                { label: 'Mover al Cofre', onClick: () => { Inventory.quickMoveToChest(currentChestId, i); refreshAll(); } }
             ));
         }
         playerGrid.appendChild(div);
     });
+}
+
+// Abre #chest-panel mostrando el cofre pedido ('main' | 'weapons' | 'tools',
+// ver Inventory.chests). Llamado desde systems/worldInteraction.js al
+// interactuar con cada cofre del mundo.
+export function openChestPanel(chestId) {
+    currentChestId = chestId;
+    refreshChestUI();
+    const title = CHEST_TITLES[chestId] || 'Cofre';
+    document.getElementById('chest-panel-title').innerText = `${title} (40 Slots) — Toca un ítem para ver sus opciones`;
+    document.getElementById('chest-panel').style.display = 'block';
 }
 
 export function toggleInventory() {
