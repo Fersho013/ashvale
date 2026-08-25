@@ -4,6 +4,7 @@
    ver js/ui/itemActionMenu.js, js/ui/inventoryUI.js y js/ui/craftingUI.js)
    ===================================================================== */
 import { WEAPONS } from '../data/weapons.js';
+import { TOOLS } from '../data/tools.js';
 import { CONSUMABLE_EFFECTS } from '../data/recipes.js';
 import { rollLoot } from '../data/mobs.js';
 import { showDialog } from '../ui/dialog.js';
@@ -30,7 +31,16 @@ export function addStackToArray(arr, name, qty, maxSlots) {
 export const Inventory = {
     quickbar: new Array(10).fill(null),
     global: new Array(100).fill(null),
-    chest: new Array(40).fill(null),
+    // Varios cofres (punto 2): cada uno es un contenedor independiente de
+    // 40 slots, igual que el Cofre original. "weapons" y "tools" reemplazan
+    // a los antiguos estantes/racks infinitos del mundo — ahora son un
+    // stock limitado que el jugador saca y decide qué llevarse (ver
+    // world/worldObjects.js y systems/worldInteraction.js).
+    chests: {
+        main: new Array(40).fill(null),
+        weapons: new Array(40).fill(null),
+        tools: new Array(40).fill(null)
+    },
     equipment: { weapon: null, armor: null, accessory: null }, // Comienza SIN ARMA
     gold: 0,
     buffs: [],
@@ -95,20 +105,22 @@ export const Inventory = {
     },
 
     // Movimiento RÁPIDO (click derecho) — pasa el stack completo al otro contenedor de inmediato
-    quickMoveToChest(globalIdx) {
+    quickMoveToChest(chestId, globalIdx) {
         const item = this.global[globalIdx];
         if (!item) return;
-        const leftover = addStackToArray(this.chest, item.name, item.qty, 40);
+        const chest = this.chests[chestId];
+        const leftover = addStackToArray(chest, item.name, item.qty, 40);
         const moved = item.qty - leftover;
         if (moved > 0) { item.qty -= moved; if (item.qty <= 0) this.global[globalIdx] = null; }
         if (leftover > 0) showDialog('Cofre', 'El cofre no tiene espacio suficiente para todo el stack.');
     },
-    quickMoveToPlayer(chestIdx) {
-        const item = this.chest[chestIdx];
+    quickMoveToPlayer(chestId, chestIdx) {
+        const chest = this.chests[chestId];
+        const item = chest[chestIdx];
         if (!item) return;
         const leftover = addStackToArray(this.global, item.name, item.qty, 100);
         const moved = item.qty - leftover;
-        if (moved > 0) { item.qty -= moved; if (item.qty <= 0) this.chest[chestIdx] = null; }
+        if (moved > 0) { item.qty -= moved; if (item.qty <= 0) chest[chestIdx] = null; }
         if (leftover > 0) showDialog('Inventario', 'Tu inventario no tiene espacio suficiente para todo el stack.');
     },
 
@@ -137,16 +149,30 @@ export const Inventory = {
     }
 };
 
-Inventory.chest[0] = { name: 'Carne', qty: 10 };
-Inventory.chest[1] = { name: 'Huevo', qty: 10 };
-Inventory.chest[2] = { name: 'Botella', qty: 10 };
-Inventory.chest[3] = { name: 'Cactus', qty: 10 };
-Inventory.chest[4] = { name: 'Mineral de Hierro', qty: 10 };
+Inventory.chests.main[0] = { name: 'Carne', qty: 10 };
+Inventory.chests.main[1] = { name: 'Huevo', qty: 10 };
+Inventory.chests.main[2] = { name: 'Botella', qty: 10 };
+Inventory.chests.main[3] = { name: 'Cactus', qty: 10 };
+Inventory.chests.main[4] = { name: 'Mineral de Hierro', qty: 10 };
 // La Hacha (data/tools.js) aún no tiene función de tala implementada, así
 // que no hay forma real de conseguir Madera todavía. Se siembra aquí para
 // poder probar la Mesa Constructora (Espada Oxidada, ver data/recipes.js)
 // mientras esa mecánica no exista.
-Inventory.chest[5] = { name: 'Madera', qty: 10 };
+Inventory.chests.main[5] = { name: 'Madera', qty: 10 };
+
+// Cofre de Armas (punto 2): reemplaza a los antiguos estantes — las 6
+// armas ya no son una fuente infinita en el mundo, ahora es un stock fijo
+// dentro de este cofre. Empieza con 1 unidad de cada una; ajustar aquí si
+// se quiere un stock inicial distinto.
+const ARMORY_WEAPON_KEYS = ['espada', 'mandoble', 'dagas', 'lanza', 'baculo', 'arco'];
+ARMORY_WEAPON_KEYS.forEach((key, i) => {
+    Inventory.chests.weapons[i] = { name: WEAPONS[key].name, qty: 1 };
+});
+
+// Cofre de Herramientas (punto 2): mismo reemplazo que el de Armas, pero
+// con Hacha y Pico.
+Inventory.chests.tools[0] = { name: TOOLS.hacha.name, qty: 1 };
+Inventory.chests.tools[1] = { name: TOOLS.pico.name, qty: 1 };
 
 export function tryConsumeItem(arr, index) {
     const item = arr[index];
