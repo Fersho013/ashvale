@@ -41,7 +41,7 @@ export const Inventory = {
         weapons: new Array(40).fill(null),
         tools: new Array(40).fill(null)
     },
-    equipment: { weapon: null, armor: null, accessory: null }, // Comienza SIN ARMA
+    equipment: { weapon: null, tool: null, armor: null, accessory: null }, // Comienza SIN EQUIPO
     gold: 0,
     buffs: [],
 
@@ -104,6 +104,35 @@ export const Inventory = {
         }
     },
 
+    equipToolFromSlot(arr, index) {
+        const item = arr[index];
+        if (!item) return;
+
+        const foundKey = Object.keys(TOOLS).find(key => TOOLS[key].name === item.name);
+        if (!foundKey) return;
+
+        const currentEquipped = this.equipment.tool;
+        this.equipment.tool = foundKey;
+        item.qty--;
+        if (item.qty <= 0) arr[index] = null;
+
+        if (currentEquipped && TOOLS[currentEquipped]) this.addMaterial(TOOLS[currentEquipped].name, 1);
+        showDialog('Equipamiento', `Has equipado: ${TOOLS[foundKey].name}`);
+        refreshInventoryUI();
+    },
+
+    unequipTool() {
+        if (!this.equipment.tool) return;
+        const toolName = TOOLS[this.equipment.tool].name;
+        if (this.addMaterial(toolName, 1)) {
+            this.equipment.tool = null;
+            showDialog('Equipamiento', `Desequipado: ${toolName}`);
+            refreshInventoryUI();
+        } else {
+            showDialog('Inventario', '¡Inventario lleno para guardar la herramienta!');
+        }
+    },
+
     // Movimiento RÁPIDO (click derecho) — pasa el stack completo al otro contenedor de inmediato
     quickMoveToChest(chestId, globalIdx) {
         const item = this.global[globalIdx];
@@ -146,6 +175,7 @@ export const Inventory = {
         this.buffs = []; this.gold = 0;
         this.quickbar.fill(null); this.global.fill(null);
         this.equipment.weapon = null;
+        this.equipment.tool = null;
     }
 };
 
@@ -181,6 +211,13 @@ export function tryConsumeItem(arr, index) {
     for (const key in WEAPONS) {
         if (WEAPONS[key].name === item.name && key !== 'desarmado') {
             Inventory.equipWeaponFromSlot(arr, index);
+            return;
+        }
+    }
+
+    for (const key in TOOLS) {
+        if (TOOLS[key].name === item.name) {
+            Inventory.equipToolFromSlot(arr, index);
             return;
         }
     }
