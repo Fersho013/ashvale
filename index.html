@@ -78,6 +78,12 @@
         <div id="escape-label">Canalizando Bocina del Vigía...</div>
     </div>
 
+    <!-- Progreso para las acciones de tala y minería. -->
+    <div id="harvest-bar-container">
+        <div id="harvest-bar-bg"><div id="harvest-bar-fill"></div></div>
+        <div id="harvest-label">Talando...</div>
+    </div>
+
     <!-- CONTROLES TÁCTILES OVERLAY -->
     <div id="touch-controls">
         <div id="left-joy-base" class="joy-base">
@@ -136,9 +142,10 @@
     <div id="inventory-panel" class="modal-panel">
         <span class="close-modal" data-close="inventory-panel">[X]</span>
         <h3 class="panel-title-row"><span>Menú de Equipamiento</span><span id="gold-display">🪙 <span id="gold-text">0</span></span></h3>
-        <p style="font-size: 10px; color: #aaa; margin-bottom: 6px;">Toca un arma de tu inventario para equiparla. Toca el slot de equipamiento para desequiparla.</p>
+        <p style="font-size: 10px; color: #aaa; margin-bottom: 6px;">Toca un arma o herramienta de tu inventario para equiparla. Toca el slot de equipamiento para desequiparla.</p>
         <div id="equip-slots">
             <div class="equip-slot" id="eq-weapon">Arma<br>Desarmado</div>
+            <div class="equip-slot" id="eq-tool">Herramienta<br>Ninguna</div>
             <div class="equip-slot" id="eq-armor">Armadura<br>Ninguna</div>
             <div class="equip-slot" id="eq-accessory">Amuleto<br>Ninguno</div>
         </div>
