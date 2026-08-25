@@ -13,7 +13,7 @@ export function saveGameState() {
     const data = {
         player: { x: player.x, y: player.y, hp: player.hp, bars: player.bars, barCapacity: player.barCapacity, respawn: player.respawn },
         inventory: {
-            quickbar: Inventory.quickbar, global: Inventory.global, chest: Inventory.chest,
+            quickbar: Inventory.quickbar, global: Inventory.global, chests: Inventory.chests,
             equipment: Inventory.equipment, gold: Inventory.gold
         },
         doors: doors.map(d => d.open)
@@ -30,7 +30,11 @@ export function loadGameState() {
     player.x = data.player.x; player.y = data.player.y; player.hp = data.player.hp;
     player.bars = data.player.bars; player.barCapacity = data.player.barCapacity; player.respawn = data.player.respawn;
     Inventory.quickbar = data.inventory.quickbar; Inventory.global = data.inventory.global;
-    Inventory.chest = data.inventory.chest; Inventory.equipment = data.inventory.equipment; Inventory.gold = data.inventory.gold;
+    // Compatibilidad con partidas guardadas ANTES del punto 2 (un solo
+    // Inventory.chest): si no existe el formato nuevo (chests), se deja el
+    // set de 3 cofres recién sembrado por defecto en vez de romper la carga.
+    if (data.inventory.chests) Inventory.chests = data.inventory.chests;
+    Inventory.equipment = data.inventory.equipment; Inventory.gold = data.inventory.gold;
     doors.forEach((d, i) => { if (data.doors[i] !== undefined) d.open = data.doors[i]; });
     return true;
 }
