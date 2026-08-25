@@ -45,3 +45,12 @@ export const buildTable    = { x: 320, y: 160, w: 30, h: 30, interactionRadius: 
 export const workTables = [ { x: 250, y: 40, w: 40, h: 26 }, { x: 310, y: 40, w: 40, h: 26 }, { x: 60, y: 230, w: 40, h: 26 } ];
 
 export const bocinaVigia = { x: 950, y: 750, w: 34, h: 34, interactionRadius: 55 };
+
+// Recursos renovables de la Zona 4: Ecosistema y Bioma Vivo. Cada nodo se
+// puede recolectar cinco veces antes de quedar en recuperación por 3 min.
+export const harvestNodes = [
+    { id: 'tree-1', type: 'tree', label: 'Árbol', x: 240, y: 430, w: 48, h: 64, interactionRadius: 62, requiredTool: 'hacha', action: 'Talando', drop: 'Madera', uses: 0, maxUses: 5, recoveryUntil: 0 },
+    { id: 'tree-2', type: 'tree', label: 'Árbol', x: 430, y: 590, w: 48, h: 64, interactionRadius: 62, requiredTool: 'hacha', action: 'Talando', drop: 'Madera', uses: 0, maxUses: 5, recoveryUntil: 0 },
+    { id: 'stone-1', type: 'stone', label: 'Piedra', x: 620, y: 450, w: 44, h: 36, interactionRadius: 58, requiredTool: 'pico', action: 'Minando', drop: 'Piedra', uses: 0, maxUses: 5, recoveryUntil: 0 },
+    { id: 'iron-ore-1', type: 'ironOre', label: 'Mena de hierro', x: 680, y: 700, w: 44, h: 40, interactionRadius: 58, requiredTool: 'pico', action: 'Minando', drop: 'Mineral de Hierro', uses: 0, maxUses: 5, recoveryUntil: 0 }
+];
