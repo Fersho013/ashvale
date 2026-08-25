@@ -9,12 +9,11 @@ import { Inventory } from './inventory.js';
 import { Slime } from '../entities/mobs.js';
 import { Projectile } from '../entities/projectile.js';
 import { doors } from '../world/map.js';
-import { npc, respawnBed, campfire, alchemyTable, buildTable, chestObj, bocinaVigia, weaponRacks, toolRacks } from '../world/worldObjects.js';
+import { npc, respawnBed, campfire, alchemyTable, buildTable, chestObj, weaponsChestObj, toolsChestObj, bocinaVigia } from '../world/worldObjects.js';
 import { WEAPONS } from '../data/weapons.js';
-import { TOOLS } from '../data/tools.js';
 import { showDialog, dialogState } from '../ui/dialog.js';
 import { openCraftPanel } from '../ui/craftingUI.js';
-import { refreshChestUI } from '../ui/inventoryUI.js';
+import { openChestPanel } from '../ui/inventoryUI.js';
 import { anyModalOpen } from '../ui/menu.js';
 import { updateHUD } from '../ui/hud.js';
 
@@ -119,51 +118,24 @@ export function update() {
             if (eDown && !state.actionHeld) openCraftPanel('build');
         } else if (dist(player, chestObj) < chestObj.interactionRadius) {
             promptText = 'Abrir Cofre [E]'; interactTarget = chestObj;
-            if (eDown && !state.actionHeld) { refreshChestUI(); document.getElementById('chest-panel').style.display = 'block'; }
+            if (eDown && !state.actionHeld) openChestPanel('main');
+        } else if (dist(player, weaponsChestObj) < weaponsChestObj.interactionRadius) {
+            promptText = 'Abrir Cofre de Armas [E]'; interactTarget = weaponsChestObj;
+            if (eDown && !state.actionHeld) openChestPanel('weapons');
+        } else if (dist(player, toolsChestObj) < toolsChestObj.interactionRadius) {
+            promptText = 'Abrir Cofre de Herramientas [E]'; interactTarget = toolsChestObj;
+            if (eDown && !state.actionHeld) openChestPanel('tools');
         } else if (dist(player, bocinaVigia) < bocinaVigia.interactionRadius) {
             promptText = 'Canalizar Bocina del Vigía [E] (5s)'; interactTarget = bocinaVigia;
             if (eDown && !state.actionHeld) player.startChannel();
         } else {
-            let found = false;
-            for (const rack of weaponRacks) {
-                if (dist(player, rack) < 50) {
-                    const w = WEAPONS[rack.weapon];
-                    promptText = `Tomar ${w.name} del ${rack.name} [E]`; interactTarget = rack;
-                    if (eDown && !state.actionHeld) {
-                        if (Inventory.addMaterial(w.name, 1)) {
-                            showDialog(rack.name, `Has obtenido: ${w.name}. Abre el inventario [I] para equiparla.`);
-                        } else {
-                            showDialog('Inventario', `¡Inventario lleno! No puedes llevar la ${w.name}.`);
-                        }
-                    }
-                    found = true; break;
-                }
-            }
-            if (!found) {
-                for (const rack of toolRacks) {
-                    if (dist(player, rack) < 50) {
-                        const t = TOOLS[rack.tool];
-                        promptText = `Tomar ${t.name} del ${rack.name} [E]`; interactTarget = rack;
-                        if (eDown && !state.actionHeld) {
-                            if (Inventory.addMaterial(t.name, 1)) {
-                                showDialog(rack.name, `Has obtenido: ${t.name}.`);
-                            } else {
-                                showDialog('Inventario', `¡Inventario lleno! No puedes llevar el/la ${t.name}.`);
-                            }
-                        }
-                        found = true; break;
-                    }
-                }
-            }
-            if (!found) {
-                for (const door of doors) {
-                    const doorCenter = { x: door.x + door.w/2, y: door.y + door.h/2, w: 1, h: 1 };
-                    const playerCenter = { x: player.x + player.w/2, y: player.y + player.h/2, w: 1, h: 1 };
-                    if (dist(doorCenter, playerCenter) < 55) {
-                        promptText = (door.open ? 'Cerrar Puerta [E]' : 'Abrir Puerta [E]'); interactTarget = door;
-                        if (eDown && !state.actionHeld) door.open = !door.open;
-                        break;
-                    }
+            for (const door of doors) {
+                const doorCenter = { x: door.x + door.w/2, y: door.y + door.h/2, w: 1, h: 1 };
+                const playerCenter = { x: player.x + player.w/2, y: player.y + player.h/2, w: 1, h: 1 };
+                if (dist(doorCenter, playerCenter) < 55) {
+                    promptText = (door.open ? 'Cerrar Puerta [E]' : 'Abrir Puerta [E]'); interactTarget = door;
+                    if (eDown && !state.actionHeld) door.open = !door.open;
+                    break;
                 }
             }
         }
