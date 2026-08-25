@@ -33,7 +33,7 @@ const player = new Player(150, 150);
 const camera = new Camera(canvas.width, canvas.height);
 
 const world = {
-    dummies: [ new DummyMob(870, 60) ],
+    dummies: [ new DummyMob(505, 115) ],
     activeMobs: [ new ActiveMob(1050, 200) ],
     slimes: [ new Slime(150, 380), new Slime(190, 400) ],
     wolves: [ new Wolf(400, 500) ],
