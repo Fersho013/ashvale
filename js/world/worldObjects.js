@@ -1,18 +1,33 @@
 /* =====================================================================
-   OBJETOS DEL MUNDO: NPC, mobiliario interactuable y cofres
+   OBJETOS DEL MUNDO: NPC, mobiliario interactuable, estantes y cofres
    ===================================================================== */
-// Cofre de Armas y Cofre de Herramientas (punto 2): mismo patrón que el
-// Cofre original (chestObj) — cada uno abre su propio almacenamiento (ver
-// Inventory.chests en systems/inventory.js) en vez de ser una fuente
-// infinita como los antiguos estantes/racks.
-export const weaponsChestObj = { x: 440, y: 40,  w: 32, h: 26, interactionRadius: 50 };
-export const toolsChestObj   = { x: 250, y: 110, w: 32, h: 26, interactionRadius: 50 };
+// Estantes de Armas/Herramientas: fuente INFINITA de ítems (se puede volver
+// las veces que se quiera, igual que el punto 1 original). Todos en una
+// sola fila, en la parte SUPERIOR de esta zona de equipamiento.
+export const weaponRacks = [
+    { x: 410, y: 40, w: 34, h: 34, weapon: 'espada',   name: 'Estante de Espadas' },
+    { x: 456, y: 40, w: 34, h: 34, weapon: 'mandoble', name: 'Estante de Mandobles' },
+    { x: 502, y: 40, w: 34, h: 34, weapon: 'dagas',    name: 'Estante de Dagas' },
+    { x: 548, y: 40, w: 34, h: 34, weapon: 'arco',     name: 'Estante de Arcos' },
+    { x: 594, y: 40, w: 34, h: 34, weapon: 'lanza',    name: 'Estante de Lanzas' },
+    { x: 640, y: 40, w: 34, h: 34, weapon: 'baculo',   name: 'Estante de Báculos' }
+];
+export const toolRacks = [
+    { x: 686, y: 40, w: 34, h: 34, tool: 'hacha', name: 'Estante de Hachas' },
+    { x: 732, y: 40, w: 34, h: 34, tool: 'pico',  name: 'Estante de Picos' }
+];
+
+// Cofre de Armas y Cofre de Herramientas (punto 2): stock FINITO — cada uno
+// abre su propio almacenamiento (ver Inventory.chests en systems/inventory.js).
+// En la parte INFERIOR de la misma zona, debajo de los estantes.
+export const weaponsChestObj = { x: 550, y: 200, w: 32, h: 26, interactionRadius: 50 };
+export const toolsChestObj   = { x: 630, y: 200, w: 32, h: 26, interactionRadius: 50 };
 
 export const npc = {
     x: 80, y: 60, w: 36, h: 36, interactionRadius: 60,
     messages: [
         "¡Bienvenido al Sandbox de Ashvale! Usa WASD o los controles táctiles para moverte.",
-        "Al este de esta sala hay un Cofre de Armas y un Cofre de Herramientas. Acércate y presiona [E] para abrirlos y elegir qué llevarte.",
+        "Al este de esta sala hay Estantes de Armas/Herramientas (puedes tomar de ahí las veces que quieras) y, más abajo, un Cofre de Armas y uno de Herramientas con existencias limitadas. Presiona [E] junto a cualquiera.",
         "Abre tu inventario con [I] para equiparte las armas o usar consumibles.",
         "En el Cofre, toca un ítem para ver sus opciones y moverlo hacia tu inventario."
     ],
