@@ -18,7 +18,6 @@ export class DummyMob {
         this.damageNumbers.push({ x: this.x + this.w/2, y: this.y, life: 40, value: dmg });
     }
     update() {
-        clampToZone3(this);
         if (this.flash > 0) this.flash--;
         this.damageNumbers.forEach(d => { d.y -= 0.6; d.life--; });
         this.damageNumbers = this.damageNumbers.filter(d => d.life > 0);
