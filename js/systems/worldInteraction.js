@@ -71,6 +71,20 @@ function checkProjectileHit(p) {
         for (const m of list) {
             if (p.hitTargets.has(m)) continue;
             if (checkRectCollision(p, m)) {
+                if (p.explosionRadius > 0) {
+                    const cx = p.x + p.w / 2, cy = p.y + p.h / 2;
+                    for (const group of getEnemyGroups(world)) {
+                        for (const target of group) {
+                            const tx = target.x + target.w / 2, ty = target.y + target.h / 2;
+                            if (Math.hypot(tx - cx, ty - cy) <= p.explosionRadius) {
+                                // Daño mágico directo: no pasa por defensas físicas.
+                                damageEnemy(target, p.dmg);
+                                p.hitTargets.add(target);
+                            }
+                        }
+                    }
+                    return true;
+                }
                 if (parry) m.takeHit(p.dmg, false); else m.takeHit(p.dmg);
                 p.hitTargets.add(m);
                 if (p.knockback > 0) {
@@ -87,6 +101,35 @@ function checkProjectileHit(p) {
     // Un perforante permanece activo después de impactar; el resto termina
     // en el primer blanco, como los proyectiles básicos.
     return p.hitTargets.size > 0 && !p.piercing;
+}
+
+function applyArcaneSkills(player, world) {
+    if (player.arcaneVoidVortexTimer <= 0) return;
+    const cx = player.arcaneVoidVortexX, cy = player.arcaneVoidVortexY;
+    const radius = 86;
+    for (const group of getEnemyGroups(world)) {
+        for (const mob of group) {
+            const mx = mob.x + mob.w / 2, my = mob.y + mob.h / 2;
+            const dx = cx - mx, dy = cy - my;
+            const distance = Math.hypot(dx, dy) || 1;
+            if (distance > radius) continue;
+            // La atracción ocurre en todos los cuadros durante los 2 s.
+            // Los jefes futuros pueden marcarse isBoss para reducirla.
+            const pull = mob.isBoss ? 0.7 : 2.2;
+            mob.x += (dx / distance) * pull;
+            mob.y += (dy / distance) * pull;
+        }
+    }
+    player.arcaneVoidVortexTimer--;
+    if (player.arcaneVoidVortexTimer === 0 && !player.arcaneVoidVortexExploded) {
+        player.arcaneVoidVortexExploded = true;
+        for (const group of getEnemyGroups(world)) {
+            for (const mob of group) {
+                const mx = mob.x + mob.w / 2, my = mob.y + mob.h / 2;
+                if (Math.hypot(mx - cx, my - cy) <= radius) damageEnemy(mob, Math.ceil(player.attackDamage * 3));
+            }
+        }
+    }
 }
 
 function getEnemyGroups(world) {
@@ -317,12 +360,13 @@ export function update() {
         world.projectiles.push(new Projectile({
             x: pp.x, y: pp.y, dirX: pp.dirX, dirY: pp.dirY, dmg: pp.dmg,
             speed: pp.speed ?? cfg.speed, size: pp.size ?? cfg.size, color: pp.color ?? cfg.color,
-            rangeBlocks: pp.rangeBlocks ?? cfg.rangeBlocks, piercing: pp.piercing, knockback: pp.knockback
+            rangeBlocks: pp.rangeBlocks ?? cfg.rangeBlocks, piercing: pp.piercing, knockback: pp.knockback,
+            homing: pp.homing, explosionRadius: pp.explosionRadius, magic: pp.magic
         }));
         player.pendingProjectile = null;
     }
     world.projectiles.forEach(p => {
-        p.update();
+        p.update(getEnemyGroups(world).flat());
         if (!p.hasHit && checkProjectileHit(p)) {
             p.hasHit = true;
             player.bars = Math.min(player.barCapacity, player.bars + 0.5);
@@ -335,6 +379,7 @@ export function update() {
     applyDualSwordsmanSkills(player, world);
     applyArcherSkills(player, world);
     applyLancerSkills(player, world);
+    applyArcaneSkills(player, world);
 
     if (player.isAttacking && !player.currentWeapon.ranged && player.swordThrustTimer === 0
         && player.swordStormTimer === 0 && player.knightEarthsplitterTimer === 0
