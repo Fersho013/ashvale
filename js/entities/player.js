@@ -96,7 +96,7 @@ export class Player {
         this.mitigationBuff = 0;
         this.mitigationPct = 0;
 
-        this.respawn = { x: 150, y: 150 };
+        this.respawn = { x: 300, y: 300 };
     }
 
     get currentWeapon() {
