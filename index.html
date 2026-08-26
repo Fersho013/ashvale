@@ -95,6 +95,7 @@
             <button id="btn-q" class="t-btn" aria-label="Habilidad 1">⭐</button>
             <button id="btn-r" class="t-btn" aria-label="Habilidad 2">🌙</button>
             <button id="btn-inv" class="t-btn" aria-label="Inventario">🎒</button>
+            <button id="btn-skills" class="t-btn" aria-label="Árbol de habilidades">🌳</button>
         </div>
     </div>
 
@@ -120,6 +121,7 @@
                     <p><strong>Habilidad 1:</strong> [Q] / RB / ⭐</p>
                     <p><strong>Habilidad 2:</strong> [R] / LB / 🌙</p>
                     <p><strong>Inventario:</strong> [I] / Y / 🎒</p>
+                    <p><strong>Árbol de habilidades:</strong> [O] / Select-Share / 🌳</p>
                     <p><strong>Pausa:</strong> [P][Esc] / Options / ⏸</p>
                     <p><strong>Debug:</strong> [~] / [F2]</p>
                 </div>
@@ -177,6 +179,22 @@
         <div id="craft-msg"></div>
         <h4>Tu Inventario (click para colocar un ingrediente)</h4>
         <div id="craft-inv-grid" class="grid-10"></div>
+    </div>
+
+    <!-- Árbol de Habilidades: las ramas se definen aquí; sus habilidades se
+         agregarán posteriormente sin cambiar los accesos al menú. -->
+    <div id="skill-tree-panel" class="modal-panel">
+        <span class="close-modal" data-close="skill-tree-panel">[X]</span>
+        <h3>Árbol de Habilidades</h3>
+        <p class="skill-tree-intro">Elige una rama para consultar su progreso. Las habilidades estarán disponibles próximamente.</p>
+        <div class="skill-tree-buttons">
+            <button type="button" data-skill-branch="swordsman">Espadachín<br><small>Rama de Espadas</small></button>
+            <button type="button" data-skill-branch="knight">Caballero<br><small>Rama de Mandobles</small></button>
+            <button type="button" data-skill-branch="dual-swordsman">Espadachín Dual<br><small>Espadas Dobles</small></button>
+            <button type="button" data-skill-branch="archer">Arquero<br><small>Rama de Arcos</small></button>
+            <button type="button" data-skill-branch="lancer">Lancer<br><small>Rama de Lanzas</small></button>
+            <button type="button" data-skill-branch="arcane">Arcano<br><small>Magia, daño explosivo y control de masas</small></button>
+        </div>
     </div>
 
     <div id="debug-panel">
