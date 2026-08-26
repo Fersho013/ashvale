@@ -153,7 +153,7 @@ function applyDualSwordsmanSkills(player, world) {
                 const mx = mob.x + mob.w / 2, my = mob.y + mob.h / 2;
                 // El radio coincide exactamente con el círculo visual del
                 // frenesí: todos los enemigos dentro reciben cada pulso.
-                if (Math.hypot(mx - px, my - py) <= 54) damageEnemy(mob, Math.ceil(player.attackDamage * 0.85));
+                if (Math.hypot(mx - px, my - py) <= 54) damageEnemy(mob, Math.ceil(player.attackDamage * 2.85));
             }
         }
     }
