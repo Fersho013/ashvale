@@ -344,7 +344,7 @@ export function update() {
     if (fused.length >= 2) {
         const [a, b] = fused;
         world.slimes = world.slimes.filter(s => s !== a && s !== b);
-        world.slimes.push(new Slime((a.x + b.x)/2, (a.y + b.y)/2, true));
+        world.slimes.push(new Slime((a.x + b.x)/2, (a.y + b.y)/2, true, a.habitat));
     }
     world.wolves.forEach(w => w.update(player, world.deers));
     world.deers.forEach(d => d.update(player, world.wolves));
