@@ -27,6 +27,22 @@ export const SKILLS = {
     dual_steel_frenzy: {
         id: 'dual_steel_frenzy', branch: 'dual-swordsman', branchLabel: 'Espadachín Dual', name: 'Frenesí de Acero', shortLabel: 'FA',
         weaponFamily: 'dualBlades', cost: 3, description: 'Cortes giratorios en avance durante 2 segundos; resiste interrupciones menores.'
+    },
+    archer_piercing_shot: {
+        id: 'archer_piercing_shot', branch: 'archer', branchLabel: 'Arquero', name: 'Disparo Perforante', shortLabel: 'DP',
+        weaponFamily: 'bow', cost: 1, description: 'Flecha de alta velocidad que atraviesa enemigos y los empuja hacia atrás.'
+    },
+    archer_thorn_rain: {
+        id: 'archer_thorn_rain', branch: 'archer', branchLabel: 'Arquero', name: 'Lluvia de Espinas', shortLabel: 'LE',
+        weaponFamily: 'bow', cost: 3, description: 'Lluvia de flechas en un área focalizada que inflige daño continuo y ralentiza.'
+    },
+    lancer_phalanx_charge: {
+        id: 'lancer_phalanx_charge', branch: 'lancer', branchLabel: 'Lancer', name: 'Embestida de Falange', shortLabel: 'EF',
+        weaponFamily: 'spear', cost: 1, description: 'Empuje frontal de largo alcance que interrumpe a enemigos menores.'
+    },
+    lancer_impaling_whirlwind: {
+        id: 'lancer_impaling_whirlwind', branch: 'lancer', branchLabel: 'Lancer', name: 'Torbellino Empalador', shortLabel: 'TE',
+        weaponFamily: 'spear', cost: 3, description: 'Barrido de 360° que empuja enemigos y rompe su postura.'
     }
 };
 
