@@ -43,6 +43,14 @@ export const SKILLS = {
     lancer_impaling_whirlwind: {
         id: 'lancer_impaling_whirlwind', branch: 'lancer', branchLabel: 'Lancer', name: 'Torbellino Empalador', shortLabel: 'TE',
         weaponFamily: 'spear', cost: 3, description: 'Barrido de 360° que empuja enemigos y rompe su postura.'
+    },
+    arcane_aether_projectile: {
+        id: 'arcane_aether_projectile', branch: 'arcane', branchLabel: 'Arcano', name: 'Proyectil de Éter', shortLabel: 'PE',
+        weaponFamily: 'staff', cost: 1, description: 'Proyectil mágico de ligero auto-seguimiento que explota al impactar.'
+    },
+    arcane_void_vortex: {
+        id: 'arcane_void_vortex', branch: 'arcane', branchLabel: 'Arcano', name: 'Vórtice del Vacío', shortLabel: 'VV',
+        weaponFamily: 'staff', cost: 3, description: 'Falla gravitacional que atrae enemigos durante 2 s y culmina en una explosión elemental.'
     }
 };
 
