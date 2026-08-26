@@ -61,21 +61,45 @@ function openSkillActions(node) {
     openItemActionMenu(node, actions);
 }
 
+const BRANCH_VIEWS = {
+    swordsman: {
+        title: 'Espadachín — Rama de Espadas',
+        description: 'Las habilidades iniciales están arriba; las más potentes se desbloquearán hacia abajo.',
+        skills: ['sword_thrust', 'sword_storm']
+    },
+    knight: {
+        title: 'Caballero — Rama de Mandobles',
+        description: 'Golpes lentos y decisivos: rompe postura y controla el espacio con impacto pesado.',
+        skills: ['knight_earthsplitter', 'knight_cataclysm']
+    }
+};
+
 function showSkillBranch(branch) {
     const branchGrid = document.getElementById('skill-branches');
     const branchView = document.getElementById('skill-branch-view');
-    branchGrid.hidden = branch === 'swordsman';
-    branchView.hidden = branch !== 'swordsman';
+    branchGrid.hidden = !!BRANCH_VIEWS[branch];
+    branchView.hidden = !BRANCH_VIEWS[branch];
     const intro = document.querySelector('#skill-tree-panel .skill-tree-intro');
-    intro.hidden = branch === 'swordsman';
-    if (branch === 'swordsman') refreshSkillNodes();
+    intro.hidden = !!BRANCH_VIEWS[branch];
+    if (!BRANCH_VIEWS[branch]) return;
+    const view = BRANCH_VIEWS[branch];
+    document.getElementById('skill-branch-title').innerText = view.title;
+    document.getElementById('skill-branch-description').innerText = view.description;
+    const nodes = document.querySelectorAll('#skill-branch-view [data-skill-id]');
+    nodes.forEach((node, index) => {
+        const skill = SkillBook.get(view.skills[index]);
+        node.dataset.skillId = skill.id;
+        node.querySelector('strong').innerText = skill.name;
+        node.querySelector('span').innerText = `${skill.cost} ${skill.cost === 1 ? 'Barra' : 'Barras'} · ${index ? 'Definitiva' : 'Base'}`;
+    });
+    refreshSkillNodes();
 }
 
 document.querySelectorAll('#skill-tree-panel [data-skill-branch]').forEach(button => {
     button.addEventListener('click', () => {
         document.querySelectorAll('#skill-tree-panel [data-skill-branch]').forEach(item => item.classList.remove('selected'));
         button.classList.add('selected');
-        if (button.dataset.skillBranch === 'swordsman') showSkillBranch('swordsman');
+        if (BRANCH_VIEWS[button.dataset.skillBranch]) showSkillBranch(button.dataset.skillBranch);
         else document.querySelector('#skill-tree-panel .skill-tree-intro').innerText = 'Esta rama estará disponible próximamente.';
     });
 });
