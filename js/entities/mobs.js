@@ -3,7 +3,7 @@
    ===================================================================== */
 import { checkRectCollision, dist } from '../core/physics.js';
 import { drawEntity } from '../core/assets.js';
-import { getActiveWalls, clampToZone3, clampToZone4 } from '../world/map.js';
+import { getActiveWalls, clampToZone3, clampToArea, randomPointInArea } from '../world/map.js';
 import { MOBS } from '../data/mobs.js';
 import { grantMobLoot } from '../systems/inventory.js';
 
@@ -82,8 +82,9 @@ export class ActiveMob {
 }
 
 export class Slime {
-    constructor(x, y, big = false) {
+    constructor(x, y, big = false, habitat = null) {
         this.x = x; this.y = y; this.big = big;
+        this.habitat = habitat;
         this.w = big ? 30 : 18; this.h = big ? 30 : 18;
         this.speed = 0.6;
         // Vida base desde el registro de datos (data/mobs.js); el Slime
@@ -105,7 +106,7 @@ export class Slime {
         this.wanderAngle += (Math.random() - 0.5) * 0.2;
         this.x += Math.cos(this.wanderAngle) * speed;
         this.y += Math.sin(this.wanderAngle) * speed;
-        clampToZone4(this);
+        clampToArea(this, this.habitat);
 
         if (!this.big) {
             for (const other of allSlimes) {
@@ -138,8 +139,9 @@ export class Slime {
 }
 
 export class Wolf {
-    constructor(x, y) {
+    constructor(x, y, habitat = null) {
         this.x = x; this.y = y; this.w = 32; this.h = 32; this.speed = 1.9;
+        this.habitat = habitat;
         this.hp = MOBS.lobo.baseHp; this.maxHp = this.hp; this.flash = 0;
     }
     takeHit(dmg) { this.flash = 10; this.hp -= dmg; }
@@ -160,19 +162,24 @@ export class Wolf {
         const d = Math.hypot(dx, dy);
         if (d > 4) { this.x += (dx/d) * speed; this.y += (dy/d) * speed; }
 
-        clampToZone4(this);
+        clampToArea(this, this.habitat);
 
         if (target === player && checkRectCollision(this, player)) player.takeDamage(6, this);
         if (this.hp <= 0) {
             grantMobLoot('lobo');
-            this.hp = this.maxHp; this.x = 120 + Math.random()*400; this.y = 680 + Math.random()*400;
+            this.hp = this.maxHp;
+            const spawn = randomPointInArea(this.habitat, this);
+            this.x = spawn.x; this.y = spawn.y;
         }
     }
     draw(ctx) { drawEntity(ctx, 'wolf', this.x, this.y, this.w, this.h, this.flash > 0 ? '#fff' : '#7f8c8d', 'rect', 'L'); }
 }
 
 export class Deer {
-    constructor(x, y) { this.x = x; this.y = y; this.w = 28; this.h = 28; this.speed = 1.6; this.hp = 15; this.maxHp = 15; }
+    constructor(x, y, habitat = null) {
+        this.x = x; this.y = y; this.w = 28; this.h = 28; this.speed = 1.6; this.hp = 15; this.maxHp = 15;
+        this.habitat = habitat;
+    }
     update(player, wolves) {
         if (this.slowTimer > 0) this.slowTimer--;
         const speed = this.speed * (this.slowTimer > 0 ? (this.slowMultiplier || 0.5) : 1);
@@ -186,21 +193,29 @@ export class Deer {
             const d = Math.hypot(dx, dy) || 1;
             this.x += (dx/d) * speed; this.y += (dy/d) * speed;
         }
-        clampToZone4(this);
+        clampToArea(this, this.habitat);
     }
     draw(ctx) { drawEntity(ctx, 'deer', this.x, this.y, this.w, this.h, '#d2b48c', 'rect', 'C'); }
 }
 
 export class GoblinExplorer {
-    constructor(x, y) {
+    constructor(x, y, habitat = null) {
         this.x = x; this.y = y; this.w = 30; this.h = 30; this.speed = 1.5;
+        this.habitat = habitat;
         this.hp = MOBS.goblin.baseHp; this.maxHp = this.hp; this.flash = 0; this.attackCooldown = 0;
+        this.hostile = false;
     }
-    takeHit(dmg) { this.flash = 10; this.hp -= dmg; }
+    takeHit(dmg) { this.flash = 10; this.hp -= dmg; this.hostile = true; }
     update(player) {
         if (this.flash > 0) this.flash--;
         if (this.staggerTimer > 0) { this.staggerTimer--; return; }
         if (this.slowTimer > 0) this.slowTimer--;
+        // Los goblins de las Minas son neutrales hasta que el jugador los
+        // ataca. Mientras tanto permanecen en su zona y no persiguen ni dañan.
+        if (!this.hostile) {
+            clampToArea(this, this.habitat);
+            return;
+        }
         const speed = this.speed * (this.slowTimer > 0 ? (this.slowMultiplier || 0.5) : 1);
         const fleeing = this.hp / this.maxHp < 0.2;
         const dx = (player.x + player.w/2) - (this.x + this.w/2);
@@ -216,10 +231,12 @@ export class GoblinExplorer {
             }
         }
         if (this.attackCooldown > 0) this.attackCooldown--;
-        clampToZone4(this);
+        clampToArea(this, this.habitat);
         if (this.hp <= 0) {
             grantMobLoot('goblin');
-            this.hp = this.maxHp; this.x = 120 + Math.random()*400; this.y = 680 + Math.random()*400;
+            this.hp = this.maxHp; this.hostile = false;
+            const spawn = randomPointInArea(this.habitat, this);
+            this.x = spawn.x; this.y = spawn.y;
         }
     }
     draw(ctx) {
