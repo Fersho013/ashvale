@@ -4,6 +4,7 @@
 import { state } from '../state.js';
 import { toggleInventory } from '../ui/inventoryUI.js';
 import { togglePause } from '../ui/pause.js';
+import { toggleSkillTree } from '../ui/skillTreeUI.js';
 
 export const Input = {
     keys: {}, keysPressed: {},
@@ -138,6 +139,14 @@ export const Input = {
             }, { passive: false });
         }
 
+        const skillsBtn = document.getElementById('btn-skills');
+        if (skillsBtn) {
+            skillsBtn.addEventListener('touchstart', e => {
+                if (state.controlsEditMode || state.gamePaused) return;
+                e.preventDefault(); toggleSkillTree();
+            }, { passive: false });
+        }
+
         const pauseBtn = document.getElementById('touch-pause-btn');
         if (pauseBtn) {
             pauseBtn.addEventListener('touchstart', e => {
@@ -164,6 +173,7 @@ export const Input = {
                 ability1: 5,   // R1 / RB        -> Habilidad 1
                 block: 6,      // L2 / LT        -> Parry básico
                 attack: 7,     // R2 / RT        -> Ataque básico
+                skillTree: 8,  // Select / Share / View -> Árbol de habilidades
                 pause: 9       // Options / Start-> Pausa
             };
             for (const key in map) {
