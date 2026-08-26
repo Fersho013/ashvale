@@ -89,6 +89,43 @@ function damageEnemy(mob, damage) {
     if (mob.takeHit) mob.takeHit(damage, false);
 }
 
+function breakPosture(mob, duration = 90) {
+    // No hay jefes todavía: cuando se incorporen, basta marcarlos con
+    // isBoss para que estas habilidades no les apliquen control total.
+    if (mob.isBoss) return;
+    mob.staggerTimer = Math.max(mob.staggerTimer || 0, duration);
+    mob.attackCooldown = Math.max(mob.attackCooldown || 0, duration);
+}
+
+function applyKnightSkills(player, world) {
+    if (player.knightEarthsplitterTimer > 0 && !player.knightEarthsplitterResolved
+        && player.knightEarthsplitterTimer <= 9) {
+        player.knightEarthsplitterResolved = true;
+        const box = player.getKnightEarthsplitterHitbox();
+        for (const group of getEnemyGroups(world)) {
+            for (const mob of group) {
+                if (!checkRectCollision(box, mob)) continue;
+                damageEnemy(mob, Math.ceil(player.attackDamage * 2));
+                breakPosture(mob, 90);
+            }
+        }
+    }
+
+    if (player.knightCataclysmTimer > 0 && !player.knightCataclysmResolved
+        && player.knightCataclysmTimer <= 8) {
+        player.knightCataclysmResolved = true;
+        const px = player.x + player.w / 2, py = player.y + player.h / 2;
+        for (const group of getEnemyGroups(world)) {
+            for (const mob of group) {
+                const mx = mob.x + mob.w / 2, my = mob.y + mob.h / 2;
+                if (Math.hypot(mx - px, my - py) > 118) continue;
+                damageEnemy(mob, Math.ceil(player.attackDamage * 1.5));
+                breakPosture(mob, 90);
+            }
+        }
+    }
+}
+
 function applyBleed(mob, damage) {
     mob.bleedStacks = Math.min(4, (mob.bleedStacks || 0) + 1);
     mob.bleedTimer = 4 * 60;
@@ -192,8 +229,11 @@ export function update() {
     world.projectiles = world.projectiles.filter(p => !p.expired);
 
     resolveSwordsmanSkills(player, world);
+    applyKnightSkills(player, world);
 
-    if (player.isAttacking && !player.currentWeapon.ranged && player.swordThrustTimer === 0 && player.swordStormTimer === 0) {
+    if (player.isAttacking && !player.currentWeapon.ranged && player.swordThrustTimer === 0
+        && player.swordStormTimer === 0 && player.knightEarthsplitterTimer === 0
+        && player.knightCataclysmTimer === 0) {
         const box = player.getAttackHitbox();
         const dmg = player.attackDamage;
         world.dummies.forEach(d => { if (checkRectCollision(box, d) && d.flash === 0) { d.takeHit(dmg); player.bars = Math.min(player.barCapacity, player.bars + 0.5); } });
