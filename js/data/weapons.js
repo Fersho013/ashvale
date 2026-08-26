@@ -50,7 +50,7 @@ export const WEAPONS = {
     lanza: {
         id: 'lanza', name: 'Lanza', color: '#f1c40f', asset: 'weapon_lanza',
         dmg: 15, attackCooldown: 120, meleeReach: 76, meleeSize: 68, family: 'spear', // alcance/tamaño x2 vs. Espada
-        ability1: 'Estocada Profunda', ability2: 'Barrido Falange'
+        skillBranch: 'lancer', ability1: 'Embestida de Falange', ability2: 'Torbellino Empalador'
     },
     baculo: {
         id: 'baculo', name: 'Báculo', color: '#e74c3c', asset: 'weapon_especial', // TODO: sprite propio cuando exista arte dedicado al báculo
@@ -60,7 +60,7 @@ export const WEAPONS = {
     },
     arco: {
         id: 'arco', name: 'Arco', color: '#2ecc71', asset: 'weapon_arco',
-        dmg: 10, attackCooldown: 60, ranged: true, family: 'bow',
+        dmg: 10, attackCooldown: 60, ranged: true, family: 'bow', skillBranch: 'archer',
         projectile: { rangeBlocks: 4, speed: 11, size: 8, color: '#2ecc71' },
         ability1: 'Disparo Perforante', ability2: 'Lluvia de Flechas'
     },
