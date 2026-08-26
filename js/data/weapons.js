@@ -12,6 +12,18 @@
      mide en BLOCK_SIZE (world/map.js) y solo pueden impactar a UN
      enemigo (el primero que golpean, ver systems/worldInteraction.js).
    ===================================================================== */
+// Una familia describe el tipo de combate, no el ítem concreto. Por ejemplo,
+// "Espada" y "Espada Oxidada" son ítems distintos, pero pertenecen a la
+// misma familia y por ello habilitan la misma rama de habilidades.
+export const WEAPON_FAMILIES = {
+    sword: { id: 'sword', label: 'espada', pluralLabel: 'Espadas' },
+    greatsword: { id: 'greatsword', label: 'mandoble', pluralLabel: 'Mandobles' },
+    dualBlades: { id: 'dualBlades', label: 'espadas duales', pluralLabel: 'Espadas Duales' },
+    bow: { id: 'bow', label: 'arco', pluralLabel: 'Arcos' },
+    spear: { id: 'spear', label: 'lanza', pluralLabel: 'Lanzas' },
+    staff: { id: 'staff', label: 'báculo', pluralLabel: 'Báculos' }
+};
+
 export const WEAPONS = {
     desarmado: {
         id: 'desarmado', name: 'Desarmado (Puños)', color: '#aaaaaa', asset: 'player',
@@ -21,34 +33,34 @@ export const WEAPONS = {
     espada: {
         id: 'espada', name: 'Espada', color: '#3498db', asset: 'weapon_espada',
         dmg: 10, attackCooldown: 60, meleeReach: 38, meleeSize: 34,
-        skillBranch: 'swordsman', ability1: 'Estocada Veloz', ability2: 'Filo Tormentoso'
+        family: 'sword', skillBranch: 'swordsman', ability1: 'Estocada Veloz', ability2: 'Filo Tormentoso'
     },
     dagas: {
         // Se conserva la clave interna "dagas" para no invalidar partidas
         // guardadas; el arma y su rama ahora se llaman Espadas Duales.
         id: 'dagas', name: 'Espadas Duales', color: '#9b59b6', asset: 'weapon_dagas',
-        dmg: 5, attackCooldown: 30, meleeReach: 38, meleeSize: 34, // 0.5s: el doble de rápida que la Espada
+        dmg: 5, attackCooldown: 30, meleeReach: 38, meleeSize: 34, family: 'dualBlades', // 0.5s: el doble de rápida que la Espada
         ability1: 'Paso Sombrío', ability2: 'Torbellino'
     },
     mandoble: {
         id: 'mandoble', name: 'Mandoble', color: '#e67e22', asset: 'weapon_mandoble',
         dmg: 20, attackCooldown: 120, meleeReach: 76, meleeSize: 68, // alcance/tamaño x2 vs. Espada
-        ability1: 'Hendidura Terrenal', ability2: 'Guardia de Titán'
+        family: 'greatsword', skillBranch: 'knight', ability1: 'Hendidura Terrenal', ability2: 'Impacto Cataclismo'
     },
     lanza: {
         id: 'lanza', name: 'Lanza', color: '#f1c40f', asset: 'weapon_lanza',
-        dmg: 15, attackCooldown: 120, meleeReach: 76, meleeSize: 68, // alcance/tamaño x2 vs. Espada
+        dmg: 15, attackCooldown: 120, meleeReach: 76, meleeSize: 68, family: 'spear', // alcance/tamaño x2 vs. Espada
         ability1: 'Estocada Profunda', ability2: 'Barrido Falange'
     },
     baculo: {
         id: 'baculo', name: 'Báculo', color: '#e74c3c', asset: 'weapon_especial', // TODO: sprite propio cuando exista arte dedicado al báculo
-        dmg: 10, attackCooldown: 60, ranged: true,
+        dmg: 10, attackCooldown: 60, ranged: true, family: 'staff',
         projectile: { rangeBlocks: 3, speed: 9, size: 12, color: '#e74c3c' },
         ability1: 'Golpe Terrenal', ability2: 'Proyección Mística'
     },
     arco: {
         id: 'arco', name: 'Arco', color: '#2ecc71', asset: 'weapon_arco',
-        dmg: 10, attackCooldown: 60, ranged: true,
+        dmg: 10, attackCooldown: 60, ranged: true, family: 'bow',
         projectile: { rangeBlocks: 4, speed: 11, size: 8, color: '#2ecc71' },
         ability1: 'Disparo Perforante', ability2: 'Lluvia de Flechas'
     },
@@ -59,16 +71,24 @@ export const WEAPONS = {
     goblin_espada_corta: {
         id: 'goblin_espada_corta', name: 'Espada Corta de Goblin', color: '#7f8c8d', asset: 'weapon_espada', // TODO: sprite propio
         dmg: 15, attackCooldown: 60, meleeReach: 38, meleeSize: 34,
-        skillBranch: 'swordsman', ability1: 'Estocada Veloz', ability2: 'Filo Tormentoso'
+        family: 'sword', skillBranch: 'swordsman', ability1: 'Estocada Veloz', ability2: 'Filo Tormentoso'
     },
     // Craftable en la Mesa Constructora: Madera + Metal Oxidado (ver
     // data/recipes.js -> BUILD_RECIPES). No se consigue en las armerías.
     espada_oxidada: {
         id: 'espada_oxidada', name: 'Espada Oxidada', color: '#a07b52', asset: 'weapon_espada', // TODO: sprite propio
         dmg: 20, attackCooldown: 60, meleeReach: 38, meleeSize: 34,
-        skillBranch: 'swordsman', ability1: 'Estocada Veloz', ability2: 'Filo Tormentoso'
+        family: 'sword', skillBranch: 'swordsman', ability1: 'Estocada Veloz', ability2: 'Filo Tormentoso'
     }
 };
+
+export function getWeaponFamily(weapon) {
+    return WEAPON_FAMILIES[weapon?.family] || null;
+}
+
+export function weaponSupportsSkill(weapon, skill) {
+    return !!weapon && !!skill && weapon.family === skill.weaponFamily;
+}
 
 // Mapa dirección -> claves de sprite (quieto / caminando) para el jugador
 export const PLAYER_SPRITE_KEYS = {
