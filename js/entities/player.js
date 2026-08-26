@@ -5,7 +5,7 @@ import { Input } from '../core/input.js';
 import { drawEntity, CHARACTER_SPRITE_SIZE } from '../core/assets.js';
 import { checkRectCollision } from '../core/physics.js';
 import { getActiveWalls } from '../world/map.js';
-import { WEAPONS, PLAYER_SPRITE_KEYS } from '../data/weapons.js';
+import { WEAPONS, PLAYER_SPRITE_KEYS, getWeaponFamily, weaponSupportsSkill } from '../data/weapons.js';
 import { Inventory } from '../systems/inventory.js';
 import { DEBUG } from '../systems/debug.js';
 import { SkillBook } from '../systems/skills.js';
@@ -176,8 +176,9 @@ export class Player {
     useAssignedSkill(slot) {
         const skill = SkillBook.get(SkillBook.assigned[slot]);
         if (!skill || !SkillBook.isLearned(skill.id)) return;
-        if (this.currentWeapon.skillBranch !== skill.branch) {
-            showDialog('Habilidades', 'Equipa una espada para realizar la habilidad de espada');
+        if (!weaponSupportsSkill(this.currentWeapon, skill)) {
+            const family = getWeaponFamily({ family: skill.weaponFamily });
+            showDialog('Habilidades', `Equipa un ${family?.label || 'arma compatible'} para hacer la habilidad de ${(skill.branchLabel || skill.branch).toLowerCase()}.`);
             return;
         }
         if (this.bars < skill.cost) return;
