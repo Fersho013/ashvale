@@ -50,6 +50,13 @@ export class Player {
         this.knightCataclysmTimer = 0;
         this.knightCataclysmResolved = false;
 
+        // Estados de la rama Espadachín Dual. Tajo Cruzado no reemplaza el
+        // ataque actual; Frenesí avanza y causa daño por pulsos durante 2 s.
+        this.dualCrossSlashTimer = 0;
+        this.dualCrossSlashResolved = false;
+        this.dualSteelFrenzyTimer = 0;
+        this.dualSteelFrenzyPulse = -1;
+
         this.isBlocking = false;
         this.blockStartFrame = 0;
         this.parryWindowFrames = 6;
@@ -166,6 +173,16 @@ export class Player {
         if (this.swordStormTimer > 0 && --this.swordStormTimer === 0) this.isAttacking = false;
         if (this.knightEarthsplitterTimer > 0 && --this.knightEarthsplitterTimer === 0) this.isAttacking = false;
         if (this.knightCataclysmTimer > 0 && --this.knightCataclysmTimer === 0) this.isAttacking = false;
+        if (this.dualCrossSlashTimer > 0) this.dualCrossSlashTimer--;
+        if (this.dualSteelFrenzyTimer > 0) {
+            this.dualSteelFrenzyTimer--;
+            // Movimiento continuo, con colisiones, para que el frenesí sea
+            // agresivo pero no atraviese paredes.
+            const activeWalls = getActiveWalls();
+            this.x += this.facing.x * 2.4; this.resolveCollisions(true, activeWalls);
+            this.y += this.facing.y * 2.4; this.resolveCollisions(false, activeWalls);
+            if (this.dualSteelFrenzyTimer === 0) this.isAttacking = false;
+        }
 
         if (this.channeling) {
             this.channelTimer++;
@@ -178,7 +195,7 @@ export class Player {
         if (!skill || !SkillBook.isLearned(skill.id)) return;
         if (!weaponSupportsSkill(this.currentWeapon, skill)) {
             const family = getWeaponFamily({ family: skill.weaponFamily });
-            showDialog('Habilidades', `Equipa un ${family?.label || 'arma compatible'} para hacer la habilidad de ${(skill.branchLabel || skill.branch).toLowerCase()}.`);
+            showDialog('Habilidades', `Equipa ${family?.requirementLabel || 'un arma compatible'} para hacer la habilidad de ${(skill.branchLabel || skill.branch).toLowerCase()}.`);
             return;
         }
         if (this.bars < skill.cost) return;
@@ -221,6 +238,19 @@ export class Player {
             this.x += this.facing.x * 75; this.y += this.facing.y * 75;
             const activeWalls = getActiveWalls();
             this.resolveCollisions(true, activeWalls); this.resolveCollisions(false, activeWalls);
+            return;
+        }
+        if (skill.id === 'dual_cross_slash') {
+            // No toca isAttacking: puede insertarse dentro de la secuencia
+            // normal de Espadas Duales sin cortarla.
+            this.dualCrossSlashTimer = 6;
+            this.dualCrossSlashResolved = false;
+            return;
+        }
+        if (skill.id === 'dual_steel_frenzy') {
+            this.dualSteelFrenzyTimer = 120;
+            this.dualSteelFrenzyPulse = -1;
+            this.isAttacking = true; this.attackTimer = 120;
         }
     }
 
@@ -345,6 +375,16 @@ export class Player {
             ctx.beginPath(); ctx.arc(this.x + this.w / 2, this.y + this.h / 2, radius, 0, Math.PI * 2);
             ctx.fillStyle = 'rgba(230,126,34,0.18)'; ctx.fill();
             ctx.strokeStyle = '#e67e22'; ctx.lineWidth = 2; ctx.stroke();
+        }
+        if (this.dualCrossSlashTimer > 0) {
+            const cx = this.x + this.w / 2, cy = this.y + this.h / 2;
+            ctx.strokeStyle = '#9b59b6'; ctx.lineWidth = 4;
+            ctx.beginPath(); ctx.moveTo(cx - 34, cy - 34); ctx.lineTo(cx + 34, cy + 34); ctx.moveTo(cx + 34, cy - 34); ctx.lineTo(cx - 34, cy + 34); ctx.stroke();
+        }
+        if (this.dualSteelFrenzyTimer > 0) {
+            ctx.beginPath(); ctx.arc(this.x + this.w / 2, this.y + this.h / 2, 54, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(155,89,182,0.18)'; ctx.fill();
+            ctx.strokeStyle = '#9b59b6'; ctx.lineWidth = 3; ctx.stroke();
         }
         if (this.channeling) {
             const pct = this.channelTimer / this.channelDuration;
