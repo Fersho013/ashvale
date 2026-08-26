@@ -5,20 +5,20 @@
    ===================================================================== */
 export const SKILLS = {
     sword_thrust: {
-        id: 'sword_thrust', branch: 'swordsman', name: 'Estocada Veloz', shortLabel: 'EV',
-        cost: 1, description: 'Desplazamiento de 3 m que golpea en línea recta.'
+        id: 'sword_thrust', branch: 'swordsman', branchLabel: 'Espadachín', name: 'Estocada Veloz', shortLabel: 'EV',
+        weaponFamily: 'sword', cost: 1, description: 'Desplazamiento de 3 m que golpea en línea recta.'
     },
     sword_storm: {
-        id: 'sword_storm', branch: 'swordsman', name: 'Filo Tormentoso', shortLabel: 'FT',
-        cost: 3, description: 'Cuatro cortes frontales que acumulan sangrado.'
+        id: 'sword_storm', branch: 'swordsman', branchLabel: 'Espadachín', name: 'Filo Tormentoso', shortLabel: 'FT',
+        weaponFamily: 'sword', cost: 3, description: 'Cuatro cortes frontales que acumulan sangrado.'
     },
     knight_earthsplitter: {
-        id: 'knight_earthsplitter', branch: 'knight', name: 'Hendidura Terrenal', shortLabel: 'HT',
-        cost: 1, description: 'Golpe descendente que destruye la postura y rompe la defensa de enemigos menores.'
+        id: 'knight_earthsplitter', branch: 'knight', branchLabel: 'Caballero', name: 'Hendidura Terrenal', shortLabel: 'HT',
+        weaponFamily: 'greatsword', cost: 1, description: 'Golpe descendente que destruye la postura y rompe la defensa de enemigos menores.'
     },
     knight_cataclysm: {
-        id: 'knight_cataclysm', branch: 'knight', name: 'Impacto Cataclismo', shortLabel: 'IC',
-        cost: 3, description: 'Salto y aplastamiento en área que aturde a enemigos no jefes durante 1.5 segundos.'
+        id: 'knight_cataclysm', branch: 'knight', branchLabel: 'Caballero', name: 'Impacto Cataclismo', shortLabel: 'IC',
+        weaponFamily: 'greatsword', cost: 3, description: 'Salto y aplastamiento en área que aturde a enemigos no jefes durante 1.5 segundos.'
     }
 };
 
