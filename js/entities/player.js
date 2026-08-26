@@ -57,6 +57,19 @@ export class Player {
         this.dualSteelFrenzyTimer = 0;
         this.dualSteelFrenzyPulse = -1;
 
+        // Lluvia de Espinas fija su área en el punto apuntado al lanzar.
+        this.archerThornRainTimer = 0;
+        this.archerThornRainPulse = -1;
+        this.archerThornRainX = 0;
+        this.archerThornRainY = 0;
+
+        // Estados de Lancer: una embestida lineal de alcance amplio y un
+        // barrido total para abrir espacio alrededor del jugador.
+        this.lancerPhalanxTimer = 0;
+        this.lancerPhalanxHits = new Set();
+        this.lancerWhirlwindTimer = 0;
+        this.lancerWhirlwindResolved = false;
+
         this.isBlocking = false;
         this.blockStartFrame = 0;
         this.parryWindowFrames = 6;
@@ -183,6 +196,9 @@ export class Player {
             this.y += this.facing.y * 2.4; this.resolveCollisions(false, activeWalls);
             if (this.dualSteelFrenzyTimer === 0) this.isAttacking = false;
         }
+        if (this.archerThornRainTimer > 0) this.archerThornRainTimer--;
+        if (this.lancerPhalanxTimer > 0 && --this.lancerPhalanxTimer === 0) this.isAttacking = false;
+        if (this.lancerWhirlwindTimer > 0 && --this.lancerWhirlwindTimer === 0) this.isAttacking = false;
 
         if (this.channeling) {
             this.channelTimer++;
@@ -251,6 +267,39 @@ export class Player {
             this.dualSteelFrenzyTimer = 120;
             this.dualSteelFrenzyPulse = -1;
             this.isAttacking = true; this.attackTimer = 120;
+            return;
+        }
+        if (skill.id === 'archer_piercing_shot') {
+            this.pendingProjectile = {
+                x: this.x + this.w / 2, y: this.y + this.h / 2,
+                dirX: this.facing.x, dirY: this.facing.y,
+                dmg: Math.ceil(this.attackDamage * 1.5), weaponKey: 'arco',
+                piercing: true, knockback: 24, speed: 16, rangeBlocks: 6, size: 10, color: '#b6f25f'
+            };
+            return;
+        }
+        if (skill.id === 'archer_thorn_rain') {
+            this.archerThornRainTimer = 120;
+            this.archerThornRainPulse = -1;
+            this.archerThornRainX = this.x + this.w / 2 + this.facing.x * 150;
+            this.archerThornRainY = this.y + this.h / 2 + this.facing.y * 150;
+            return;
+        }
+        if (skill.id === 'lancer_phalanx_charge') {
+            // Avance largo que aprovecha el rango medio de la lanza. El
+            // hitbox cubre todo el trayecto y cada enemigo solo recibe un golpe.
+            this.lancerPhalanxTimer = 12;
+            this.lancerPhalanxHits = new Set();
+            this.isAttacking = true; this.attackTimer = 12;
+            this.x += this.facing.x * 110; this.y += this.facing.y * 110;
+            const activeWalls = getActiveWalls();
+            this.resolveCollisions(true, activeWalls); this.resolveCollisions(false, activeWalls);
+            return;
+        }
+        if (skill.id === 'lancer_impaling_whirlwind') {
+            this.lancerWhirlwindTimer = 20;
+            this.lancerWhirlwindResolved = false;
+            this.isAttacking = true; this.attackTimer = 20;
         }
     }
 
@@ -351,6 +400,22 @@ export class Player {
         };
     }
 
+    getLancerPhalanxHitbox() {
+        const length = 160, thickness = 50;
+        if (Math.abs(this.facing.x) >= Math.abs(this.facing.y)) {
+            return {
+                x: this.facing.x >= 0 ? this.x - 110 : this.x - 16,
+                y: this.y + this.h / 2 - thickness / 2,
+                w: length, h: thickness
+            };
+        }
+        return {
+            x: this.x + this.w / 2 - thickness / 2,
+            y: this.facing.y >= 0 ? this.y - 110 : this.y - 16,
+            w: thickness, h: length
+        };
+    }
+
     draw(ctx) {
         const weapon = this.currentWeapon;
         let color = weapon.color;
@@ -363,7 +428,8 @@ export class Player {
 
         if (this.isAttacking && !weapon.ranged) {
             const box = this.swordThrustTimer > 0 ? this.getSwordThrustHitbox()
-                : this.knightEarthsplitterTimer > 0 ? this.getKnightEarthsplitterHitbox() : this.getAttackHitbox();
+                : this.knightEarthsplitterTimer > 0 ? this.getKnightEarthsplitterHitbox()
+                : this.lancerPhalanxTimer > 0 ? this.getLancerPhalanxHitbox() : this.getAttackHitbox();
             ctx.fillStyle = 'rgba(255,255,255,0.35)';
             ctx.strokeStyle = weapon.color;
             ctx.lineWidth = 2;
@@ -385,6 +451,16 @@ export class Player {
             ctx.beginPath(); ctx.arc(this.x + this.w / 2, this.y + this.h / 2, 54, 0, Math.PI * 2);
             ctx.fillStyle = 'rgba(155,89,182,0.18)'; ctx.fill();
             ctx.strokeStyle = '#9b59b6'; ctx.lineWidth = 3; ctx.stroke();
+        }
+        if (this.archerThornRainTimer > 0) {
+            ctx.beginPath(); ctx.arc(this.archerThornRainX, this.archerThornRainY, 82, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(46,204,113,0.18)'; ctx.fill();
+            ctx.strokeStyle = '#b6f25f'; ctx.lineWidth = 2; ctx.stroke();
+        }
+        if (this.lancerWhirlwindTimer > 0) {
+            ctx.beginPath(); ctx.arc(this.x + this.w / 2, this.y + this.h / 2, 92, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(241,196,15,0.18)'; ctx.fill();
+            ctx.strokeStyle = '#f1c40f'; ctx.lineWidth = 3; ctx.stroke();
         }
         if (this.channeling) {
             const pct = this.channelTimer / this.channelDuration;
