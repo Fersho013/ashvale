@@ -97,6 +97,7 @@ export class Slime {
     takeHit(dmg) { this.flash = 10; this.hp -= dmg; this.mergeTimer = 0; }
     update(allSlimes, player) {
         if (this.flash > 0) this.flash--;
+        if (this.staggerTimer > 0) { this.staggerTimer--; return; }
         this.wanderAngle += (Math.random() - 0.5) * 0.2;
         this.x += Math.cos(this.wanderAngle) * this.speed;
         this.y += Math.sin(this.wanderAngle) * this.speed;
@@ -141,6 +142,7 @@ export class Wolf {
     takeHit(dmg) { this.flash = 10; this.hp -= dmg; }
     update(player, deerList) {
         if (this.flash > 0) this.flash--;
+        if (this.staggerTimer > 0) { this.staggerTimer--; return; }
         let target = null, best = 9999;
         for (const deer of deerList) {
             const d = dist(this, deer);
@@ -192,6 +194,7 @@ export class GoblinExplorer {
     takeHit(dmg) { this.flash = 10; this.hp -= dmg; }
     update(player) {
         if (this.flash > 0) this.flash--;
+        if (this.staggerTimer > 0) { this.staggerTimer--; return; }
         const fleeing = this.hp / this.maxHp < 0.2;
         const dx = (player.x + player.w/2) - (this.x + this.w/2);
         const dy = (player.y + player.h/2) - (this.y + this.h/2);
