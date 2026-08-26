@@ -151,6 +151,18 @@
     .equip-slot.selected { background: #14261a; border-color: #2ecc71; box-shadow: 0 0 0 2px rgba(46,204,113,0.5); }
     .close-modal { position: absolute; top: 8px; right: 10px; cursor: pointer; color: #e74c3c; font-weight: bold; pointer-events: all; }
 
+    /* ---------- ÁRBOL DE HABILIDADES ---------- */
+    #skill-tree-panel { width: min(500px, calc(100vw - 38px)); }
+    .skill-tree-intro { font-size: 11px; color: #bbb; line-height: 1.45; margin: 2px 0 14px; }
+    .skill-tree-buttons { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .skill-tree-buttons button {
+        min-height: 72px; padding: 10px; background: #17231c; border: 1px solid #2ecc71; color: #e7f8ed;
+        border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 13px; line-height: 1.35;
+    }
+    .skill-tree-buttons button:hover, .skill-tree-buttons button:active { background: #2ecc71; color: #102016; }
+    .skill-tree-buttons small { color: #a9dcb8; font-size: 9px; }
+    .skill-tree-buttons button:hover small, .skill-tree-buttons button:active small { color: inherit; }
+
     /* ---------- CRAFTING PANEL ---------- */
     #craft-slots { display: flex; gap: 10px; margin-bottom: 10px; }
     .craft-slot {
@@ -269,6 +281,7 @@
 
     @media (max-width: 640px) {
         .pause-content { flex-direction: column; align-items: center; }
+        .skill-tree-buttons { grid-template-columns: 1fr; }
     }
 
     /* Botones de pantallas y de pausa comparten estilo */
