@@ -6,6 +6,7 @@ import { doors } from '../world/map.js';
 import { harvestNodes } from '../world/worldObjects.js';
 import { game } from '../core/gameContext.js';
 import { state } from '../state.js';
+import { SkillBook } from './skills.js';
 
 export const SAVE_KEY = 'ashvale_save_v1';
 
@@ -18,7 +19,8 @@ export function saveGameState() {
             equipment: Inventory.equipment, gold: Inventory.gold
         },
         doors: doors.map(d => d.open),
-        harvestNodes: harvestNodes.map(node => ({ uses: node.uses, recoveryUntil: node.recoveryUntil }))
+        harvestNodes: harvestNodes.map(node => ({ uses: node.uses, recoveryUntil: node.recoveryUntil })),
+        skills: SkillBook.toSaveData()
     };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch (err) { console.warn('No se pudo guardar la partida:', err); }
 }
@@ -43,6 +45,7 @@ export function loadGameState() {
     // set de 3 cofres recién sembrado por defecto en vez de romper la carga.
     if (data.inventory.chests) Inventory.chests = data.inventory.chests;
     Inventory.equipment = data.inventory.equipment; Inventory.equipment.tool ??= null; Inventory.gold = data.inventory.gold;
+    SkillBook.loadSaveData(data.skills);
     doors.forEach((d, i) => { if (data.doors[i] !== undefined) d.open = data.doors[i]; });
     // Las partidas previas a los recursos renovables no tienen esta sección;
     // en ese caso los nodos conservan su estado inicial listo para usar.
