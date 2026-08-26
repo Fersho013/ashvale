@@ -71,6 +71,11 @@ const BRANCH_VIEWS = {
         title: 'Caballero — Rama de Mandobles',
         description: 'Golpes lentos y decisivos: rompe postura y controla el espacio con impacto pesado.',
         skills: ['knight_earthsplitter', 'knight_cataclysm']
+    },
+    'dual-swordsman': {
+        title: 'Espadachín Dual — Rama de Espadas Duales',
+        description: 'Presión constante, daño continuo y movilidad ofensiva con Espadas Duales.',
+        skills: ['dual_cross_slash', 'dual_steel_frenzy']
     }
 };
 
