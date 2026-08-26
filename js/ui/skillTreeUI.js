@@ -76,6 +76,16 @@ const BRANCH_VIEWS = {
         title: 'Espadachín Dual — Rama de Espadas Duales',
         description: 'Presión constante, daño continuo y movilidad ofensiva con Espadas Duales.',
         skills: ['dual_cross_slash', 'dual_steel_frenzy']
+    },
+    archer: {
+        title: 'Arquero — Rama de Arcos',
+        description: 'Controla la distancia con disparos perforantes y zonas de lluvia de flechas.',
+        skills: ['archer_piercing_shot', 'archer_thorn_rain']
+    },
+    lancer: {
+        title: 'Lancer — Rama de Lanzas',
+        description: 'Ataque seguro de rango medio y control de zonas: interrumpe, empuja y rompe posturas.',
+        skills: ['lancer_phalanx_charge', 'lancer_impaling_whirlwind']
     }
 };
 
