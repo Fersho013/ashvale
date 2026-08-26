@@ -12,7 +12,7 @@
    ===================================================================== */
 import { state } from '../state.js';
 
-export const CONTROL_IDS = ['left-joy-base', 'btn-atk', 'btn-blk', 'btn-q', 'btn-r', 'btn-inv', 'touch-pause-btn'];
+export const CONTROL_IDS = ['left-joy-base', 'btn-atk', 'btn-blk', 'btn-q', 'btn-r', 'btn-inv', 'btn-skills', 'touch-pause-btn'];
 
 export const CONTROL_TYPES = {
     'left-joy-base':   'joystick',
@@ -21,6 +21,7 @@ export const CONTROL_TYPES = {
     'btn-q':           'button',
     'btn-r':           'button',
     'btn-inv':         'button',
+    'btn-skills':      'button',
     'touch-pause-btn': 'button'
 };
 
@@ -41,7 +42,8 @@ const DEFAULT_LAYOUT = {
     'btn-blk':         { anchor: 'bottom-right', offsetX: 69,  offsetY: 69, size: 46 },
     'btn-q':           { anchor: 'bottom-right', offsetX: 123, offsetY: 69, size: 46 },
     'btn-r':           { anchor: 'bottom-right', offsetX: 15,  offsetY: 15, size: 46 },
-    'btn-inv':         { anchor: 'bottom-right', offsetX: 69,  offsetY: 15, size: 46 }
+    'btn-inv':         { anchor: 'bottom-right', offsetX: 69,  offsetY: 15, size: 46 },
+    'btn-skills':      { anchor: 'top-right',    offsetX: 15,  offsetY: 69, size: 46 }
 };
 
 const STORAGE_KEY = 'ashvale_controls_layout_v1';
