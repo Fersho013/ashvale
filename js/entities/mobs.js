@@ -42,6 +42,8 @@ export class ActiveMob {
     update(player) {
         if (this.flash > 0) this.flash--;
         if (this.staggerTimer > 0) { this.staggerTimer--; clampToZone3(this); return; }
+        if (this.slowTimer > 0) this.slowTimer--;
+        const speed = this.speed * (this.slowTimer > 0 ? (this.slowMultiplier || 0.5) : 1);
 
         const dx = (player.x + player.w/2) - (this.x + this.w/2);
         const dy = (player.y + player.h/2) - (this.y + this.h/2);
@@ -49,8 +51,8 @@ export class ActiveMob {
         if (d > 2) {
             const nx = dx/d, ny = dy/d;
             const activeWalls = getActiveWalls();
-            this.x += nx * this.speed; this.resolveCollisions(true, activeWalls);
-            this.y += ny * this.speed; this.resolveCollisions(false, activeWalls);
+            this.x += nx * speed; this.resolveCollisions(true, activeWalls);
+            this.y += ny * speed; this.resolveCollisions(false, activeWalls);
         }
         clampToZone3(this);
 
@@ -98,9 +100,11 @@ export class Slime {
     update(allSlimes, player) {
         if (this.flash > 0) this.flash--;
         if (this.staggerTimer > 0) { this.staggerTimer--; return; }
+        if (this.slowTimer > 0) this.slowTimer--;
+        const speed = this.speed * (this.slowTimer > 0 ? (this.slowMultiplier || 0.5) : 1);
         this.wanderAngle += (Math.random() - 0.5) * 0.2;
-        this.x += Math.cos(this.wanderAngle) * this.speed;
-        this.y += Math.sin(this.wanderAngle) * this.speed;
+        this.x += Math.cos(this.wanderAngle) * speed;
+        this.y += Math.sin(this.wanderAngle) * speed;
         this.x = Math.max(30, Math.min(MAP_W - 60, this.x));
         this.y = Math.max(310, Math.min(MAP_H - 60, this.y));
 
@@ -143,6 +147,8 @@ export class Wolf {
     update(player, deerList) {
         if (this.flash > 0) this.flash--;
         if (this.staggerTimer > 0) { this.staggerTimer--; return; }
+        if (this.slowTimer > 0) this.slowTimer--;
+        const speed = this.speed * (this.slowTimer > 0 ? (this.slowMultiplier || 0.5) : 1);
         let target = null, best = 9999;
         for (const deer of deerList) {
             const d = dist(this, deer);
@@ -153,7 +159,7 @@ export class Wolf {
         const dx = (target.x + target.w/2) - (this.x + this.w/2);
         const dy = (target.y + target.h/2) - (this.y + this.h/2);
         const d = Math.hypot(dx, dy);
-        if (d > 4) { this.x += (dx/d) * this.speed; this.y += (dy/d) * this.speed; }
+        if (d > 4) { this.x += (dx/d) * speed; this.y += (dy/d) * speed; }
 
         this.x = Math.max(30, Math.min(770, this.x));
         this.y = Math.max(310, Math.min(880, this.y));
@@ -170,6 +176,8 @@ export class Wolf {
 export class Deer {
     constructor(x, y) { this.x = x; this.y = y; this.w = 28; this.h = 28; this.speed = 1.6; this.hp = 15; this.maxHp = 15; }
     update(player, wolves) {
+        if (this.slowTimer > 0) this.slowTimer--;
+        const speed = this.speed * (this.slowTimer > 0 ? (this.slowMultiplier || 0.5) : 1);
         let fleeFrom = null, best = 9999;
         for (const w of wolves) { const d = dist(this, w); if (d < 120 && d < best) { best = d; fleeFrom = w; } }
         if (!fleeFrom && dist(this, player) < 90) fleeFrom = player;
@@ -178,7 +186,7 @@ export class Deer {
             const dx = (this.x + this.w/2) - (fleeFrom.x + fleeFrom.w/2);
             const dy = (this.y + this.h/2) - (fleeFrom.y + fleeFrom.h/2);
             const d = Math.hypot(dx, dy) || 1;
-            this.x += (dx/d) * this.speed; this.y += (dy/d) * this.speed;
+            this.x += (dx/d) * speed; this.y += (dy/d) * speed;
         }
         this.x = Math.max(30, Math.min(770, this.x));
         this.y = Math.max(310, Math.min(880, this.y));
@@ -195,15 +203,17 @@ export class GoblinExplorer {
     update(player) {
         if (this.flash > 0) this.flash--;
         if (this.staggerTimer > 0) { this.staggerTimer--; return; }
+        if (this.slowTimer > 0) this.slowTimer--;
+        const speed = this.speed * (this.slowTimer > 0 ? (this.slowMultiplier || 0.5) : 1);
         const fleeing = this.hp / this.maxHp < 0.2;
         const dx = (player.x + player.w/2) - (this.x + this.w/2);
         const dy = (player.y + player.h/2) - (this.y + this.h/2);
         const d = Math.hypot(dx, dy) || 1;
 
         if (fleeing) {
-            this.x -= (dx/d) * this.speed; this.y -= (dy/d) * this.speed;
+            this.x -= (dx/d) * speed; this.y -= (dy/d) * speed;
         } else if (d < 200) {
-            this.x += (dx/d) * this.speed; this.y += (dy/d) * this.speed;
+            this.x += (dx/d) * speed; this.y += (dy/d) * speed;
             if (checkRectCollision(this, player) && this.attackCooldown === 0) {
                 player.takeDamage(5, this); this.attackCooldown = 50;
             }
