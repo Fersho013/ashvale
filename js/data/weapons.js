@@ -54,9 +54,9 @@ export const WEAPONS = {
     },
     baculo: {
         id: 'baculo', name: 'Báculo', color: '#e74c3c', asset: 'weapon_especial', // TODO: sprite propio cuando exista arte dedicado al báculo
-        dmg: 10, attackCooldown: 60, ranged: true, family: 'staff',
+        dmg: 10, attackCooldown: 60, ranged: true, family: 'staff', skillBranch: 'arcane',
         projectile: { rangeBlocks: 3, speed: 9, size: 12, color: '#e74c3c' },
-        ability1: 'Golpe Terrenal', ability2: 'Proyección Mística'
+        ability1: 'Proyectil de Éter', ability2: 'Vórtice del Vacío'
     },
     arco: {
         id: 'arco', name: 'Arco', color: '#2ecc71', asset: 'weapon_arco',
