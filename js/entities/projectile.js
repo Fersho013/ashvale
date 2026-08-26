@@ -8,7 +8,7 @@
 import { BLOCK_SIZE } from '../world/map.js';
 
 export class Projectile {
-    constructor({ x, y, dirX, dirY, dmg, speed, size, color, rangeBlocks }) {
+    constructor({ x, y, dirX, dirY, dmg, speed, size, color, rangeBlocks, piercing = false, knockback = 0 }) {
         this.w = size; this.h = size;
         // x,y de entrada son el punto de origen (centro del jugador); se
         // convierten a la esquina superior izquierda del hitbox del proyectil.
@@ -18,13 +18,16 @@ export class Projectile {
         this.maxDistance = rangeBlocks * BLOCK_SIZE;
         this.traveled = 0;
         this.hasHit = false; // true en cuanto golpea a su primer (y único) objetivo
+        this.piercing = piercing;
+        this.knockback = knockback;
+        this.hitTargets = new Set();
     }
     update() {
         const stepX = this.dirX * this.speed, stepY = this.dirY * this.speed;
         this.x += stepX; this.y += stepY;
         this.traveled += Math.hypot(stepX, stepY);
     }
-    get expired() { return this.hasHit || this.traveled >= this.maxDistance; }
+    get expired() { return (!this.piercing && this.hasHit) || this.traveled >= this.maxDistance; }
     draw(ctx) {
         ctx.fillStyle = this.color;
         ctx.beginPath();
