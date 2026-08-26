@@ -7,7 +7,7 @@
 export const weaponRacks = [
     { x: 410, y: 40, w: 34, h: 34, weapon: 'espada',   name: 'Estante de Espadas' },
     { x: 456, y: 40, w: 34, h: 34, weapon: 'mandoble', name: 'Estante de Mandobles' },
-    { x: 502, y: 40, w: 34, h: 34, weapon: 'dagas',    name: 'Estante de Dagas' },
+    { x: 502, y: 40, w: 34, h: 34, weapon: 'dagas',    name: 'Estante de Espadas Duales' },
     { x: 548, y: 40, w: 34, h: 34, weapon: 'arco',     name: 'Estante de Arcos' },
     { x: 594, y: 40, w: 34, h: 34, weapon: 'lanza',    name: 'Estante de Lanzas' },
     { x: 640, y: 40, w: 34, h: 34, weapon: 'baculo',   name: 'Estante de Báculos' }
