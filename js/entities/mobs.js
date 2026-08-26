@@ -3,7 +3,7 @@
    ===================================================================== */
 import { checkRectCollision, dist } from '../core/physics.js';
 import { drawEntity } from '../core/assets.js';
-import { getActiveWalls, MAP_W, MAP_H, clampToZone3 } from '../world/map.js';
+import { getActiveWalls, clampToZone3, clampToZone4 } from '../world/map.js';
 import { MOBS } from '../data/mobs.js';
 import { grantMobLoot } from '../systems/inventory.js';
 
@@ -63,7 +63,7 @@ export class ActiveMob {
             this.attackCooldown = 45;
         }
         if (this.attackCooldown > 0) this.attackCooldown--;
-        if (this.hp <= 0) { this.x = 900 + Math.random()*100; this.y = 80 + Math.random()*150; this.hp = this.maxHp; }
+        if (this.hp <= 0) { this.x = 1800 + Math.random()*200; this.y = 160 + Math.random()*300; this.hp = this.maxHp; }
     }
     resolveCollisions(isXAxis, activeWalls) {
         for (const wall of activeWalls) {
@@ -105,8 +105,7 @@ export class Slime {
         this.wanderAngle += (Math.random() - 0.5) * 0.2;
         this.x += Math.cos(this.wanderAngle) * speed;
         this.y += Math.sin(this.wanderAngle) * speed;
-        this.x = Math.max(30, Math.min(MAP_W - 60, this.x));
-        this.y = Math.max(310, Math.min(MAP_H - 60, this.y));
+        clampToZone4(this);
 
         if (!this.big) {
             for (const other of allSlimes) {
@@ -161,13 +160,12 @@ export class Wolf {
         const d = Math.hypot(dx, dy);
         if (d > 4) { this.x += (dx/d) * speed; this.y += (dy/d) * speed; }
 
-        this.x = Math.max(30, Math.min(770, this.x));
-        this.y = Math.max(310, Math.min(880, this.y));
+        clampToZone4(this);
 
         if (target === player && checkRectCollision(this, player)) player.takeDamage(6, this);
         if (this.hp <= 0) {
             grantMobLoot('lobo');
-            this.hp = this.maxHp; this.x = 60 + Math.random()*200; this.y = 340 + Math.random()*200;
+            this.hp = this.maxHp; this.x = 120 + Math.random()*400; this.y = 680 + Math.random()*400;
         }
     }
     draw(ctx) { drawEntity(ctx, 'wolf', this.x, this.y, this.w, this.h, this.flash > 0 ? '#fff' : '#7f8c8d', 'rect', 'L'); }
@@ -188,8 +186,7 @@ export class Deer {
             const d = Math.hypot(dx, dy) || 1;
             this.x += (dx/d) * speed; this.y += (dy/d) * speed;
         }
-        this.x = Math.max(30, Math.min(770, this.x));
-        this.y = Math.max(310, Math.min(880, this.y));
+        clampToZone4(this);
     }
     draw(ctx) { drawEntity(ctx, 'deer', this.x, this.y, this.w, this.h, '#d2b48c', 'rect', 'C'); }
 }
@@ -219,11 +216,10 @@ export class GoblinExplorer {
             }
         }
         if (this.attackCooldown > 0) this.attackCooldown--;
-        this.x = Math.max(30, Math.min(770, this.x));
-        this.y = Math.max(310, Math.min(880, this.y));
+        clampToZone4(this);
         if (this.hp <= 0) {
             grantMobLoot('goblin');
-            this.hp = this.maxHp; this.x = 60 + Math.random()*200; this.y = 340 + Math.random()*200;
+            this.hp = this.maxHp; this.x = 120 + Math.random()*400; this.y = 680 + Math.random()*400;
         }
     }
     draw(ctx) {
