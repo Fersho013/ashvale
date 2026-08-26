@@ -20,5 +20,9 @@ document.querySelectorAll('#skill-tree-panel [data-skill-branch]').forEach(butto
     button.addEventListener('click', () => {
         document.querySelectorAll('#skill-tree-panel [data-skill-branch]').forEach(item => item.classList.remove('selected'));
         button.classList.add('selected');
+        const intro = document.querySelector('#skill-tree-panel .skill-tree-intro');
+        intro.innerText = button.dataset.skillBranch === 'swordsman'
+            ? 'Espadachín activo: [Q] Estocada Veloz (1 barra) y [R] Filo Tormentoso (3 barras). Equipa una espada para usarlas.'
+            : 'Esta rama estará disponible próximamente.';
     });
 });
