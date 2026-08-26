@@ -30,16 +30,17 @@ const ctx = canvas.getContext('2d');
 // completa, etc.).
 ctx.imageSmoothingEnabled = false;
 
-const player = new Player(150, 150);
+const TUTORIAL_SCALE = 2;
+const player = new Player(150 * TUTORIAL_SCALE, 150 * TUTORIAL_SCALE);
 const camera = new Camera(canvas.width, canvas.height);
 
 const world = {
-    dummies: [ new DummyMob(505, 115) ],
-    activeMobs: [ new ActiveMob(1050, 200) ],
-    slimes: [ new Slime(150, 380), new Slime(190, 400) ],
-    wolves: [ new Wolf(400, 500) ],
-    deers: [ new Deer(500, 600) ],
-    goblins: [ new GoblinExplorer(650, 450) ],
+    dummies: [ new DummyMob(505 * TUTORIAL_SCALE, 115 * TUTORIAL_SCALE) ],
+    activeMobs: [ new ActiveMob(1050 * TUTORIAL_SCALE, 200 * TUTORIAL_SCALE) ],
+    slimes: [ new Slime(150 * TUTORIAL_SCALE, 380 * TUTORIAL_SCALE), new Slime(190 * TUTORIAL_SCALE, 400 * TUTORIAL_SCALE) ],
+    wolves: [ new Wolf(400 * TUTORIAL_SCALE, 500 * TUTORIAL_SCALE) ],
+    deers: [ new Deer(500 * TUTORIAL_SCALE, 600 * TUTORIAL_SCALE) ],
+    goblins: [ new GoblinExplorer(650 * TUTORIAL_SCALE, 450 * TUTORIAL_SCALE) ],
     projectiles: [] // proyectiles activos de Báculo/Arco (ver systems/worldInteraction.js)
 };
 
