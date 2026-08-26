@@ -21,10 +21,12 @@ export const WEAPONS = {
     espada: {
         id: 'espada', name: 'Espada', color: '#3498db', asset: 'weapon_espada',
         dmg: 10, attackCooldown: 60, meleeReach: 38, meleeSize: 34,
-        ability1: 'Estocada Veloz', ability2: 'Filo Tormentoso'
+        skillBranch: 'swordsman', ability1: 'Estocada Veloz', ability2: 'Filo Tormentoso'
     },
     dagas: {
-        id: 'dagas', name: 'Dagas Duales', color: '#9b59b6', asset: 'weapon_dagas',
+        // Se conserva la clave interna "dagas" para no invalidar partidas
+        // guardadas; el arma y su rama ahora se llaman Espadas Duales.
+        id: 'dagas', name: 'Espadas Duales', color: '#9b59b6', asset: 'weapon_dagas',
         dmg: 5, attackCooldown: 30, meleeReach: 38, meleeSize: 34, // 0.5s: el doble de rápida que la Espada
         ability1: 'Paso Sombrío', ability2: 'Torbellino'
     },
@@ -57,14 +59,14 @@ export const WEAPONS = {
     goblin_espada_corta: {
         id: 'goblin_espada_corta', name: 'Espada Corta de Goblin', color: '#7f8c8d', asset: 'weapon_espada', // TODO: sprite propio
         dmg: 15, attackCooldown: 60, meleeReach: 38, meleeSize: 34,
-        ability1: 'Estocada Veloz', ability2: 'Guardia'
+        skillBranch: 'swordsman', ability1: 'Estocada Veloz', ability2: 'Filo Tormentoso'
     },
     // Craftable en la Mesa Constructora: Madera + Metal Oxidado (ver
     // data/recipes.js -> BUILD_RECIPES). No se consigue en las armerías.
     espada_oxidada: {
         id: 'espada_oxidada', name: 'Espada Oxidada', color: '#a07b52', asset: 'weapon_espada', // TODO: sprite propio
         dmg: 20, attackCooldown: 60, meleeReach: 38, meleeSize: 34,
-        ability1: 'Estocada Veloz', ability2: 'Filo Tormentoso'
+        skillBranch: 'swordsman', ability1: 'Estocada Veloz', ability2: 'Filo Tormentoso'
     }
 };
 
