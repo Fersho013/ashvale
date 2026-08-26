@@ -8,6 +8,8 @@ import { getActiveWalls } from '../world/map.js';
 import { WEAPONS, PLAYER_SPRITE_KEYS } from '../data/weapons.js';
 import { Inventory } from '../systems/inventory.js';
 import { DEBUG } from '../systems/debug.js';
+import { SkillBook } from '../systems/skills.js';
+import { showDialog } from '../ui/dialog.js';
 
 export class Player {
     constructor(x, y) {
@@ -141,10 +143,10 @@ export class Player {
             if (this.attackTimer <= 0) this.isAttacking = false;
         }
 
-        // Habilidad 1: [Q] / Mando R1-RB / Botón de estrella táctil
-        if ((Input.wasPressed('KeyQ') || Input.touch.q || Input.gamepad.justPressed.ability1) && this.bars >= 1) { this.bars -= 1; this.useAbility1(); Input.touch.q = false; }
-        // Habilidad 2: [R] / Mando L1-LB / Botón de luna táctil
-        if ((Input.wasPressed('KeyR') || Input.touch.r || Input.gamepad.justPressed.ability2) && this.bars >= 3) { this.bars -= 3; this.useAbility2(); Input.touch.r = false; }
+        // Cada entrada usa exactamente la habilidad que el jugador haya
+        // configurado en el Árbol de Habilidades para ese botón.
+        if (Input.wasPressed('KeyQ') || Input.touch.q || Input.gamepad.justPressed.ability1) { this.useAssignedSkill('q'); Input.touch.q = false; }
+        if (Input.wasPressed('KeyR') || Input.touch.r || Input.gamepad.justPressed.ability2) { this.useAssignedSkill('r'); Input.touch.r = false; }
 
         this.regenAccum += 0.2 / 60;
         if (this.regenAccum >= 1 && this.bars < this.barCapacity) { this.bars = Math.min(this.barCapacity, this.bars + 1); this.regenAccum = 0; }
@@ -162,8 +164,17 @@ export class Player {
         }
     }
 
-    useAbility1() {
-        if (this.currentWeapon.skillBranch === 'swordsman') {
+    useAssignedSkill(slot) {
+        const skill = SkillBook.get(SkillBook.assigned[slot]);
+        if (!skill || !SkillBook.isLearned(skill.id)) return;
+        if (this.currentWeapon.skillBranch !== skill.branch) {
+            showDialog('Habilidades', 'Equipa una espada para realizar la habilidad de espada');
+            return;
+        }
+        if (this.bars < skill.cost) return;
+
+        this.bars -= skill.cost;
+        if (skill.id === 'sword_thrust') {
             // 3 m equivalen a 90 px en este prototipo. El hitbox recorre el
             // trayecto completo y puede alcanzar a más de un enemigo.
             this.swordThrustTimer = 8;
@@ -174,13 +185,7 @@ export class Player {
             this.resolveCollisions(true, activeWalls); this.resolveCollisions(false, activeWalls);
             return;
         }
-        this.attackTimer = this.attackDuration; this.isAttacking = true;
-        this.x += this.facing.x * 30; this.y += this.facing.y * 30;
-        const activeWalls = getActiveWalls();
-        this.resolveCollisions(true, activeWalls); this.resolveCollisions(false, activeWalls);
-    }
-    useAbility2() {
-        if (this.currentWeapon.skillBranch === 'swordsman') {
+        if (skill.id === 'sword_storm') {
             // Cuatro tajos durante 0.8 s. Cada impacto reinicia y acumula
             // sangrado por cuatro segundos (resuelto en worldInteraction).
             this.swordStormTimer = 48;
@@ -188,11 +193,6 @@ export class Player {
             this.swordStormHits = new Map();
             this.isAttacking = true; this.attackTimer = 48;
             return;
-        }
-        if (Inventory.equipment.weapon === 'mandoble') {
-            this.mitigationBuff = 3 * 60; this.mitigationPct = 0.5;
-        } else {
-            this.attackTimer = this.attackDuration; this.isAttacking = true;
         }
     }
 
