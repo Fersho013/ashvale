@@ -33,6 +33,14 @@ export class Player {
         // Player no depende de game/world (ver core/gameContext.js).
         this.pendingProjectile = null;
 
+        // Estados temporales de la rama Espadachín. El daño se resuelve en
+        // worldInteraction.js, que conoce todos los enemigos del mundo.
+        this.swordThrustTimer = 0;
+        this.swordThrustHits = new Set();
+        this.swordStormTimer = 0;
+        this.swordStormLastSlash = -1;
+        this.swordStormHits = new Map();
+
         this.isBlocking = false;
         this.blockStartFrame = 0;
         this.parryWindowFrames = 6;
@@ -145,6 +153,8 @@ export class Player {
         if (this.mitigationBuff > 0) this.mitigationBuff--; else this.mitigationPct = 0;
         if (this.flashTimer > 0) this.flashTimer--;
         if (this.channelCooldown > 0) this.channelCooldown--;
+        if (this.swordThrustTimer > 0 && --this.swordThrustTimer === 0) this.isAttacking = false;
+        if (this.swordStormTimer > 0 && --this.swordStormTimer === 0) this.isAttacking = false;
 
         if (this.channeling) {
             this.channelTimer++;
@@ -153,12 +163,32 @@ export class Player {
     }
 
     useAbility1() {
+        if (this.currentWeapon.skillBranch === 'swordsman') {
+            // 3 m equivalen a 90 px en este prototipo. El hitbox recorre el
+            // trayecto completo y puede alcanzar a más de un enemigo.
+            this.swordThrustTimer = 8;
+            this.swordThrustHits = new Set();
+            this.isAttacking = true; this.attackTimer = 8;
+            this.x += this.facing.x * 90; this.y += this.facing.y * 90;
+            const activeWalls = getActiveWalls();
+            this.resolveCollisions(true, activeWalls); this.resolveCollisions(false, activeWalls);
+            return;
+        }
         this.attackTimer = this.attackDuration; this.isAttacking = true;
         this.x += this.facing.x * 30; this.y += this.facing.y * 30;
         const activeWalls = getActiveWalls();
         this.resolveCollisions(true, activeWalls); this.resolveCollisions(false, activeWalls);
     }
     useAbility2() {
+        if (this.currentWeapon.skillBranch === 'swordsman') {
+            // Cuatro tajos durante 0.8 s. Cada impacto reinicia y acumula
+            // sangrado por cuatro segundos (resuelto en worldInteraction).
+            this.swordStormTimer = 48;
+            this.swordStormLastSlash = -1;
+            this.swordStormHits = new Map();
+            this.isAttacking = true; this.attackTimer = 48;
+            return;
+        }
         if (Inventory.equipment.weapon === 'mandoble') {
             this.mitigationBuff = 3 * 60; this.mitigationPct = 0.5;
         } else {
@@ -237,6 +267,23 @@ export class Player {
         };
     }
 
+    getSwordThrustHitbox() {
+        // Cubre el trayecto del desplazamiento, no solo la posición final.
+        const length = 120, thickness = 46;
+        if (Math.abs(this.facing.x) >= Math.abs(this.facing.y)) {
+            return {
+                x: this.facing.x >= 0 ? this.x - 90 : this.x - 30,
+                y: this.y + this.h / 2 - thickness / 2,
+                w: length, h: thickness
+            };
+        }
+        return {
+            x: this.x + this.w / 2 - thickness / 2,
+            y: this.facing.y >= 0 ? this.y - 90 : this.y - 30,
+            w: thickness, h: length
+        };
+    }
+
     draw(ctx) {
         const weapon = this.currentWeapon;
         let color = weapon.color;
@@ -248,7 +295,7 @@ export class Player {
         drawEntity(ctx, spriteKey, this.x, this.y, this.w, this.h, color, 'rect', null, CHARACTER_SPRITE_SIZE);
 
         if (this.isAttacking && !weapon.ranged) {
-            const box = this.getAttackHitbox();
+            const box = this.swordThrustTimer > 0 ? this.getSwordThrustHitbox() : this.getAttackHitbox();
             ctx.fillStyle = 'rgba(255,255,255,0.35)';
             ctx.strokeStyle = weapon.color;
             ctx.lineWidth = 2;
