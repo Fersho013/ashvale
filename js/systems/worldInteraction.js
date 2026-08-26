@@ -79,6 +79,75 @@ function checkProjectileHit(p) {
     return false;
 }
 
+function getEnemyGroups(world) {
+    return [world.dummies, world.activeMobs, world.slimes, world.wolves, world.goblins];
+}
+
+function damageEnemy(mob, damage) {
+    // ActiveMob usa el segundo parámetro para el parry; para las habilidades
+    // de Espadachín no se activa ese efecto adicional.
+    if (mob.takeHit) mob.takeHit(damage, false);
+}
+
+function applyBleed(mob, damage) {
+    mob.bleedStacks = Math.min(4, (mob.bleedStacks || 0) + 1);
+    mob.bleedTimer = 4 * 60;
+    mob.bleedTick = 30;
+    mob.bleedDamage = damage;
+}
+
+function updateBleeds(world) {
+    for (const group of getEnemyGroups(world)) {
+        for (const mob of group) {
+            if (!mob.bleedTimer || mob.bleedTimer <= 0) continue;
+            mob.bleedTimer--;
+            if (--mob.bleedTick <= 0) {
+                damageEnemy(mob, mob.bleedDamage * mob.bleedStacks);
+                mob.bleedTick = 30;
+            }
+            if (mob.bleedTimer <= 0) mob.bleedStacks = 0;
+        }
+    }
+}
+
+function isInSwordStormRange(player, mob) {
+    const px = player.x + player.w / 2, py = player.y + player.h / 2;
+    const mx = mob.x + mob.w / 2, my = mob.y + mob.h / 2;
+    const dx = mx - px, dy = my - py;
+    const distance = Math.hypot(dx, dy);
+    return distance <= 105 && distance > 0 && ((dx / distance) * player.facing.x + (dy / distance) * player.facing.y) >= 0.15;
+}
+
+function resolveSwordsmanSkills(player, world) {
+    if (player.swordThrustTimer > 0) {
+        const box = player.getSwordThrustHitbox();
+        for (const group of getEnemyGroups(world)) {
+            for (const mob of group) {
+                if (!player.swordThrustHits.has(mob) && checkRectCollision(box, mob)) {
+                    player.swordThrustHits.add(mob);
+                    // Daño directo: no depende de ningún modificador de defensa.
+                    damageEnemy(mob, Math.ceil(player.attackDamage * 1.5));
+                }
+            }
+        }
+    }
+
+    if (player.swordStormTimer > 0) {
+        const slash = Math.floor((48 - player.swordStormTimer) / 12);
+        if (slash !== player.swordStormLastSlash) {
+            player.swordStormLastSlash = slash;
+            for (const group of getEnemyGroups(world)) {
+                for (const mob of group) {
+                    if (!isInSwordStormRange(player, mob) || player.swordStormHits.get(mob) === slash) continue;
+                    player.swordStormHits.set(mob, slash);
+                    damageEnemy(mob, Math.ceil(player.attackDamage * 0.75));
+                    applyBleed(mob, Math.max(1, Math.ceil(player.attackDamage * 0.12)));
+                }
+            }
+        }
+    }
+}
+
 export function update() {
     const player = game.player;
     const world = game.world;
@@ -99,6 +168,7 @@ export function update() {
     world.wolves.forEach(w => w.update(player, world.deers));
     world.deers.forEach(d => d.update(player, world.wolves));
     world.goblins.forEach(g => g.update(player));
+    updateBleeds(world);
 
     // Báculo/Arco: Player.update() dejó los datos de disparo en
     // pendingProjectile (ver entities/player.js); aquí se crea el
@@ -121,7 +191,9 @@ export function update() {
     });
     world.projectiles = world.projectiles.filter(p => !p.expired);
 
-    if (player.isAttacking && !player.currentWeapon.ranged) {
+    resolveSwordsmanSkills(player, world);
+
+    if (player.isAttacking && !player.currentWeapon.ranged && player.swordThrustTimer === 0 && player.swordStormTimer === 0) {
         const box = player.getAttackHitbox();
         const dmg = player.attackDamage;
         world.dummies.forEach(d => { if (checkRectCollision(box, d) && d.flash === 0) { d.takeHit(dmg); player.bars = Math.min(player.barCapacity, player.bars + 0.5); } });
