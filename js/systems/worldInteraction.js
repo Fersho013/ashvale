@@ -56,9 +56,8 @@ function startHarvest(node) {
     setHarvestBar(true, `${node.action}...`, 0);
 }
 
-// Un proyectil solo puede golpear al PRIMER enemigo con el que colisiona
-// (Báculo/Arco, ver data/weapons.js). Recorre los grupos de mobs en orden
-// y se detiene en el primer impacto.
+// Los disparos básicos golpean al primer enemigo. Disparo Perforante marca
+// el proyectil como piercing para atravesar objetivos sin golpearlos dos veces.
 function checkProjectileHit(p) {
     const world = game.world;
     const groups = [
@@ -70,13 +69,24 @@ function checkProjectileHit(p) {
     ];
     for (const { list, parry } of groups) {
         for (const m of list) {
+            if (p.hitTargets.has(m)) continue;
             if (checkRectCollision(p, m)) {
                 if (parry) m.takeHit(p.dmg, false); else m.takeHit(p.dmg);
-                return true;
+                p.hitTargets.add(m);
+                if (p.knockback > 0) {
+                    const dx = (m.x + m.w / 2) - (p.x + p.w / 2);
+                    const dy = (m.y + m.h / 2) - (p.y + p.h / 2);
+                    const length = Math.hypot(dx, dy) || 1;
+                    m.x += (dx / length) * p.knockback;
+                    m.y += (dy / length) * p.knockback;
+                }
+                if (!p.piercing) return true;
             }
         }
     }
-    return false;
+    // Un perforante permanece activo después de impactar; el resto termina
+    // en el primer blanco, como los proyectiles básicos.
+    return p.hitTargets.size > 0 && !p.piercing;
 }
 
 function getEnemyGroups(world) {
@@ -95,6 +105,46 @@ function breakPosture(mob, duration = 90) {
     if (mob.isBoss) return;
     mob.staggerTimer = Math.max(mob.staggerTimer || 0, duration);
     mob.attackCooldown = Math.max(mob.attackCooldown || 0, duration);
+}
+
+function pushEnemyFrom(mob, originX, originY, distance) {
+    const mx = mob.x + mob.w / 2, my = mob.y + mob.h / 2;
+    const dx = mx - originX, dy = my - originY;
+    const length = Math.hypot(dx, dy) || 1;
+    mob.x += (dx / length) * distance;
+    mob.y += (dy / length) * distance;
+}
+
+function applyLancerSkills(player, world) {
+    if (player.lancerPhalanxTimer > 0) {
+        const box = player.getLancerPhalanxHitbox();
+        for (const group of getEnemyGroups(world)) {
+            for (const mob of group) {
+                if (player.lancerPhalanxHits.has(mob) || !checkRectCollision(box, mob)) continue;
+                player.lancerPhalanxHits.add(mob);
+                damageEnemy(mob, Math.ceil(player.attackDamage * 1.35));
+                // Interrumpe ataques/casteos de enemigos menores sin hacer
+                // que el control sea permanente: 1 s de postura rota.
+                breakPosture(mob, 60);
+            }
+        }
+    }
+
+    if (player.lancerWhirlwindTimer > 0 && !player.lancerWhirlwindResolved
+        && player.lancerWhirlwindTimer <= 12) {
+        player.lancerWhirlwindResolved = true;
+        const px = player.x + player.w / 2, py = player.y + player.h / 2;
+        for (const group of getEnemyGroups(world)) {
+            for (const mob of group) {
+                const mx = mob.x + mob.w / 2, my = mob.y + mob.h / 2;
+                if (Math.hypot(mx - px, my - py) > 90) continue;
+                damageEnemy(mob, Math.ceil(player.attackDamage * 1.5));
+                pushEnemyFrom(mob, px, py, 95);
+                // Ruptura instantánea de postura: 1.5 s para recuperar espacio.
+                breakPosture(mob, 90);
+            }
+        }
+    }
 }
 
 function applyKnightSkills(player, world) {
@@ -154,6 +204,24 @@ function applyDualSwordsmanSkills(player, world) {
                 // El radio coincide exactamente con el círculo visual del
                 // frenesí: todos los enemigos dentro reciben cada pulso.
                 if (Math.hypot(mx - px, my - py) <= 54) damageEnemy(mob, Math.ceil(player.attackDamage * 2.85));
+            }
+        }
+    }
+}
+
+function applyArcherSkills(player, world) {
+    if (player.archerThornRainTimer <= 0) return;
+    const pulse = Math.floor((120 - player.archerThornRainTimer) / 15);
+    if (pulse === player.archerThornRainPulse) return;
+    player.archerThornRainPulse = pulse;
+    for (const group of getEnemyGroups(world)) {
+        for (const mob of group) {
+            const mx = mob.x + mob.w / 2, my = mob.y + mob.h / 2;
+            if (Math.hypot(mx - player.archerThornRainX, my - player.archerThornRainY) > 82) continue;
+            damageEnemy(mob, Math.ceil(player.attackDamage * 0.8));
+            if (!mob.isBoss) {
+                mob.slowTimer = Math.max(mob.slowTimer || 0, 30);
+                mob.slowMultiplier = 0.5;
             }
         }
     }
@@ -248,7 +316,8 @@ export function update() {
         const cfg = WEAPONS[pp.weaponKey].projectile;
         world.projectiles.push(new Projectile({
             x: pp.x, y: pp.y, dirX: pp.dirX, dirY: pp.dirY, dmg: pp.dmg,
-            speed: cfg.speed, size: cfg.size, color: cfg.color, rangeBlocks: cfg.rangeBlocks
+            speed: pp.speed ?? cfg.speed, size: pp.size ?? cfg.size, color: pp.color ?? cfg.color,
+            rangeBlocks: pp.rangeBlocks ?? cfg.rangeBlocks, piercing: pp.piercing, knockback: pp.knockback
         }));
         player.pendingProjectile = null;
     }
@@ -264,10 +333,13 @@ export function update() {
     resolveSwordsmanSkills(player, world);
     applyKnightSkills(player, world);
     applyDualSwordsmanSkills(player, world);
+    applyArcherSkills(player, world);
+    applyLancerSkills(player, world);
 
     if (player.isAttacking && !player.currentWeapon.ranged && player.swordThrustTimer === 0
         && player.swordStormTimer === 0 && player.knightEarthsplitterTimer === 0
-        && player.knightCataclysmTimer === 0 && player.dualSteelFrenzyTimer === 0) {
+        && player.knightCataclysmTimer === 0 && player.dualSteelFrenzyTimer === 0
+        && player.lancerPhalanxTimer === 0 && player.lancerWhirlwindTimer === 0) {
         const box = player.getAttackHitbox();
         const dmg = player.attackDamage;
         world.dummies.forEach(d => { if (checkRectCollision(box, d) && d.flash === 0) { d.takeHit(dmg); player.bars = Math.min(player.barCapacity, player.bars + 0.5); } });
