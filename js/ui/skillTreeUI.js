@@ -86,6 +86,11 @@ const BRANCH_VIEWS = {
         title: 'Lancer — Rama de Lanzas',
         description: 'Ataque seguro de rango medio y control de zonas: interrumpe, empuja y rompe posturas.',
         skills: ['lancer_phalanx_charge', 'lancer_impaling_whirlwind']
+    },
+    arcane: {
+        title: 'Arcano — Rama de Báculos',
+        description: 'Magia explosiva y control de masas: proyectiles de éter y fuerzas gravitacionales.',
+        skills: ['arcane_aether_projectile', 'arcane_void_vortex']
     }
 };
 
