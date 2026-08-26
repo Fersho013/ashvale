@@ -16,12 +16,12 @@
 // "Espada" y "Espada Oxidada" son ítems distintos, pero pertenecen a la
 // misma familia y por ello habilitan la misma rama de habilidades.
 export const WEAPON_FAMILIES = {
-    sword: { id: 'sword', label: 'espada', pluralLabel: 'Espadas' },
-    greatsword: { id: 'greatsword', label: 'mandoble', pluralLabel: 'Mandobles' },
-    dualBlades: { id: 'dualBlades', label: 'espadas duales', pluralLabel: 'Espadas Duales' },
-    bow: { id: 'bow', label: 'arco', pluralLabel: 'Arcos' },
-    spear: { id: 'spear', label: 'lanza', pluralLabel: 'Lanzas' },
-    staff: { id: 'staff', label: 'báculo', pluralLabel: 'Báculos' }
+    sword: { id: 'sword', label: 'espada', requirementLabel: 'una espada', pluralLabel: 'Espadas' },
+    greatsword: { id: 'greatsword', label: 'mandoble', requirementLabel: 'un mandoble', pluralLabel: 'Mandobles' },
+    dualBlades: { id: 'dualBlades', label: 'espadas duales', requirementLabel: 'unas Espadas Duales', pluralLabel: 'Espadas Duales' },
+    bow: { id: 'bow', label: 'arco', requirementLabel: 'un arco', pluralLabel: 'Arcos' },
+    spear: { id: 'spear', label: 'lanza', requirementLabel: 'una lanza', pluralLabel: 'Lanzas' },
+    staff: { id: 'staff', label: 'báculo', requirementLabel: 'un báculo', pluralLabel: 'Báculos' }
 };
 
 export const WEAPONS = {
@@ -40,7 +40,7 @@ export const WEAPONS = {
         // guardadas; el arma y su rama ahora se llaman Espadas Duales.
         id: 'dagas', name: 'Espadas Duales', color: '#9b59b6', asset: 'weapon_dagas',
         dmg: 5, attackCooldown: 30, meleeReach: 38, meleeSize: 34, family: 'dualBlades', // 0.5s: el doble de rápida que la Espada
-        ability1: 'Paso Sombrío', ability2: 'Torbellino'
+        skillBranch: 'dual-swordsman', ability1: 'Tajo Cruzado', ability2: 'Frenesí de Acero'
     },
     mandoble: {
         id: 'mandoble', name: 'Mandoble', color: '#e67e22', asset: 'weapon_mandoble',
