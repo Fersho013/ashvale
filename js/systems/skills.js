@@ -11,6 +11,14 @@ export const SKILLS = {
     sword_storm: {
         id: 'sword_storm', branch: 'swordsman', name: 'Filo Tormentoso', shortLabel: 'FT',
         cost: 3, description: 'Cuatro cortes frontales que acumulan sangrado.'
+    },
+    knight_earthsplitter: {
+        id: 'knight_earthsplitter', branch: 'knight', name: 'Hendidura Terrenal', shortLabel: 'HT',
+        cost: 1, description: 'Golpe descendente que destruye la postura y rompe la defensa de enemigos menores.'
+    },
+    knight_cataclysm: {
+        id: 'knight_cataclysm', branch: 'knight', name: 'Impacto Cataclismo', shortLabel: 'IC',
+        cost: 3, description: 'Salto y aplastamiento en área que aturde a enemigos no jefes durante 1.5 segundos.'
     }
 };
 
