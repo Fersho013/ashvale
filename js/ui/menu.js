@@ -10,13 +10,15 @@ import { applyControlsLayout } from '../systems/controlsLayout.js';
 export function anyModalOpen() {
     return document.getElementById('inventory-panel').style.display === 'block'
         || document.getElementById('chest-panel').style.display === 'block'
-        || document.getElementById('craft-panel').style.display === 'block';
+        || document.getElementById('craft-panel').style.display === 'block'
+        || document.getElementById('skill-tree-panel').style.display === 'block';
 }
 
 export function closeAllModals() {
     document.getElementById('inventory-panel').style.display = 'none';
     document.getElementById('chest-panel').style.display = 'none';
     document.getElementById('craft-panel').style.display = 'none';
+    document.getElementById('skill-tree-panel').style.display = 'none';
 }
 
 export function showScreen(id) {
