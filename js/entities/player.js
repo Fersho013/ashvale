@@ -43,6 +43,13 @@ export class Player {
         this.swordStormLastSlash = -1;
         this.swordStormHits = new Map();
 
+        // Estados de la rama Caballero. El impacto y sus efectos sobre los
+        // enemigos se resuelven en worldInteraction.js.
+        this.knightEarthsplitterTimer = 0;
+        this.knightEarthsplitterResolved = false;
+        this.knightCataclysmTimer = 0;
+        this.knightCataclysmResolved = false;
+
         this.isBlocking = false;
         this.blockStartFrame = 0;
         this.parryWindowFrames = 6;
@@ -157,6 +164,8 @@ export class Player {
         if (this.channelCooldown > 0) this.channelCooldown--;
         if (this.swordThrustTimer > 0 && --this.swordThrustTimer === 0) this.isAttacking = false;
         if (this.swordStormTimer > 0 && --this.swordStormTimer === 0) this.isAttacking = false;
+        if (this.knightEarthsplitterTimer > 0 && --this.knightEarthsplitterTimer === 0) this.isAttacking = false;
+        if (this.knightCataclysmTimer > 0 && --this.knightCataclysmTimer === 0) this.isAttacking = false;
 
         if (this.channeling) {
             this.channelTimer++;
@@ -193,6 +202,24 @@ export class Player {
             this.swordStormHits = new Map();
             this.isAttacking = true; this.attackTimer = 48;
             return;
+        }
+        if (skill.id === 'knight_earthsplitter') {
+            // Un breve armado comunica el peso del mandoble; el golpe se
+            // resuelve una sola vez a mitad de la animación.
+            this.knightEarthsplitterTimer = 18;
+            this.knightEarthsplitterResolved = false;
+            this.isAttacking = true; this.attackTimer = 18;
+            return;
+        }
+        if (skill.id === 'knight_cataclysm') {
+            // El salto avanza hacia la dirección de mira. El aterrizaje y el
+            // área de impacto se resuelven en el último tercio del movimiento.
+            this.knightCataclysmTimer = 24;
+            this.knightCataclysmResolved = false;
+            this.isAttacking = true; this.attackTimer = 24;
+            this.x += this.facing.x * 75; this.y += this.facing.y * 75;
+            const activeWalls = getActiveWalls();
+            this.resolveCollisions(true, activeWalls); this.resolveCollisions(false, activeWalls);
         }
     }
 
@@ -284,6 +311,15 @@ export class Player {
         };
     }
 
+    getKnightEarthsplitterHitbox() {
+        const size = 92, reach = 62;
+        return {
+            x: this.x + this.w / 2 + this.facing.x * reach - size / 2,
+            y: this.y + this.h / 2 + this.facing.y * reach - size / 2,
+            w: size, h: size
+        };
+    }
+
     draw(ctx) {
         const weapon = this.currentWeapon;
         let color = weapon.color;
@@ -295,12 +331,19 @@ export class Player {
         drawEntity(ctx, spriteKey, this.x, this.y, this.w, this.h, color, 'rect', null, CHARACTER_SPRITE_SIZE);
 
         if (this.isAttacking && !weapon.ranged) {
-            const box = this.swordThrustTimer > 0 ? this.getSwordThrustHitbox() : this.getAttackHitbox();
+            const box = this.swordThrustTimer > 0 ? this.getSwordThrustHitbox()
+                : this.knightEarthsplitterTimer > 0 ? this.getKnightEarthsplitterHitbox() : this.getAttackHitbox();
             ctx.fillStyle = 'rgba(255,255,255,0.35)';
             ctx.strokeStyle = weapon.color;
             ctx.lineWidth = 2;
             ctx.fillRect(box.x, box.y, box.w, box.h);
             ctx.strokeRect(box.x, box.y, box.w, box.h);
+        }
+        if (this.knightCataclysmTimer > 0) {
+            const radius = 118;
+            ctx.beginPath(); ctx.arc(this.x + this.w / 2, this.y + this.h / 2, radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(230,126,34,0.18)'; ctx.fill();
+            ctx.strokeStyle = '#e67e22'; ctx.lineWidth = 2; ctx.stroke();
         }
         if (this.channeling) {
             const pct = this.channelTimer / this.channelDuration;
