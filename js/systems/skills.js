@@ -19,6 +19,14 @@ export const SKILLS = {
     knight_cataclysm: {
         id: 'knight_cataclysm', branch: 'knight', branchLabel: 'Caballero', name: 'Impacto Cataclismo', shortLabel: 'IC',
         weaponFamily: 'greatsword', cost: 3, description: 'Salto y aplastamiento en área que aturde a enemigos no jefes durante 1.5 segundos.'
+    },
+    dual_cross_slash: {
+        id: 'dual_cross_slash', branch: 'dual-swordsman', branchLabel: 'Espadachín Dual', name: 'Tajo Cruzado', shortLabel: 'TC',
+        weaponFamily: 'dualBlades', cost: 1, description: 'Doble corte instantáneo en X que mantiene la presión del ataque básico.'
+    },
+    dual_steel_frenzy: {
+        id: 'dual_steel_frenzy', branch: 'dual-swordsman', branchLabel: 'Espadachín Dual', name: 'Frenesí de Acero', shortLabel: 'FA',
+        weaponFamily: 'dualBlades', cost: 3, description: 'Cortes giratorios en avance durante 2 segundos; resiste interrupciones menores.'
     }
 };
 
