@@ -186,14 +186,29 @@
     <div id="skill-tree-panel" class="modal-panel">
         <span class="close-modal" data-close="skill-tree-panel">[X]</span>
         <h3>Árbol de Habilidades</h3>
-        <p class="skill-tree-intro">Elige una rama para consultar su progreso. Las habilidades estarán disponibles próximamente.</p>
-        <div class="skill-tree-buttons">
+        <p class="skill-tree-intro">Elige una rama para consultar su progreso.</p>
+        <div id="skill-branches" class="skill-tree-buttons">
             <button type="button" data-skill-branch="swordsman">Espadachín<br><small>Rama de Espadas</small></button>
             <button type="button" data-skill-branch="knight">Caballero<br><small>Rama de Mandobles</small></button>
             <button type="button" data-skill-branch="dual-swordsman">Espadachín Dual<br><small>Espadas Duales</small></button>
             <button type="button" data-skill-branch="archer">Arquero<br><small>Rama de Arcos</small></button>
             <button type="button" data-skill-branch="lancer">Lancer<br><small>Rama de Lanzas</small></button>
             <button type="button" data-skill-branch="arcane">Arcano<br><small>Magia, daño explosivo y control de masas</small></button>
+        </div>
+        <div id="skill-branch-view" hidden>
+            <button id="skill-tree-back" type="button">← Ramas</button>
+            <h4 id="skill-branch-title">Espadachín — Rama de Espadas</h4>
+            <p id="skill-branch-description">Las habilidades iniciales están arriba; las más potentes se desbloquearán hacia abajo.</p>
+            <div class="skill-genealogy" aria-label="Árbol de habilidades de Espadachín">
+                <button id="skill-node-sword-thrust" class="skill-node" type="button" data-skill-id="sword_thrust">
+                    <strong>Estocada Veloz</strong><span>1 Barra · Base</span><small>Aprendida</small>
+                </button>
+                <div class="skill-connector" aria-hidden="true"></div>
+                <button id="skill-node-sword-storm" class="skill-node" type="button" data-skill-id="sword_storm">
+                    <strong>Filo Tormentoso</strong><span>3 Barras · Avanzada</span><small>Aprendida</small>
+                </button>
+                <div class="skill-future-node">Próximas habilidades<br>más poderosas</div>
+            </div>
         </div>
     </div>
 
