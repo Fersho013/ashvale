@@ -70,6 +70,13 @@ export class Player {
         this.lancerWhirlwindTimer = 0;
         this.lancerWhirlwindResolved = false;
 
+        // Vórtice del Vacío: el centro se fija frente al jugador y atrae
+        // durante 2 s antes de liberar una explosión elemental.
+        this.arcaneVoidVortexTimer = 0;
+        this.arcaneVoidVortexX = 0;
+        this.arcaneVoidVortexY = 0;
+        this.arcaneVoidVortexExploded = false;
+
         this.isBlocking = false;
         this.blockStartFrame = 0;
         this.parryWindowFrames = 6;
@@ -300,6 +307,23 @@ export class Player {
             this.lancerWhirlwindTimer = 20;
             this.lancerWhirlwindResolved = false;
             this.isAttacking = true; this.attackTimer = 20;
+            return;
+        }
+        if (skill.id === 'arcane_aether_projectile') {
+            this.pendingProjectile = {
+                x: this.x + this.w / 2, y: this.y + this.h / 2,
+                dirX: this.facing.x, dirY: this.facing.y,
+                dmg: Math.ceil(this.attackDamage * 1.6), weaponKey: 'baculo',
+                speed: 12, rangeBlocks: 5, size: 16, color: '#8e44ad', homing: 0.12,
+                explosionRadius: 62, magic: true
+            };
+            return;
+        }
+        if (skill.id === 'arcane_void_vortex') {
+            this.arcaneVoidVortexTimer = 120;
+            this.arcaneVoidVortexExploded = false;
+            this.arcaneVoidVortexX = this.x + this.w / 2 + this.facing.x * 145;
+            this.arcaneVoidVortexY = this.y + this.h / 2 + this.facing.y * 145;
         }
     }
 
@@ -461,6 +485,14 @@ export class Player {
             ctx.beginPath(); ctx.arc(this.x + this.w / 2, this.y + this.h / 2, 92, 0, Math.PI * 2);
             ctx.fillStyle = 'rgba(241,196,15,0.18)'; ctx.fill();
             ctx.strokeStyle = '#f1c40f'; ctx.lineWidth = 3; ctx.stroke();
+        }
+        if (this.arcaneVoidVortexTimer > 0) {
+            const radius = 86;
+            ctx.beginPath(); ctx.arc(this.arcaneVoidVortexX, this.arcaneVoidVortexY, radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(142,68,173,0.20)'; ctx.fill();
+            ctx.strokeStyle = '#c39bd3'; ctx.lineWidth = 3; ctx.stroke();
+            ctx.beginPath(); ctx.arc(this.arcaneVoidVortexX, this.arcaneVoidVortexY, 16, 0, Math.PI * 2);
+            ctx.fillStyle = '#241133'; ctx.fill();
         }
         if (this.channeling) {
             const pct = this.channelTimer / this.channelDuration;
