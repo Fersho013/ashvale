@@ -14,6 +14,7 @@ import { update } from './systems/worldInteraction.js';
 import { buildQuickbarUI } from './ui/hud.js';
 import { toggleInventory } from './ui/inventoryUI.js';
 import { togglePause } from './ui/pause.js';
+import { toggleSkillTree } from './ui/skillTreeUI.js';
 import { anyModalOpen, closeAllModals } from './ui/menu.js';
 import { ZONES, MAP_W, MAP_H, walls, doors } from './world/map.js';
 import { npc, respawnBed, campfire, alchemyTable, buildTable, chestObj, workTables, weaponsChestObj, toolsChestObj, weaponRacks, toolRacks, bocinaVigia, harvestNodes } from './world/worldObjects.js';
@@ -57,6 +58,7 @@ document.addEventListener('keydown', e => {
     }
     if (state.gamePaused) return;
     if (e.code === 'KeyI' || e.code === 'Tab') toggleInventory();
+    if (e.code === 'KeyO') toggleSkillTree();
     if (e.code === 'Backquote' || e.code === 'F2') {
         DEBUG.panelOpen = !DEBUG.panelOpen;
         document.getElementById('debug-panel').style.display = DEBUG.panelOpen ? 'block' : 'none';
@@ -152,6 +154,7 @@ function gameLoop(timestamp) {
             if (Input.gamepad.justPressed.pause) togglePause();
             if (!state.gamePaused) {
                 if (Input.gamepad.justPressed.inventory) toggleInventory();
+                if (Input.gamepad.justPressed.skillTree) toggleSkillTree();
                 update();
             }
             render();
