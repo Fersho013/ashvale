@@ -69,3 +69,25 @@ export function clampToZone4(entity, margin = 10) {
     entity.x = Math.max(ZONE4_BOUNDS.x + margin, Math.min(ZONE4_BOUNDS.x + ZONE4_BOUNDS.w - entity.w - margin, entity.x));
     entity.y = Math.max(ZONE4_BOUNDS.y + margin, Math.min(ZONE4_BOUNDS.y + ZONE4_BOUNDS.h - entity.h - margin, entity.y));
 }
+
+// Subzonas de la Zona 4. Además de comunicar visualmente el ecosistema,
+// son el límite de movimiento y el origen de reaparición de cada especie.
+// Mantener estos datos aquí evita coordenadas sueltas al añadir futuros mobs.
+export const BIOME_AREAS = {
+    forest: { id: 'forest', name: 'Bosque', x: 70, y: 680, w: 680, h: 1040, color: 'rgba(39,174,96,0.12)', border: '#2e8b57' },
+    mines: { id: 'mines', name: 'Minas', x: 830, y: 680, w: 690, h: 550, color: 'rgba(127,140,141,0.15)', border: '#7f8c8d' },
+    slimeMarsh: { id: 'slimeMarsh', name: 'Humedal de Slimes', x: 830, y: 1300, w: 690, h: 420, color: 'rgba(46,204,113,0.12)', border: '#27ae60' }
+};
+
+export function clampToArea(entity, area, margin = 10) {
+    const bounds = area || ZONE4_BOUNDS;
+    entity.x = Math.max(bounds.x + margin, Math.min(bounds.x + bounds.w - entity.w - margin, entity.x));
+    entity.y = Math.max(bounds.y + margin, Math.min(bounds.y + bounds.h - entity.h - margin, entity.y));
+}
+
+export function randomPointInArea(area, entity, margin = 35) {
+    const bounds = area || ZONE4_BOUNDS;
+    const width = Math.max(1, bounds.w - entity.w - margin * 2);
+    const height = Math.max(1, bounds.h - entity.h - margin * 2);
+    return { x: bounds.x + margin + Math.random() * width, y: bounds.y + margin + Math.random() * height };
+}
