@@ -16,7 +16,7 @@ import { toggleInventory } from './ui/inventoryUI.js';
 import { togglePause } from './ui/pause.js';
 import { toggleSkillTree } from './ui/skillTreeUI.js';
 import { anyModalOpen, closeAllModals } from './ui/menu.js';
-import { ZONES, MAP_W, MAP_H, walls, doors } from './world/map.js';
+import { ZONES, MAP_W, MAP_H, walls, doors, BIOME_AREAS } from './world/map.js';
 import { npc, respawnBed, campfire, alchemyTable, buildTable, chestObj, workTables, weaponsChestObj, toolsChestObj, weaponRacks, toolRacks, bocinaVigia, harvestNodes } from './world/worldObjects.js';
 import { WEAPONS } from './data/weapons.js';
 import { TOOLS } from './data/tools.js';
@@ -37,10 +37,11 @@ const camera = new Camera(canvas.width, canvas.height);
 const world = {
     dummies: [ new DummyMob(505 * TUTORIAL_SCALE, 115 * TUTORIAL_SCALE) ],
     activeMobs: [ new ActiveMob(1050 * TUTORIAL_SCALE, 200 * TUTORIAL_SCALE) ],
-    slimes: [ new Slime(150 * TUTORIAL_SCALE, 380 * TUTORIAL_SCALE), new Slime(190 * TUTORIAL_SCALE, 400 * TUTORIAL_SCALE) ],
-    wolves: [ new Wolf(400 * TUTORIAL_SCALE, 500 * TUTORIAL_SCALE) ],
-    deers: [ new Deer(500 * TUTORIAL_SCALE, 600 * TUTORIAL_SCALE) ],
-    goblins: [ new GoblinExplorer(650 * TUTORIAL_SCALE, 450 * TUTORIAL_SCALE) ],
+    // Cada especie comienza y permanece dentro de su bioma específico.
+    slimes: [ new Slime(1060, 1490, false, BIOME_AREAS.slimeMarsh), new Slime(1240, 1570, false, BIOME_AREAS.slimeMarsh) ],
+    wolves: [ new Wolf(360, 940, BIOME_AREAS.forest), new Wolf(610, 1170, BIOME_AREAS.forest) ],
+    deers: [ new Deer(520, 1310, BIOME_AREAS.forest), new Deer(680, 1510, BIOME_AREAS.forest) ],
+    goblins: [ new GoblinExplorer(1050, 860, BIOME_AREAS.mines), new GoblinExplorer(1300, 1030, BIOME_AREAS.mines), new GoblinExplorer(1430, 800, BIOME_AREAS.mines) ],
     projectiles: [] // proyectiles activos de Báculo/Arco (ver systems/worldInteraction.js)
 };
 
@@ -75,6 +76,12 @@ function render() {
     ctx.translate(-camera.x, -camera.y);
 
     for (const z of ZONES) { ctx.fillStyle = z.color; ctx.fillRect(z.x, z.y, z.w, z.h); }
+    for (const biome of Object.values(BIOME_AREAS)) {
+        ctx.fillStyle = biome.color; ctx.fillRect(biome.x, biome.y, biome.w, biome.h);
+        ctx.strokeStyle = biome.border; ctx.lineWidth = 2; ctx.strokeRect(biome.x, biome.y, biome.w, biome.h);
+        ctx.fillStyle = biome.border; ctx.font = 'bold 16px monospace'; ctx.textAlign = 'left';
+        ctx.fillText(biome.name, biome.x + 14, biome.y + 26);
+    }
 
     if (DEBUG.showHitboxes) {
         ctx.strokeStyle = '#2a2a2a';
