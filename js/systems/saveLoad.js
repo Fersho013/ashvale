@@ -20,7 +20,8 @@ export function saveGameState() {
         },
         doors: doors.map(d => d.open),
         harvestNodes: harvestNodes.map(node => ({ uses: node.uses, recoveryUntil: node.recoveryUntil })),
-        skills: SkillBook.toSaveData()
+        skills: SkillBook.toSaveData(),
+        tutorialMapScale: 2
     };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch (err) { console.warn('No se pudo guardar la partida:', err); }
 }
@@ -30,6 +31,15 @@ export function loadGameState() {
     try { raw = localStorage.getItem(SAVE_KEY); } catch (err) { raw = null; }
     if (!raw) return false;
     const data = JSON.parse(raw);
+    // Las partidas guardadas en el mapa anterior (1200×900) se trasladan a
+    // su posición equivalente dentro del nuevo plano duplicado una sola vez.
+    if (data.tutorialMapScale !== 2 && data.player) {
+        data.player.x *= 2; data.player.y *= 2;
+        if (data.player.respawn) {
+            data.player.respawn.x *= 2;
+            data.player.respawn.y *= 2;
+        }
+    }
     // La clave interna del arma se conserva como "dagas", pero las partidas
     // previas guardaban su nombre anterior. Se migra al cargar para que siga
     // siendo equipable después del cambio a Espadas Duales.
