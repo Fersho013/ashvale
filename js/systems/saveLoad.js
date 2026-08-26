@@ -28,6 +28,12 @@ export function loadGameState() {
     try { raw = localStorage.getItem(SAVE_KEY); } catch (err) { raw = null; }
     if (!raw) return false;
     const data = JSON.parse(raw);
+    // La clave interna del arma se conserva como "dagas", pero las partidas
+    // previas guardaban su nombre anterior. Se migra al cargar para que siga
+    // siendo equipable después del cambio a Espadas Duales.
+    const renameDualSwords = item => { if (item && item.name === 'Dagas Duales') item.name = 'Espadas Duales'; };
+    [data.inventory.quickbar, data.inventory.global].forEach(items => items?.forEach(renameDualSwords));
+    Object.values(data.inventory.chests || {}).forEach(items => items?.forEach(renameDualSwords));
     const player = game.player;
     player.x = data.player.x; player.y = data.player.y; player.hp = data.player.hp;
     player.bars = data.player.bars; player.barCapacity = data.player.barCapacity; player.respawn = data.player.respawn;
