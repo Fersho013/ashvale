@@ -7,6 +7,7 @@
    ===================================================================== */
 import { BLOCK_SIZE } from '../world/map.js';
 import { drawSprite } from '../core/assets.js';
+import { drawAtlasFrame } from '../core/atlas.js';
 
 export class Projectile {
     constructor({ x, y, dirX, dirY, dmg, speed, size, color, sprite = 'arcaneBolt', rangeBlocks, piercing = false, knockback = 0, homing = 0, explosionRadius = 0, magic = false }) {
@@ -53,6 +54,9 @@ export class Projectile {
     }
     get expired() { return (!this.piercing && this.hasHit) || this.traveled >= this.maxDistance; }
     draw(ctx) {
-        drawSprite(ctx, this.sprite, this.x, this.y, this.w, this.h, { color: this.color });
+        const frame = this.sprite === 'arrow' ? 'arrow' : 'arcane_bolt';
+        if (!drawAtlasFrame(ctx, 'weapons', frame, this.x, this.y, this.w, this.h)) {
+            drawSprite(ctx, this.sprite, this.x, this.y, this.w, this.h, { color: this.color });
+        }
     }
 }
