@@ -166,14 +166,14 @@ export class Slime {
         this.habitat = habitat;
         this.w = big ? 30 : 18; this.h = big ? 30 : 18;
         this.speed = 0.6;
-        // Vida base desde el registro de datos (data/mobs.js); el Slime
-        // "grande" (fusión de dos pequeños) conserva el x2 que ya tenía.
+        // El Gran Slime nace solo al fusionar dos normales: tiene triple
+        // vida y doble daño, nunca se genera desde el spawner del bioma.
         const baseHp = MOBS.slime.baseHp;
-        this.hp = big ? baseHp * 2 : baseHp; this.maxHp = this.hp;
+        this.hp = big ? baseHp * 3 : baseHp; this.maxHp = this.hp;
         this.flash = 0; this.mergeTimer = 0; this.wanderAngle = Math.random() * Math.PI * 2;
         this.fused = false;
         this.attackCooldown = 0; this.attackTimer = 0; this.attackWarningTimer = 0;
-        this.attackRange = big ? 62 : 50; this.attackDamage = 4; this.attackInterval = 240;
+        this.attackRange = big ? 62 : 50; this.attackDamage = big ? 8 : 4; this.attackInterval = 240;
         this.attackDuration = 20; this.attackImpactFrame = 10;
     }
     takeHit(dmg) { this.flash = 10; this.hp -= dmg; this.mergeTimer = 0; }
@@ -185,11 +185,26 @@ export class Slime {
         const dx = player ? (player.x + player.w / 2) - (this.x + this.w / 2) : 0;
         const dy = player ? (player.y + player.h / 2) - (this.y + this.h / 2) : 0;
         const playerDistance = Math.hypot(dx, dy);
-        // El Slime conserva su deambular, pero si el jugador entra en su
-        // zona de alerta se aproxima hasta la distancia de ataque.
-        if (this.attackWarningTimer <= 0 && this.attackTimer <= 0 && player && playerDistance < 180 && playerDistance > this.attackRange * 0.72) {
-            this.x += (dx / playerDistance) * speed;
-            this.y += (dy / playerDistance) * speed;
+        const playerDetected = !!player && playerDistance < 180;
+        let mergeTarget = null;
+        if (!this.big && playerDetected) {
+            let nearest = Infinity;
+            for (const other of allSlimes) {
+                if (other === this || other.big || other.fused) continue;
+                const distance = dist(this, other);
+                if (distance < nearest) { nearest = distance; mergeTarget = other; }
+            }
+        }
+        // Al detectar al jugador, los Slimes normales priorizan reunirse
+        // entre sí. Si no tienen aliado cercano, se aproximan al jugador.
+        const target = mergeTarget && dist(this, mergeTarget) < 200 ? mergeTarget : player;
+        const targetDx = target ? (target.x + target.w / 2) - (this.x + this.w / 2) : 0;
+        const targetDy = target ? (target.y + target.h / 2) - (this.y + this.h / 2) : 0;
+        const targetDistance = Math.hypot(targetDx, targetDy);
+        const targetStopDistance = target === player ? this.attackRange * 0.72 : 18;
+        if (this.attackWarningTimer <= 0 && this.attackTimer <= 0 && playerDetected && targetDistance > targetStopDistance) {
+            this.x += (targetDx / targetDistance) * speed;
+            this.y += (targetDy / targetDistance) * speed;
         } else if (!player || playerDistance >= 180) {
             this.wanderAngle += (Math.random() - 0.5) * 0.2;
             this.x += Math.cos(this.wanderAngle) * speed;
@@ -197,12 +212,12 @@ export class Slime {
         }
         clampToArea(this, this.habitat);
 
-        if (!this.big) {
+        if (!this.big && playerDetected) {
             for (const other of allSlimes) {
                 if (other === this || other.big || other.fused) continue;
                 if (dist(this, other) < 30 && this.flash === 0 && other.flash === 0) {
                     this.mergeTimer++;
-                    if (this.mergeTimer > 5 * 60) { this.fused = true; other.fused = true; }
+                    if (this.mergeTimer > 60) { this.fused = true; other.fused = true; }
                     break;
                 } else { this.mergeTimer = 0; }
             }
@@ -214,7 +229,7 @@ export class Slime {
         // El propio Slime dispara la entrega del loot al morir: la
         // eliminación del array (world.slimes) la sigue haciendo
         // worldInteraction.js con el filtro de hp>0 de siempre.
-        if (this.hp <= 0 && !this.lootGranted) { this.lootGranted = true; grantMobLoot('slime'); }
+        if (this.hp <= 0 && !this.lootGranted) { this.lootGranted = true; grantMobLoot(this.big ? 'granSlime' : 'slime'); }
     }
     draw(ctx) {
         drawEntity(ctx, 'slime_green', this.x, this.y, this.w, this.h,
@@ -291,6 +306,7 @@ export class Deer {
             this.x += (dx/d) * speed; this.y += (dy/d) * speed;
         }
         clampToArea(this, this.habitat);
+        if (this.hp <= 0 && !this.lootGranted) { this.lootGranted = true; grantMobLoot('ciervo'); }
     }
     takeHit(dmg) { this.flash = 10; this.hp -= dmg; }
     draw(ctx) {
