@@ -12,6 +12,10 @@ const UI_FRAME_SELECTORS = {
     button: ['.menu-buttons button', '.settings-row button', '.pause-buttons button', '#craft-action-btn', '.item-action-btn'],
     slot: ['.inv-slot', '.equip-slot', '.craft-slot', '.qb-slot'],
     skill_node: ['.skill-node', '.skill-tree-buttons button'],
+    tooltip: ['#zone-label', '#escape-bar-container', '#harvest-bar-container'],
+    hp_bar: ['.stat-bar', '#hp-fill'],
+    skill_bar: ['#skill-gauge', '.skill-pip'],
+    gold_icon: ['#gold-display'],
     touch_button: ['.t-btn']
 };
 
@@ -24,3 +28,11 @@ function applyUiAtlas() {
 onAtlasReady(id => {
     if (id === 'ui') applyUiAtlas();
 });
+
+// Inventario, cofres y barra rápida crean slots después de cargar la página.
+// Este observador les aplica el mismo fondo del atlas al aparecer.
+const observer = new MutationObserver(mutations => {
+    if (!mutations.some(mutation => mutation.addedNodes.length)) return;
+    applyUiAtlas();
+});
+observer.observe(document.body, { childList: true, subtree: true });
