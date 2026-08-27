@@ -3,7 +3,7 @@
    ===================================================================== */
 import { Input } from '../core/input.js';
 import { drawEntity, CHARACTER_SPRITE_SIZE } from '../core/assets.js';
-import { drawAtlasAnimation } from '../core/atlas.js';
+import { drawAtlasAnimation, ATLAS_DISPLAY_SIZES } from '../core/atlas.js';
 import { checkRectCollision } from '../core/physics.js';
 import { getActiveWalls } from '../world/map.js';
 import { getStaticSolidColliders } from '../world/worldObjects.js';
@@ -476,10 +476,9 @@ export class Player {
         const direction = this.facingDir === 'centro' ? 'down' : this.facingDir;
         const atlasAnimation = this.getAtlasAnimation();
         const renderedFromAtlas = drawAtlasAnimation(
-            ctx, 'player', atlasAnimation, direction, Math.floor(performance.now() / 80),
-            this.x + this.w / 2 - CHARACTER_SPRITE_SIZE.w / 2,
-            this.y + this.h - CHARACTER_SPRITE_SIZE.h,
-            CHARACTER_SPRITE_SIZE.w, CHARACTER_SPRITE_SIZE.h, 'feet'
+            ctx, 'player', atlasAnimation, direction, performance.now(),
+            this.x, this.y, this.w, this.h,
+            { anchor: 'feet', spriteSize: ATLAS_DISPLAY_SIZES.player }
         );
         if (!renderedFromAtlas) {
             drawEntity(ctx, spriteKey, this.x, this.y, this.w, this.h, color, 'rect', null, CHARACTER_SPRITE_SIZE);
