@@ -31,35 +31,35 @@ export const WEAPONS = {
         ability1: 'Puñetazo Veloz', ability2: 'Guardia'
     },
     espada: {
-        id: 'espada', name: 'Espada', color: '#3498db', asset: 'weapon_espada',
+        id: 'espada', name: 'Espada', color: '#3498db', asset: 'weapon_espada', atlasFrame: 'sword',
         dmg: 10, attackCooldown: 60, meleeReach: 38, meleeSize: 34,
         family: 'sword', skillBranch: 'swordsman', ability1: 'Estocada Veloz', ability2: 'Filo Tormentoso'
     },
     dagas: {
         // Se conserva la clave interna "dagas" para no invalidar partidas
         // guardadas; el arma y su rama ahora se llaman Espadas Duales.
-        id: 'dagas', name: 'Espadas Duales', color: '#9b59b6', asset: 'weapon_dagas',
+        id: 'dagas', name: 'Espadas Duales', color: '#9b59b6', asset: 'weapon_dagas', atlasFrame: 'dual_blades',
         dmg: 5, attackCooldown: 30, meleeReach: 38, meleeSize: 34, family: 'dualBlades', // 0.5s: el doble de rápida que la Espada
         skillBranch: 'dual-swordsman', ability1: 'Tajo Cruzado', ability2: 'Frenesí de Acero'
     },
     mandoble: {
-        id: 'mandoble', name: 'Mandoble', color: '#e67e22', asset: 'weapon_mandoble',
+        id: 'mandoble', name: 'Mandoble', color: '#e67e22', asset: 'weapon_mandoble', atlasFrame: 'greatsword',
         dmg: 20, attackCooldown: 120, meleeReach: 76, meleeSize: 68, // alcance/tamaño x2 vs. Espada
         family: 'greatsword', skillBranch: 'knight', ability1: 'Hendidura Terrenal', ability2: 'Impacto Cataclismo'
     },
     lanza: {
-        id: 'lanza', name: 'Lanza', color: '#f1c40f', asset: 'weapon_lanza',
+        id: 'lanza', name: 'Lanza', color: '#f1c40f', asset: 'weapon_lanza', atlasFrame: 'spear',
         dmg: 15, attackCooldown: 120, meleeReach: 76, meleeSize: 68, family: 'spear', // alcance/tamaño x2 vs. Espada
         skillBranch: 'lancer', ability1: 'Embestida de Falange', ability2: 'Torbellino Empalador'
     },
     baculo: {
-        id: 'baculo', name: 'Báculo', color: '#e74c3c', asset: 'weapon_especial', // TODO: sprite propio cuando exista arte dedicado al báculo
+        id: 'baculo', name: 'Báculo', color: '#e74c3c', asset: 'weapon_especial', atlasFrame: 'staff',
         dmg: 10, attackCooldown: 60, ranged: true, family: 'staff', skillBranch: 'arcane',
         projectile: { rangeBlocks: 3, speed: 9, size: 12, color: '#e74c3c', sprite: 'arcaneBolt' },
         ability1: 'Proyectil de Éter', ability2: 'Vórtice del Vacío'
     },
     arco: {
-        id: 'arco', name: 'Arco', color: '#2ecc71', asset: 'weapon_arco',
+        id: 'arco', name: 'Arco', color: '#2ecc71', asset: 'weapon_arco', atlasFrame: 'bow',
         dmg: 10, attackCooldown: 60, ranged: true, family: 'bow', skillBranch: 'archer',
         projectile: { rangeBlocks: 4, speed: 11, size: 8, color: '#2ecc71', sprite: 'arrow' },
         ability1: 'Disparo Perforante', ability2: 'Lluvia de Flechas'
@@ -69,14 +69,14 @@ export const WEAPONS = {
     // un Goblin. El nombre debe coincidir EXACTO con el del loot para que
     // el sistema de equipamiento la reconozca (ver systems/inventory.js).
     goblin_espada_corta: {
-        id: 'goblin_espada_corta', name: 'Espada Corta de Goblin', color: '#7f8c8d', asset: 'weapon_espada', // TODO: sprite propio
+        id: 'goblin_espada_corta', name: 'Espada Corta de Goblin', color: '#7f8c8d', asset: 'weapon_espada', atlasFrame: 'sword',
         dmg: 15, attackCooldown: 60, meleeReach: 38, meleeSize: 34,
         family: 'sword', skillBranch: 'swordsman', ability1: 'Estocada Veloz', ability2: 'Filo Tormentoso'
     },
     // Craftable en la Mesa Constructora: Madera + Metal Oxidado (ver
     // data/recipes.js -> BUILD_RECIPES). No se consigue en las armerías.
     espada_oxidada: {
-        id: 'espada_oxidada', name: 'Espada Oxidada', color: '#a07b52', asset: 'weapon_espada', // TODO: sprite propio
+        id: 'espada_oxidada', name: 'Espada Oxidada', color: '#a07b52', asset: 'weapon_espada', atlasFrame: 'sword',
         dmg: 20, attackCooldown: 60, meleeReach: 38, meleeSize: 34,
         family: 'sword', skillBranch: 'swordsman', ability1: 'Estocada Veloz', ability2: 'Filo Tormentoso'
     }
