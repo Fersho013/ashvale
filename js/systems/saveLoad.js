@@ -54,7 +54,10 @@ export function loadGameState() {
     // Inventory.chest): si no existe el formato nuevo (chests), se deja el
     // set de 3 cofres recién sembrado por defecto en vez de romper la carga.
     if (data.inventory.chests) Inventory.chests = data.inventory.chests;
-    Inventory.equipment = data.inventory.equipment; Inventory.equipment.tool ??= null; Inventory.gold = data.inventory.gold;
+    Inventory.equipment = data.inventory.equipment || { weapon: null, tool: null, armor: null, accessory: null };
+    Inventory.equipment.tool ??= null; Inventory.equipment.armor ??= null; Inventory.equipment.accessory ??= null;
+    player.hp = Math.min(player.hp, player.maxHp);
+    Inventory.gold = data.inventory.gold;
     SkillBook.loadSaveData(data.skills);
     doors.forEach((d, i) => { if (data.doors[i] !== undefined) d.open = data.doors[i]; });
     // Las partidas previas a los recursos renovables no tienen esta sección;
