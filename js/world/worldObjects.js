@@ -54,8 +54,8 @@ export const bocinaVigia = { ...pos(950, 750), w: 34, h: 34, interactionRadius: 
 // Recursos renovables de la Zona 4: Ecosistema y Bioma Vivo. Cada nodo se
 // puede recolectar cinco veces antes de quedar en recuperación por 3 min.
 export const harvestNodes = [
-    { id: 'tree-1', type: 'tree', label: 'Árbol', ...pos(240, 430), w: 48, h: 64, interactionRadius: 62, requiredTool: 'hacha', action: 'Talando', drop: 'Madera', uses: 0, maxUses: 5, recoveryUntil: 0 },
-    { id: 'tree-2', type: 'tree', label: 'Árbol', ...pos(320, 650), w: 48, h: 64, interactionRadius: 62, requiredTool: 'hacha', action: 'Talando', drop: 'Madera', uses: 0, maxUses: 5, recoveryUntil: 0 },
-    { id: 'stone-1', type: 'stone', label: 'Piedra', ...pos(620, 450), w: 44, h: 36, interactionRadius: 58, requiredTool: 'pico', action: 'Minando', drop: 'Piedra', uses: 0, maxUses: 5, recoveryUntil: 0 },
-    { id: 'iron-ore-1', type: 'ironOre', label: 'Mena de hierro', ...pos(690, 500), w: 44, h: 40, interactionRadius: 58, requiredTool: 'pico', action: 'Minando', drop: 'Mineral de Hierro', uses: 0, maxUses: 5, recoveryUntil: 0 }
+    { id: 'tree-1', type: 'tree', sprite: 'tree', label: 'Árbol', ...pos(240, 430), w: 48, h: 64, interactionRadius: 62, requiredTool: 'hacha', action: 'Talando', drop: 'Madera', uses: 0, maxUses: 5, recoveryUntil: 0 },
+    { id: 'tree-2', type: 'tree', sprite: 'tree', label: 'Árbol', ...pos(320, 650), w: 48, h: 64, interactionRadius: 62, requiredTool: 'hacha', action: 'Talando', drop: 'Madera', uses: 0, maxUses: 5, recoveryUntil: 0 },
+    { id: 'stone-1', type: 'stone', sprite: 'stone', label: 'Piedra', ...pos(620, 450), w: 44, h: 36, interactionRadius: 58, requiredTool: 'pico', action: 'Minando', drop: 'Piedra', uses: 0, maxUses: 5, recoveryUntil: 0 },
+    { id: 'iron-ore-1', type: 'ironOre', sprite: 'ironOre', label: 'Mena de hierro', ...pos(690, 500), w: 44, h: 40, interactionRadius: 58, requiredTool: 'pico', action: 'Minando', drop: 'Mineral de Hierro', uses: 0, maxUses: 5, recoveryUntil: 0 }
 ];
