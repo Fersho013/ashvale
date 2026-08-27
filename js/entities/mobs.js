@@ -134,7 +134,7 @@ export class ActiveMob {
         this.atlasId = 'arenaMob'; this.spriteDirection = 'down'; this.isMoving = false;
         this.speed = 1.7; this.flash = 0; this.maxHp = MOBS.mobArena.baseHp; this.hp = this.maxHp;
         this.attackCooldown = 0; this.attackTimer = 0; this.attackWarningTimer = 0; this.staggerTimer = 0;
-        this.attackRange = 62; this.attackDamage = 10; this.attackInterval = 120;
+        this.attackRange = 62; this.attackDamage = 10; this.attackInterval = 60;
         this.attackDuration = 18; this.attackImpactFrame = 9;
     }
     takeHit(dmg, wasParried) {
@@ -196,7 +196,8 @@ export class Slime {
         this.flash = 0; this.mergeTimer = 0; this.wanderAngle = Math.random() * Math.PI * 2;
         this.fused = false;
         this.attackCooldown = 0; this.attackTimer = 0; this.attackWarningTimer = 0;
-        this.attackRange = big ? 62 : 50; this.attackDamage = big ? 8 : 4; this.attackInterval = 240;
+        this.attackRange = big ? 62 : 50; this.attackDamage = big ? 8 : 4; this.attackInterval = 180;
+        this.detectionRange = 360;
         this.attackDuration = 20; this.attackImpactFrame = 10;
     }
     takeHit(dmg) { this.flash = 10; this.hp -= dmg; this.mergeTimer = 0; }
@@ -209,7 +210,7 @@ export class Slime {
         const dx = player ? (player.x + player.w / 2) - (this.x + this.w / 2) : 0;
         const dy = player ? (player.y + player.h / 2) - (this.y + this.h / 2) : 0;
         const playerDistance = Math.hypot(dx, dy);
-        const playerDetected = !!player && playerDistance < 180;
+        const playerDetected = !!player && playerDistance < this.detectionRange;
         let mergeTarget = null;
         if (!this.big && playerDetected) {
             let nearest = Infinity;
@@ -230,7 +231,7 @@ export class Slime {
             setMobMovement(this, (targetDx / targetDistance) * speed, (targetDy / targetDistance) * speed);
             this.x += (targetDx / targetDistance) * speed;
             this.y += (targetDy / targetDistance) * speed;
-        } else if (!player || playerDistance >= 180) {
+        } else if (!player || playerDistance >= this.detectionRange) {
             this.wanderAngle += (Math.random() - 0.5) * 0.2;
             setMobMovement(this, Math.cos(this.wanderAngle) * speed, Math.sin(this.wanderAngle) * speed);
             this.x += Math.cos(this.wanderAngle) * speed;
@@ -273,7 +274,8 @@ export class Wolf {
         this.habitat = habitat;
         this.hp = MOBS.lobo.baseHp; this.maxHp = this.hp; this.flash = 0;
         this.attackCooldown = 0; this.attackTimer = 0; this.attackWarningTimer = 0;
-        this.attackRange = 66; this.attackDamage = 6; this.attackInterval = 120;
+        this.attackRange = 66; this.attackDamage = 6; this.attackInterval = 60;
+        this.playerDetectionRange = 560;
         this.attackDuration = 16; this.attackImpactFrame = 8;
     }
     takeHit(dmg) { this.flash = 10; this.hp -= dmg; }
@@ -288,7 +290,8 @@ export class Wolf {
             const d = dist(this, deer);
             if (d < 140 && d < best) { best = d; target = deer; }
         }
-        if (!target) target = player;
+        if (!target && player && dist(this, player) < this.playerDetectionRange) target = player;
+        if (!target) { clampToArea(this, this.habitat); return; }
 
         const dx = (target.x + target.w/2) - (this.x + this.w/2);
         const dy = (target.y + target.h/2) - (this.y + this.h/2);
@@ -357,7 +360,8 @@ export class GoblinExplorer {
         this.atlasId = 'goblin'; this.spriteDirection = 'down'; this.isMoving = false;
         this.habitat = habitat;
         this.hp = MOBS.goblin.baseHp; this.maxHp = this.hp; this.flash = 0; this.attackCooldown = 0;
-        this.attackTimer = 0; this.attackWarningTimer = 0; this.attackRange = 62; this.attackDamage = 5; this.attackInterval = 120;
+        this.attackTimer = 0; this.attackWarningTimer = 0; this.attackRange = 62; this.attackDamage = 5; this.attackInterval = 60;
+        this.detectionRange = 400;
         this.attackDuration = 18; this.attackImpactFrame = 9;
         this.hostile = false;
     }
@@ -382,7 +386,7 @@ export class GoblinExplorer {
         if (fleeing) {
             setMobMovement(this, -(dx/d) * speed, -(dy/d) * speed);
             this.x -= (dx/d) * speed; this.y -= (dy/d) * speed;
-        } else if (d < 200) {
+        } else if (d < this.detectionRange) {
             if (this.attackWarningTimer <= 0 && this.attackTimer <= 0 && d > this.attackRange * 0.72) {
                 setMobMovement(this, (dx/d) * speed, (dy/d) * speed);
                 this.x += (dx/d) * speed; this.y += (dy/d) * speed;
