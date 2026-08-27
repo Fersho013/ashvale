@@ -11,19 +11,27 @@ import { grantMobLoot } from '../systems/inventory.js';
 // la dirección, muestra un abanico frontal y aplica daño una única vez en
 // el fotograma de impacto; nunca por el simple hecho de superponerse.
 function beginMobAttack(mob, player) {
-    if (mob.attackCooldown > 0 || mob.attackTimer > 0) return;
+    if (mob.attackCooldown > 0 || mob.attackTimer > 0 || mob.attackWarningTimer > 0) return;
     const cx = mob.x + mob.w / 2, cy = mob.y + mob.h / 2;
     const px = player.x + player.w / 2, py = player.y + player.h / 2;
     const distance = Math.hypot(px - cx, py - cy);
     if (distance > mob.attackRange) return;
     mob.attackDirX = (px - cx) / (distance || 1);
     mob.attackDirY = (py - cy) / (distance || 1);
-    mob.attackTimer = mob.attackDuration;
-    mob.attackHit = false;
-    mob.attackCooldown = mob.attackInterval;
+    // El intervalo solicitado es ahora la preparación anunciada: primero
+    // aparece el aviso y, al terminar, se ejecuta el golpe telegrafiado.
+    mob.attackWarningTimer = mob.attackInterval;
 }
 
 function resolveMobAttack(mob, player) {
+    if (mob.attackWarningTimer > 0) {
+        mob.attackWarningTimer--;
+        if (mob.attackWarningTimer === 0) {
+            mob.attackTimer = mob.attackDuration;
+            mob.attackHit = false;
+        }
+        return;
+    }
     if (mob.attackTimer <= 0) return;
     if (!mob.attackHit && mob.attackTimer === mob.attackImpactFrame) {
         const cx = mob.x + mob.w / 2, cy = mob.y + mob.h / 2;
@@ -41,6 +49,18 @@ function resolveMobAttack(mob, player) {
         mob.attackHit = true;
     }
     mob.attackTimer--;
+}
+
+function drawMobAttackWarning(ctx, mob) {
+    if (mob.attackWarningTimer <= 0) return;
+    const x = mob.x + mob.w / 2, y = mob.y - 17;
+    const pulse = 1 + Math.sin(mob.attackWarningTimer * 0.2) * 0.08;
+    ctx.save();
+    ctx.translate(x, y); ctx.scale(pulse, pulse);
+    ctx.fillStyle = '#e53935'; ctx.beginPath(); ctx.arc(0, 0, 11, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 17px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('!', 0, 1);
+    ctx.restore();
 }
 
 function drawMobAttackArea(ctx, mob, color) {
@@ -84,7 +104,7 @@ export class ActiveMob {
     constructor(x, y) {
         this.x = x; this.y = y; this.w = 34; this.h = 34;
         this.speed = 1.7; this.flash = 0; this.maxHp = 40; this.hp = 40;
-        this.attackCooldown = 0; this.attackTimer = 0; this.staggerTimer = 0;
+        this.attackCooldown = 0; this.attackTimer = 0; this.attackWarningTimer = 0; this.staggerTimer = 0;
         this.attackRange = 62; this.attackDamage = 10; this.attackInterval = 120;
         this.attackDuration = 18; this.attackImpactFrame = 9;
     }
@@ -101,7 +121,7 @@ export class ActiveMob {
         const dx = (player.x + player.w/2) - (this.x + this.w/2);
         const dy = (player.y + player.h/2) - (this.y + this.h/2);
         const d = Math.hypot(dx, dy);
-        if (d > this.attackRange * 0.72) {
+        if (this.attackWarningTimer <= 0 && this.attackTimer <= 0 && d > this.attackRange * 0.72) {
             const nx = dx/d, ny = dy/d;
             const activeWalls = getActiveWalls();
             this.x += nx * speed; this.resolveCollisions(true, activeWalls);
@@ -125,6 +145,7 @@ export class ActiveMob {
     draw(ctx) {
         const color = this.staggerTimer > 0 ? '#7f8c8d' : (this.flash > 0 ? '#fff' : '#c0392b');
         drawEntity(ctx, 'goblin', this.x, this.y, this.w, this.h, color, 'rect', 'M');
+        drawMobAttackWarning(ctx, this);
         drawMobAttackArea(ctx, this, '#e74c3c');
         ctx.fillStyle = '#444'; ctx.fillRect(this.x, this.y - 8, this.w, 4);
         ctx.fillStyle = '#e74c3c'; ctx.fillRect(this.x, this.y - 8, Math.max(0,(this.hp/this.maxHp))*this.w, 4);
@@ -143,7 +164,7 @@ export class Slime {
         this.hp = big ? baseHp * 2 : baseHp; this.maxHp = this.hp;
         this.flash = 0; this.mergeTimer = 0; this.wanderAngle = Math.random() * Math.PI * 2;
         this.fused = false;
-        this.attackCooldown = 0; this.attackTimer = 0;
+        this.attackCooldown = 0; this.attackTimer = 0; this.attackWarningTimer = 0;
         this.attackRange = big ? 62 : 50; this.attackDamage = 4; this.attackInterval = 240;
         this.attackDuration = 20; this.attackImpactFrame = 10;
     }
@@ -158,7 +179,7 @@ export class Slime {
         const playerDistance = Math.hypot(dx, dy);
         // El Slime conserva su deambular, pero si el jugador entra en su
         // zona de alerta se aproxima hasta la distancia de ataque.
-        if (player && playerDistance < 180 && playerDistance > this.attackRange * 0.72) {
+        if (this.attackWarningTimer <= 0 && this.attackTimer <= 0 && player && playerDistance < 180 && playerDistance > this.attackRange * 0.72) {
             this.x += (dx / playerDistance) * speed;
             this.y += (dy / playerDistance) * speed;
         } else if (!player || playerDistance >= 180) {
@@ -190,6 +211,7 @@ export class Slime {
     draw(ctx) {
         drawEntity(ctx, 'slime_green', this.x, this.y, this.w, this.h,
             this.flash > 0 ? '#fff' : (this.big ? '#16a085' : '#2ecc71'), 'circle');
+        drawMobAttackWarning(ctx, this);
         drawMobAttackArea(ctx, this, '#2ecc71');
     }
 }
@@ -199,7 +221,7 @@ export class Wolf {
         this.x = x; this.y = y; this.w = 32; this.h = 32; this.speed = 1.9;
         this.habitat = habitat;
         this.hp = MOBS.lobo.baseHp; this.maxHp = this.hp; this.flash = 0;
-        this.attackCooldown = 0; this.attackTimer = 0;
+        this.attackCooldown = 0; this.attackTimer = 0; this.attackWarningTimer = 0;
         this.attackRange = 66; this.attackDamage = 6; this.attackInterval = 120;
         this.attackDuration = 16; this.attackImpactFrame = 8;
     }
@@ -220,7 +242,7 @@ export class Wolf {
         const dy = (target.y + target.h/2) - (this.y + this.h/2);
         const d = Math.hypot(dx, dy);
         const desiredDistance = target === player ? this.attackRange * 0.72 : 4;
-        if (d > desiredDistance) { this.x += (dx/d) * speed; this.y += (dy/d) * speed; }
+        if (this.attackWarningTimer <= 0 && this.attackTimer <= 0 && d > desiredDistance) { this.x += (dx/d) * speed; this.y += (dy/d) * speed; }
 
         clampToArea(this, this.habitat);
 
@@ -238,6 +260,7 @@ export class Wolf {
     }
     draw(ctx) {
         drawEntity(ctx, 'wolf', this.x, this.y, this.w, this.h, this.flash > 0 ? '#fff' : '#7f8c8d', 'rect', 'L');
+        drawMobAttackWarning(ctx, this);
         drawMobAttackArea(ctx, this, '#bdc3c7');
     }
 }
@@ -270,7 +293,7 @@ export class GoblinExplorer {
         this.x = x; this.y = y; this.w = 30; this.h = 30; this.speed = 1.5;
         this.habitat = habitat;
         this.hp = MOBS.goblin.baseHp; this.maxHp = this.hp; this.flash = 0; this.attackCooldown = 0;
-        this.attackTimer = 0; this.attackRange = 62; this.attackDamage = 5; this.attackInterval = 120;
+        this.attackTimer = 0; this.attackWarningTimer = 0; this.attackRange = 62; this.attackDamage = 5; this.attackInterval = 120;
         this.attackDuration = 18; this.attackImpactFrame = 9;
         this.hostile = false;
     }
@@ -294,7 +317,7 @@ export class GoblinExplorer {
         if (fleeing) {
             this.x -= (dx/d) * speed; this.y -= (dy/d) * speed;
         } else if (d < 200) {
-            if (d > this.attackRange * 0.72) {
+            if (this.attackWarningTimer <= 0 && this.attackTimer <= 0 && d > this.attackRange * 0.72) {
                 this.x += (dx/d) * speed; this.y += (dy/d) * speed;
             }
             beginMobAttack(this, player);
@@ -314,6 +337,7 @@ export class GoblinExplorer {
     draw(ctx) {
         const color = this.flash > 0 ? '#fff' : (this.hp/this.maxHp < 0.2 ? '#f39c12' : '#27ae60');
         drawEntity(ctx, 'goblin', this.x, this.y, this.w, this.h, color, 'rect', 'G');
+        drawMobAttackWarning(ctx, this);
         drawMobAttackArea(ctx, this, '#f1c40f');
     }
 }
