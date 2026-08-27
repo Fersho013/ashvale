@@ -7,6 +7,7 @@ import { Input } from './core/input.js';
 import { ScreenManager } from './core/screenManager.js';
 import { Camera } from './core/camera.js';
 import { drawEntity, drawSprite, hasSprite } from './core/assets.js';
+import { drawAtlasAnimation, drawAtlasFrame, drawAtlasTiled, ATLAS_DISPLAY_SIZES } from './core/atlas.js';
 import { Player } from './entities/player.js';
 import { DummyMob, ActiveMob, Slime, Wolf, Deer, GoblinExplorer } from './entities/mobs.js';
 import { setupDebugPanel, DEBUG } from './systems/debug.js';
@@ -76,12 +77,22 @@ document.addEventListener('keydown', e => {
 ScreenManager.init('gameCanvas', { virtualWidth: 960, virtualHeight: 540, maintainAspectRatio: false });
 ScreenManager.onResize = () => { if (typeof camera !== 'undefined' && camera) { camera.width = canvas.width; camera.height = canvas.height; } };
 
+function drawWorldFrame(frame, x, y, w, h, fallback) {
+    if (!drawAtlasFrame(ctx, 'world', frame, x, y, w, h)) fallback();
+}
+
+function drawWeaponFrame(frame, x, y, w, h, fallback) {
+    if (!drawAtlasFrame(ctx, 'weapons', frame, x, y, w, h)) fallback();
+}
+
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     ctx.translate(-camera.x, -camera.y);
 
-    for (const z of ZONES) { ctx.fillStyle = z.color; ctx.fillRect(z.x, z.y, z.w, z.h); }
+    for (const z of ZONES) {
+        if (!drawAtlasTiled(ctx, 'world', 'ground', z.x, z.y, z.w, z.h, 48, 48)) { ctx.fillStyle = z.color; ctx.fillRect(z.x, z.y, z.w, z.h); }
+    }
     for (const biome of Object.values(BIOME_AREAS)) {
         ctx.fillStyle = biome.color; ctx.fillRect(biome.x, biome.y, biome.w, biome.h);
         ctx.strokeStyle = biome.border; ctx.lineWidth = 2; ctx.strokeRect(biome.x, biome.y, biome.w, biome.h);
@@ -96,30 +107,33 @@ function render() {
     }
 
     ctx.fillStyle = '#3a3a3a'; ctx.strokeStyle = '#555'; ctx.lineWidth = 2;
-    for (const w of walls) { ctx.fillRect(w.x, w.y, w.w, w.h); if (DEBUG.showHitboxes) ctx.strokeRect(w.x, w.y, w.w, w.h); }
+    for (const w of walls) {
+        drawWorldFrame('wall', w.x, w.y, w.w, w.h, () => ctx.fillRect(w.x, w.y, w.w, w.h));
+        if (DEBUG.showHitboxes) ctx.strokeRect(w.x, w.y, w.w, w.h);
+    }
 
     for (const d of doors) {
-        drawEntity(ctx, 'door', d.x, d.y, d.w, d.h, d.open ? 'rgba(46,204,113,0.35)' : '#6e4b2a', 'rect');
+        drawWorldFrame('door', d.x, d.y, d.w, d.h, () => drawEntity(ctx, 'door', d.x, d.y, d.w, d.h, d.open ? 'rgba(46,204,113,0.35)' : '#6e4b2a', 'rect'));
         if (DEBUG.showHitboxes) { ctx.strokeStyle = d.open ? '#2ecc71' : '#e74c3c'; ctx.strokeRect(d.x, d.y, d.w, d.h); }
     }
 
-    workTables.forEach(t => drawSprite(ctx, 'workTable', t.x, t.y, t.w, t.h));
-    drawSprite(ctx, 'npc', npc.x, npc.y, npc.w, npc.h);
-    drawSprite(ctx, 'bed', respawnBed.x, respawnBed.y, respawnBed.w, respawnBed.h);
-    drawSprite(ctx, 'campfire', campfire.x, campfire.y, campfire.w, campfire.h);
-    drawSprite(ctx, 'alchemy', alchemyTable.x, alchemyTable.y, alchemyTable.w, alchemyTable.h);
-    drawSprite(ctx, 'buildTable', buildTable.x, buildTable.y, buildTable.w, buildTable.h);
-    drawSprite(ctx, 'chest', chestObj.x, chestObj.y, chestObj.w, chestObj.h);
-    drawSprite(ctx, 'chest', weaponsChestObj.x, weaponsChestObj.y, weaponsChestObj.w, weaponsChestObj.h, { color: '#c0392b', label: 'A' });
-    drawSprite(ctx, 'chest', toolsChestObj.x, toolsChestObj.y, toolsChestObj.w, toolsChestObj.h, { color: '#7f8c8d', label: 'H' });
+    workTables.forEach(t => drawWorldFrame('work_table', t.x, t.y, t.w, t.h, () => drawSprite(ctx, 'workTable', t.x, t.y, t.w, t.h)));
+    if (!drawAtlasAnimation(ctx, 'npc', 'idle', 'down', performance.now(), npc.x, npc.y, npc.w, npc.h, { anchor: 'feet', spriteSize: ATLAS_DISPLAY_SIZES.npc })) drawSprite(ctx, 'npc', npc.x, npc.y, npc.w, npc.h);
+    drawWorldFrame('bed', respawnBed.x, respawnBed.y, respawnBed.w, respawnBed.h, () => drawSprite(ctx, 'bed', respawnBed.x, respawnBed.y, respawnBed.w, respawnBed.h));
+    drawWorldFrame('campfire', campfire.x, campfire.y, campfire.w, campfire.h, () => drawSprite(ctx, 'campfire', campfire.x, campfire.y, campfire.w, campfire.h));
+    drawWorldFrame('alchemy_table', alchemyTable.x, alchemyTable.y, alchemyTable.w, alchemyTable.h, () => drawSprite(ctx, 'alchemy', alchemyTable.x, alchemyTable.y, alchemyTable.w, alchemyTable.h));
+    drawWorldFrame('build_table', buildTable.x, buildTable.y, buildTable.w, buildTable.h, () => drawSprite(ctx, 'buildTable', buildTable.x, buildTable.y, buildTable.w, buildTable.h));
+    drawWorldFrame('chest', chestObj.x, chestObj.y, chestObj.w, chestObj.h, () => drawSprite(ctx, 'chest', chestObj.x, chestObj.y, chestObj.w, chestObj.h));
+    drawWorldFrame('chest', weaponsChestObj.x, weaponsChestObj.y, weaponsChestObj.w, weaponsChestObj.h, () => drawSprite(ctx, 'chest', weaponsChestObj.x, weaponsChestObj.y, weaponsChestObj.w, weaponsChestObj.h, { color: '#c0392b', label: 'A' }));
+    drawWorldFrame('chest', toolsChestObj.x, toolsChestObj.y, toolsChestObj.w, toolsChestObj.h, () => drawSprite(ctx, 'chest', toolsChestObj.x, toolsChestObj.y, toolsChestObj.w, toolsChestObj.h, { color: '#7f8c8d', label: 'H' }));
 
     for (const rack of weaponRacks) {
         const w = WEAPONS[rack.weapon];
-        drawEntity(ctx, w.asset, rack.x, rack.y, rack.w, rack.h, w.color, 'rect', w.name[0]);
+        drawWeaponFrame(w.atlasFrame, rack.x, rack.y, rack.w, rack.h, () => drawEntity(ctx, w.asset, rack.x, rack.y, rack.w, rack.h, w.color, 'rect', w.name[0]));
     }
     for (const rack of toolRacks) {
         const t = TOOLS[rack.tool];
-        drawEntity(ctx, t.asset, rack.x, rack.y, rack.w, rack.h, t.color, 'rect', t.name[0]);
+        drawWeaponFrame(t.atlasFrame, rack.x, rack.y, rack.w, rack.h, () => drawEntity(ctx, t.asset, rack.x, rack.y, rack.w, rack.h, t.color, 'rect', t.name[0]));
     }
 
     // Recursos del Ecosistema y Bioma Vivo. Se dibujan con formas simples
@@ -127,7 +141,9 @@ function render() {
     for (const node of harvestNodes) {
         const recovering = Date.now() < node.recoveryUntil;
         ctx.globalAlpha = recovering ? 0.35 : 1;
-        if (hasSprite(node.sprite)) {
+        if (drawAtlasFrame(ctx, 'world', node.type === 'ironOre' ? 'iron_ore' : node.type, node.x, node.y, node.w, node.h)) {
+            // Atlas de mundo aplicado.
+        } else if (hasSprite(node.sprite)) {
             drawSprite(ctx, node.sprite, node.x, node.y, node.w, node.h);
         } else if (node.type === 'tree') {
             ctx.fillStyle = '#6e4b2a';
@@ -149,7 +165,7 @@ function render() {
     world.deers.forEach(d => d.draw(ctx));
     world.goblins.forEach(g => g.draw(ctx));
 
-    drawSprite(ctx, 'horn', bocinaVigia.x, bocinaVigia.y, bocinaVigia.w, bocinaVigia.h);
+    drawWorldFrame('horn', bocinaVigia.x, bocinaVigia.y, bocinaVigia.w, bocinaVigia.h, () => drawSprite(ctx, 'horn', bocinaVigia.x, bocinaVigia.y, bocinaVigia.w, bocinaVigia.h));
 
     world.projectiles.forEach(p => p.draw(ctx));
 
