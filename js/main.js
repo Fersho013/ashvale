@@ -38,9 +38,14 @@ const world = {
     dummies: [ new DummyMob(505 * TUTORIAL_SCALE, 115 * TUTORIAL_SCALE) ],
     activeMobs: [ new ActiveMob(1050 * TUTORIAL_SCALE, 200 * TUTORIAL_SCALE) ],
     // Cada especie comienza y permanece dentro de su bioma específico.
-    slimes: [ new Slime(1060, 1490, false, BIOME_AREAS.slimeMarsh), new Slime(1240, 1570, false, BIOME_AREAS.slimeMarsh) ],
+    slimes: [
+        new Slime(940, 1430, false, BIOME_AREAS.slimeMarsh), new Slime(1040, 1510, false, BIOME_AREAS.slimeMarsh),
+        new Slime(1130, 1410, false, BIOME_AREAS.slimeMarsh), new Slime(1220, 1520, false, BIOME_AREAS.slimeMarsh),
+        new Slime(1320, 1430, false, BIOME_AREAS.slimeMarsh), new Slime(1400, 1560, false, BIOME_AREAS.slimeMarsh),
+        new Slime(1010, 1640, false, BIOME_AREAS.slimeMarsh), new Slime(1280, 1650, false, BIOME_AREAS.slimeMarsh)
+    ],
     wolves: [ new Wolf(360, 940, BIOME_AREAS.forest), new Wolf(610, 1170, BIOME_AREAS.forest) ],
-    deers: [ new Deer(520, 1310, BIOME_AREAS.forest), new Deer(680, 1510, BIOME_AREAS.forest) ],
+    deers: [ new Deer(520, 1310, BIOME_AREAS.forest), new Deer(680, 1510, BIOME_AREAS.forest), new Deer(390, 1480, BIOME_AREAS.forest) ],
     goblins: [ new GoblinExplorer(1050, 860, BIOME_AREAS.mines), new GoblinExplorer(1300, 1030, BIOME_AREAS.mines), new GoblinExplorer(1430, 800, BIOME_AREAS.mines) ],
     projectiles: [] // proyectiles activos de Báculo/Arco (ver systems/worldInteraction.js)
 };
