@@ -281,7 +281,7 @@ export class Player {
                 x: this.x + this.w / 2, y: this.y + this.h / 2,
                 dirX: this.facing.x, dirY: this.facing.y,
                 dmg: Math.ceil(this.attackDamage * 1.5), weaponKey: 'arco',
-                piercing: true, knockback: 24, speed: 16, rangeBlocks: 6, size: 10, color: '#b6f25f'
+                piercing: true, knockback: 24, speed: 16, rangeBlocks: 6, size: 10, color: '#b6f25f', sprite: 'arrow'
             };
             return;
         }
@@ -314,7 +314,7 @@ export class Player {
                 x: this.x + this.w / 2, y: this.y + this.h / 2,
                 dirX: this.facing.x, dirY: this.facing.y,
                 dmg: Math.ceil(this.attackDamage * 1.6), weaponKey: 'baculo',
-                speed: 12, rangeBlocks: 5, size: 16, color: '#8e44ad', homing: 0.12,
+                speed: 12, rangeBlocks: 5, size: 16, color: '#8e44ad', sprite: 'arcaneBolt', homing: 0.12,
                 explosionRadius: 62, magic: true
             };
             return;
