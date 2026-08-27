@@ -3,6 +3,7 @@
    ===================================================================== */
 import { Input } from '../core/input.js';
 import { drawEntity, CHARACTER_SPRITE_SIZE } from '../core/assets.js';
+import { drawAtlasAnimation } from '../core/atlas.js';
 import { checkRectCollision } from '../core/physics.js';
 import { getActiveWalls } from '../world/map.js';
 import { WEAPONS, PLAYER_SPRITE_KEYS, getWeaponFamily, weaponSupportsSkill } from '../data/weapons.js';
@@ -29,6 +30,8 @@ export class Player {
         this.attackTimer = 0;
         this.attackDuration = 15;
         this.attackCooldown = 0;
+        this.spriteSkillAction = null;
+        this.spriteSkillTimer = 0;
         // Cuando el arma equipada es a distancia (ranged), el ataque no usa
         // getAttackHitbox(): en vez de eso deja aquí los datos de disparo un
         // frame para que worldInteraction.js cree el Projectile real. Así
@@ -114,6 +117,7 @@ export class Player {
     }
 
     update() {
+        if (this.spriteSkillTimer > 0 && --this.spriteSkillTimer === 0) this.spriteSkillAction = null;
         let dx = 0, dy = 0;
         if (Input.isDown(['KeyW','ArrowUp'])) dy -= 1;
         if (Input.isDown(['KeyS','ArrowDown'])) dy += 1;
@@ -224,6 +228,15 @@ export class Player {
         if (this.bars < skill.cost) return;
 
         this.bars -= skill.cost;
+        this.spriteSkillAction = {
+            sword_thrust: 'skill_sword_thrust', sword_storm: 'skill_sword_storm',
+            knight_earthsplitter: 'skill_greatsword_earthsplitter', knight_cataclysm: 'skill_greatsword_cataclysm',
+            dual_cross_slash: 'skill_dual_cross_slash', dual_steel_frenzy: 'skill_dual_steel_frenzy',
+            archer_piercing_shot: 'skill_bow_piercing_shot', archer_thorn_rain: 'skill_bow_thorn_rain',
+            lancer_phalanx_charge: 'skill_spear_phalanx_charge', lancer_impaling_whirlwind: 'skill_spear_impaling_whirlwind',
+            arcane_aether_projectile: 'skill_staff_aether_projectile', arcane_void_vortex: 'skill_staff_void_vortex'
+        }[skill.id] || null;
+        this.spriteSkillTimer = this.spriteSkillAction ? 24 : 0;
         if (skill.id === 'sword_thrust') {
             // 3 m equivalen a 90 px en este prototipo. El hitbox recorre el
             // trayecto completo y puede alcanzar a más de un enemigo.
@@ -448,7 +461,17 @@ export class Player {
 
         const dirSprites = PLAYER_SPRITE_KEYS[this.facingDir] || PLAYER_SPRITE_KEYS.centro;
         const spriteKey = (this.isMoving && this.walkFrameToggle) ? dirSprites.walk : dirSprites.idle;
-        drawEntity(ctx, spriteKey, this.x, this.y, this.w, this.h, color, 'rect', null, CHARACTER_SPRITE_SIZE);
+        const direction = this.facingDir === 'centro' ? 'down' : this.facingDir;
+        const atlasAnimation = this.getAtlasAnimation();
+        const renderedFromAtlas = drawAtlasAnimation(
+            ctx, 'player', atlasAnimation, direction, Math.floor(performance.now() / 80),
+            this.x + this.w / 2 - CHARACTER_SPRITE_SIZE.w / 2,
+            this.y + this.h - CHARACTER_SPRITE_SIZE.h,
+            CHARACTER_SPRITE_SIZE.w, CHARACTER_SPRITE_SIZE.h, 'feet'
+        );
+        if (!renderedFromAtlas) {
+            drawEntity(ctx, spriteKey, this.x, this.y, this.w, this.h, color, 'rect', null, CHARACTER_SPRITE_SIZE);
+        }
 
         if (this.isAttacking && !weapon.ranged) {
             const box = this.swordThrustTimer > 0 ? this.getSwordThrustHitbox()
@@ -505,5 +528,29 @@ export class Player {
             ctx.strokeStyle = '#00ffff';
             ctx.strokeRect(this.x, this.y, this.w, this.h);
         }
+    }
+
+    getAtlasAnimation() {
+        if (this.spriteSkillTimer > 0 && this.spriteSkillAction) return this.spriteSkillAction;
+        if (this.swordThrustTimer > 0) return 'skill_sword_thrust';
+        if (this.swordStormTimer > 0) return 'skill_sword_storm';
+        if (this.knightEarthsplitterTimer > 0) return 'skill_greatsword_earthsplitter';
+        if (this.knightCataclysmTimer > 0) return 'skill_greatsword_cataclysm';
+        if (this.dualCrossSlashTimer > 0) return 'skill_dual_cross_slash';
+        if (this.dualSteelFrenzyTimer > 0) return 'skill_dual_steel_frenzy';
+        if (this.archerThornRainTimer > 0) return 'skill_bow_thorn_rain';
+        if (this.lancerPhalanxTimer > 0) return 'skill_spear_phalanx_charge';
+        if (this.lancerWhirlwindTimer > 0) return 'skill_spear_impaling_whirlwind';
+        if (this.arcaneVoidVortexTimer > 0) return 'skill_staff_void_vortex';
+        if (this.isAttacking) {
+            const family = this.currentWeapon.family;
+            if (family === 'sword') return 'attack_sword';
+            if (family === 'greatsword') return 'attack_greatsword';
+            if (family === 'dualBlades') return 'attack_dual_blades';
+            if (family === 'bow') return 'attack_bow';
+            if (family === 'spear') return 'attack_spear';
+            if (family === 'staff') return 'attack_staff';
+        }
+        return this.isMoving ? 'move' : 'idle';
     }
 }
