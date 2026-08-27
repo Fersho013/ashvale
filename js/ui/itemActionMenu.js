@@ -9,6 +9,7 @@
 let menuEl = null;
 let outsideCloseHandler = null;
 let selectedEl = null;
+let itemNameEl = null;
 
 function ensureMenuEl() {
     if (menuEl) return menuEl;
@@ -19,16 +20,35 @@ function ensureMenuEl() {
     return menuEl;
 }
 
+function ensureItemNameEl() {
+    if (itemNameEl) return itemNameEl;
+    itemNameEl = document.createElement('div');
+    itemNameEl.id = 'item-selected-name';
+    itemNameEl.className = 'item-selected-name';
+    document.body.appendChild(itemNameEl);
+    return itemNameEl;
+}
+
 export function closeItemActionMenu() {
     if (selectedEl) { selectedEl.classList.remove('selected'); selectedEl = null; }
     if (!menuEl) return;
     menuEl.style.display = 'none';
     menuEl.innerHTML = '';
+    if (itemNameEl) { itemNameEl.style.display = 'none'; itemNameEl.innerText = ''; }
     if (outsideCloseHandler) {
         document.removeEventListener('mousedown', outsideCloseHandler, true);
         document.removeEventListener('touchstart', outsideCloseHandler, true);
         outsideCloseHandler = null;
     }
+}
+
+function positionItemName(el, anchorEl) {
+    const rect = anchorEl.getBoundingClientRect(), margin = 6;
+    el.style.display = 'block';
+    const width = Math.min(Math.max(90, el.offsetWidth), window.innerWidth - margin * 2);
+    const left = Math.max(margin, Math.min(rect.left + rect.width / 2 - width / 2, window.innerWidth - width - margin));
+    const top = Math.max(margin, rect.top - el.offsetHeight - margin);
+    el.style.left = `${left}px`; el.style.top = `${top}px`;
 }
 
 function positionMenu(el, anchorEl) {
@@ -56,6 +76,12 @@ export function openItemActionMenu(anchorEl, actions) {
 
     anchorEl.classList.add('selected');
     selectedEl = anchorEl;
+    const itemName = anchorEl.dataset.itemName;
+    if (itemName) {
+        const nameEl = ensureItemNameEl();
+        nameEl.innerText = itemName;
+        positionItemName(nameEl, anchorEl);
+    }
 
     actions.forEach(a => {
         const btn = document.createElement('button');
