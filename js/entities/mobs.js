@@ -2,7 +2,7 @@
    7. ENTIDADES Y MOBS
    ===================================================================== */
 import { checkRectCollision, dist } from '../core/physics.js';
-import { drawEntity } from '../core/assets.js';
+import { drawSprite } from '../core/assets.js';
 import { getActiveWalls, clampToZone3, clampToArea } from '../world/map.js';
 import { MOBS } from '../data/mobs.js';
 import { grantMobLoot } from '../systems/inventory.js';
@@ -91,6 +91,7 @@ function drawMobAttackArea(ctx, mob, color) {
 export class DummyMob {
     constructor(x, y) {
         this.x = x; this.y = y; this.w = 38; this.h = 38;
+        this.sprite = 'dummy';
         this.flash = 0; this.maxHp = 9999; this.hp = 9999;
         this.damageNumbers = [];
     }
@@ -104,7 +105,7 @@ export class DummyMob {
         this.damageNumbers = this.damageNumbers.filter(d => d.life > 0);
     }
     draw(ctx) {
-        drawEntity(ctx, 'dummy', this.x, this.y, this.w, this.h, this.flash > 0 ? '#fff' : '#95a5a6', 'rect', 'D');
+        drawSprite(ctx, this.sprite, this.x, this.y, this.w, this.h, { color: this.flash > 0 ? '#fff' : undefined });
         ctx.fillStyle = '#f1c40f'; ctx.font = 'bold 11px monospace'; ctx.textAlign = 'center';
         this.damageNumbers.forEach(d => ctx.fillText(d.value, d.x, d.y));
     }
@@ -113,6 +114,7 @@ export class DummyMob {
 export class ActiveMob {
     constructor(x, y) {
         this.x = x; this.y = y; this.w = 34; this.h = 34;
+        this.sprite = 'arenaMob';
         this.speed = 1.7; this.flash = 0; this.maxHp = MOBS.mobArena.baseHp; this.hp = this.maxHp;
         this.attackCooldown = 0; this.attackTimer = 0; this.attackWarningTimer = 0; this.staggerTimer = 0;
         this.attackRange = 62; this.attackDamage = 10; this.attackInterval = 120;
@@ -153,7 +155,7 @@ export class ActiveMob {
     }
     draw(ctx) {
         const color = this.staggerTimer > 0 ? '#7f8c8d' : (this.flash > 0 ? '#fff' : '#c0392b');
-        drawEntity(ctx, 'goblin', this.x, this.y, this.w, this.h, color, 'rect', 'M');
+        drawSprite(ctx, this.sprite, this.x, this.y, this.w, this.h, { color });
         drawMobAttackWarning(ctx, this);
         drawMobAttackArea(ctx, this, '#e74c3c');
         drawMobHealthBar(ctx, this);
@@ -163,6 +165,7 @@ export class ActiveMob {
 export class Slime {
     constructor(x, y, big = false, habitat = null) {
         this.x = x; this.y = y; this.big = big;
+        this.sprite = big ? 'bigSlime' : 'slime';
         this.habitat = habitat;
         this.w = big ? 30 : 18; this.h = big ? 30 : 18;
         this.speed = 0.6;
@@ -232,8 +235,8 @@ export class Slime {
         if (this.hp <= 0 && !this.lootGranted) { this.lootGranted = true; grantMobLoot(this.big ? 'granSlime' : 'slime'); }
     }
     draw(ctx) {
-        drawEntity(ctx, 'slime_green', this.x, this.y, this.w, this.h,
-            this.flash > 0 ? '#fff' : (this.big ? '#16a085' : '#2ecc71'), 'circle');
+        drawSprite(ctx, this.sprite, this.x, this.y, this.w, this.h,
+            { color: this.flash > 0 ? '#fff' : undefined });
         drawMobAttackWarning(ctx, this);
         drawMobAttackArea(ctx, this, '#2ecc71');
         drawMobHealthBar(ctx, this);
@@ -243,6 +246,7 @@ export class Slime {
 export class Wolf {
     constructor(x, y, habitat = null) {
         this.x = x; this.y = y; this.w = 32; this.h = 32; this.speed = 1.9;
+        this.sprite = 'wolf';
         this.habitat = habitat;
         this.hp = MOBS.lobo.baseHp; this.maxHp = this.hp; this.flash = 0;
         this.attackCooldown = 0; this.attackTimer = 0; this.attackWarningTimer = 0;
@@ -278,7 +282,7 @@ export class Wolf {
         if (this.hp <= 0 && !this.lootGranted) { this.lootGranted = true; grantMobLoot('lobo'); }
     }
     draw(ctx) {
-        drawEntity(ctx, 'wolf', this.x, this.y, this.w, this.h, this.flash > 0 ? '#fff' : '#7f8c8d', 'rect', 'L');
+        drawSprite(ctx, this.sprite, this.x, this.y, this.w, this.h, { color: this.flash > 0 ? '#fff' : undefined });
         drawMobAttackWarning(ctx, this);
         drawMobAttackArea(ctx, this, '#bdc3c7');
         drawMobHealthBar(ctx, this);
@@ -288,6 +292,7 @@ export class Wolf {
 export class Deer {
     constructor(x, y, habitat = null) {
         this.x = x; this.y = y; this.w = 28; this.h = 28; this.speed = 1.6;
+        this.sprite = 'deer';
         this.hp = MOBS.ciervo.baseHp; this.maxHp = this.hp; this.flash = 0;
         this.habitat = habitat;
     }
@@ -310,7 +315,7 @@ export class Deer {
     }
     takeHit(dmg) { this.flash = 10; this.hp -= dmg; }
     draw(ctx) {
-        drawEntity(ctx, 'deer', this.x, this.y, this.w, this.h, this.flash > 0 ? '#fff' : '#d2b48c', 'rect', 'C');
+        drawSprite(ctx, this.sprite, this.x, this.y, this.w, this.h, { color: this.flash > 0 ? '#fff' : undefined });
         drawMobHealthBar(ctx, this);
     }
 }
@@ -318,6 +323,7 @@ export class Deer {
 export class GoblinExplorer {
     constructor(x, y, habitat = null) {
         this.x = x; this.y = y; this.w = 30; this.h = 30; this.speed = 1.5;
+        this.sprite = 'goblin';
         this.habitat = habitat;
         this.hp = MOBS.goblin.baseHp; this.maxHp = this.hp; this.flash = 0; this.attackCooldown = 0;
         this.attackTimer = 0; this.attackWarningTimer = 0; this.attackRange = 62; this.attackDamage = 5; this.attackInterval = 120;
@@ -358,7 +364,7 @@ export class GoblinExplorer {
     }
     draw(ctx) {
         const color = this.flash > 0 ? '#fff' : (this.hp/this.maxHp < 0.2 ? '#f39c12' : '#27ae60');
-        drawEntity(ctx, 'goblin', this.x, this.y, this.w, this.h, color, 'rect', 'G');
+        drawSprite(ctx, this.sprite, this.x, this.y, this.w, this.h, { color });
         drawMobAttackWarning(ctx, this);
         drawMobAttackArea(ctx, this, '#f1c40f');
         drawMobHealthBar(ctx, this);
