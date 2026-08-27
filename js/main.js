@@ -22,6 +22,7 @@ import { WEAPONS } from './data/weapons.js';
 import { TOOLS } from './data/tools.js';
 import './systems/saveLoad.js';
 import './ui/craftingUI.js';
+import './ui/atlasTheme.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
