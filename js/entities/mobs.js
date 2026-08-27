@@ -3,7 +3,7 @@
    ===================================================================== */
 import { checkRectCollision, dist } from '../core/physics.js';
 import { drawSprite } from '../core/assets.js';
-import { drawAtlasAnimation } from '../core/atlas.js';
+import { drawAtlasAnimation, ATLAS_DISPLAY_SIZES } from '../core/atlas.js';
 import { getActiveWalls, clampToZone3, clampToArea } from '../world/map.js';
 import { MOBS } from '../data/mobs.js';
 import { grantMobLoot } from '../systems/inventory.js';
@@ -83,8 +83,8 @@ function setMobMovement(mob, dx, dy) {
 function drawMobVisual(ctx, mob, color) {
     const animation = (mob.attackWarningTimer > 0 || mob.attackTimer > 0) ? 'attack' : (mob.isMoving ? 'move' : 'idle');
     const renderedFromAtlas = drawAtlasAnimation(
-        ctx, mob.atlasId, animation, mob.spriteDirection, Math.floor(performance.now() / 90),
-        mob.x, mob.y, mob.w, mob.h
+        ctx, mob.atlasId, animation, mob.spriteDirection, performance.now(),
+        mob.x, mob.y, mob.w, mob.h, { anchor: 'feet', spriteSize: mob.spriteSize }
     );
     if (!renderedFromAtlas) drawSprite(ctx, mob.sprite, mob.x, mob.y, mob.w, mob.h, { color });
 }
@@ -108,6 +108,7 @@ export class DummyMob {
     constructor(x, y) {
         this.x = x; this.y = y; this.w = 38; this.h = 38;
         this.sprite = 'dummy';
+        this.atlasId = 'dummy'; this.spriteSize = ATLAS_DISPLAY_SIZES.dummy;
         this.flash = 0; this.maxHp = 9999; this.hp = 9999;
         this.damageNumbers = [];
     }
@@ -121,7 +122,9 @@ export class DummyMob {
         this.damageNumbers = this.damageNumbers.filter(d => d.life > 0);
     }
     draw(ctx) {
-        drawSprite(ctx, this.sprite, this.x, this.y, this.w, this.h, { color: this.flash > 0 ? '#fff' : undefined });
+        if (!drawAtlasAnimation(ctx, this.atlasId, 'idle', 'down', performance.now(), this.x, this.y, this.w, this.h, { anchor: 'feet', spriteSize: this.spriteSize })) {
+            drawSprite(ctx, this.sprite, this.x, this.y, this.w, this.h, { color: this.flash > 0 ? '#fff' : undefined });
+        }
         ctx.fillStyle = '#f1c40f'; ctx.font = 'bold 11px monospace'; ctx.textAlign = 'center';
         this.damageNumbers.forEach(d => ctx.fillText(d.value, d.x, d.y));
     }
@@ -131,7 +134,7 @@ export class ActiveMob {
     constructor(x, y) {
         this.x = x; this.y = y; this.w = 34; this.h = 34;
         this.sprite = 'arenaMob';
-        this.atlasId = 'arenaMob'; this.spriteDirection = 'down'; this.isMoving = false;
+        this.atlasId = 'arenaMob'; this.spriteSize = ATLAS_DISPLAY_SIZES.arenaMob; this.spriteDirection = 'down'; this.isMoving = false;
         this.speed = 1.7; this.flash = 0; this.maxHp = MOBS.mobArena.baseHp; this.hp = this.maxHp;
         this.attackCooldown = 0; this.attackTimer = 0; this.attackWarningTimer = 0; this.staggerTimer = 0;
         this.attackRange = 62; this.attackDamage = 10; this.attackInterval = 60;
@@ -185,7 +188,7 @@ export class Slime {
     constructor(x, y, big = false, habitat = null) {
         this.x = x; this.y = y; this.big = big;
         this.sprite = big ? 'bigSlime' : 'slime';
-        this.atlasId = big ? 'bigSlime' : 'slime'; this.spriteDirection = 'down'; this.isMoving = false;
+        this.atlasId = big ? 'bigSlime' : 'slime'; this.spriteSize = big ? ATLAS_DISPLAY_SIZES.bigSlime : ATLAS_DISPLAY_SIZES.slime; this.spriteDirection = 'down'; this.isMoving = false;
         this.habitat = habitat;
         this.w = big ? 30 : 18; this.h = big ? 30 : 18;
         this.speed = 0.6;
@@ -270,7 +273,7 @@ export class Wolf {
     constructor(x, y, habitat = null) {
         this.x = x; this.y = y; this.w = 32; this.h = 32; this.speed = 1.9;
         this.sprite = 'wolf';
-        this.atlasId = 'wolf'; this.spriteDirection = 'down'; this.isMoving = false;
+        this.atlasId = 'wolf'; this.spriteSize = ATLAS_DISPLAY_SIZES.wolf; this.spriteDirection = 'down'; this.isMoving = false;
         this.habitat = habitat;
         this.hp = MOBS.lobo.baseHp; this.maxHp = this.hp; this.flash = 0;
         this.attackCooldown = 0; this.attackTimer = 0; this.attackWarningTimer = 0;
@@ -323,7 +326,7 @@ export class Deer {
     constructor(x, y, habitat = null) {
         this.x = x; this.y = y; this.w = 28; this.h = 28; this.speed = 1.6;
         this.sprite = 'deer';
-        this.atlasId = 'deer'; this.spriteDirection = 'down'; this.isMoving = false;
+        this.atlasId = 'deer'; this.spriteSize = ATLAS_DISPLAY_SIZES.deer; this.spriteDirection = 'down'; this.isMoving = false;
         this.hp = MOBS.ciervo.baseHp; this.maxHp = this.hp; this.flash = 0;
         this.habitat = habitat;
     }
@@ -357,7 +360,7 @@ export class GoblinExplorer {
     constructor(x, y, habitat = null) {
         this.x = x; this.y = y; this.w = 30; this.h = 30; this.speed = 1.5;
         this.sprite = 'goblin';
-        this.atlasId = 'goblin'; this.spriteDirection = 'down'; this.isMoving = false;
+        this.atlasId = 'goblin'; this.spriteSize = ATLAS_DISPLAY_SIZES.goblin; this.spriteDirection = 'down'; this.isMoving = false;
         this.habitat = habitat;
         this.hp = MOBS.goblin.baseHp; this.maxHp = this.hp; this.flash = 0; this.attackCooldown = 0;
         this.attackTimer = 0; this.attackWarningTimer = 0; this.attackRange = 62; this.attackDamage = 5; this.attackInterval = 60;
