@@ -59,3 +59,14 @@ export const harvestNodes = [
     { id: 'stone-1', type: 'stone', sprite: 'stone', label: 'Piedra', ...pos(620, 450), w: 44, h: 36, interactionRadius: 58, requiredTool: 'pico', action: 'Minando', drop: 'Piedra', uses: 0, maxUses: 5, recoveryUntil: 0 },
     { id: 'iron-ore-1', type: 'ironOre', sprite: 'ironOre', label: 'Mena de hierro', ...pos(690, 500), w: 44, h: 40, interactionRadius: 58, requiredTool: 'pico', action: 'Minando', drop: 'Mineral de Hierro', uses: 0, maxUses: 5, recoveryUntil: 0 }
 ];
+
+// Todos los objetos físicos del mapa se concentran aquí. Las interacciones
+// continúan usando sus radios propios, pero el jugador no puede atravesar
+// NPC, mobiliario, cofres, estantes, recursos ni la Bocina del Vigía.
+export function getStaticSolidColliders() {
+    return [
+        npc, respawnBed, campfire, alchemyTable, buildTable, chestObj,
+        weaponsChestObj, toolsChestObj, bocinaVigia,
+        ...workTables, ...weaponRacks, ...toolRacks, ...harvestNodes
+    ];
+}
