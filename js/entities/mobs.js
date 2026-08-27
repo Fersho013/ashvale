@@ -3,6 +3,7 @@
    ===================================================================== */
 import { checkRectCollision, dist } from '../core/physics.js';
 import { drawSprite } from '../core/assets.js';
+import { drawAtlasAnimation } from '../core/atlas.js';
 import { getActiveWalls, clampToZone3, clampToArea } from '../world/map.js';
 import { MOBS } from '../data/mobs.js';
 import { grantMobLoot } from '../systems/inventory.js';
@@ -73,6 +74,21 @@ function drawMobHealthBar(ctx, mob) {
     ctx.fillRect(x, y, width * ratio, 4);
 }
 
+function setMobMovement(mob, dx, dy) {
+    mob.isMoving = Math.hypot(dx, dy) > 0.01;
+    if (!mob.isMoving) return;
+    mob.spriteDirection = Math.abs(dx) >= Math.abs(dy) ? (dx >= 0 ? 'right' : 'left') : (dy >= 0 ? 'down' : 'up');
+}
+
+function drawMobVisual(ctx, mob, color) {
+    const animation = (mob.attackWarningTimer > 0 || mob.attackTimer > 0) ? 'attack' : (mob.isMoving ? 'move' : 'idle');
+    const renderedFromAtlas = drawAtlasAnimation(
+        ctx, mob.atlasId, animation, mob.spriteDirection, Math.floor(performance.now() / 90),
+        mob.x, mob.y, mob.w, mob.h
+    );
+    if (!renderedFromAtlas) drawSprite(ctx, mob.sprite, mob.x, mob.y, mob.w, mob.h, { color });
+}
+
 function drawMobAttackArea(ctx, mob, color) {
     if (mob.attackTimer <= 0) return;
     const cx = mob.x + mob.w / 2, cy = mob.y + mob.h / 2;
@@ -115,6 +131,7 @@ export class ActiveMob {
     constructor(x, y) {
         this.x = x; this.y = y; this.w = 34; this.h = 34;
         this.sprite = 'arenaMob';
+        this.atlasId = 'arenaMob'; this.spriteDirection = 'down'; this.isMoving = false;
         this.speed = 1.7; this.flash = 0; this.maxHp = MOBS.mobArena.baseHp; this.hp = this.maxHp;
         this.attackCooldown = 0; this.attackTimer = 0; this.attackWarningTimer = 0; this.staggerTimer = 0;
         this.attackRange = 62; this.attackDamage = 10; this.attackInterval = 120;
@@ -125,6 +142,7 @@ export class ActiveMob {
         if (wasParried) this.staggerTimer = 0.8 * 60;
     }
     update(player) {
+        this.isMoving = false;
         if (this.flash > 0) this.flash--;
         if (this.staggerTimer > 0) { this.staggerTimer--; clampToZone3(this); return; }
         if (this.slowTimer > 0) this.slowTimer--;
@@ -135,6 +153,7 @@ export class ActiveMob {
         const d = Math.hypot(dx, dy);
         if (this.attackWarningTimer <= 0 && this.attackTimer <= 0 && d > this.attackRange * 0.72) {
             const nx = dx/d, ny = dy/d;
+            setMobMovement(this, nx * speed, ny * speed);
             const activeWalls = getActiveWalls();
             this.x += nx * speed; this.resolveCollisions(true, activeWalls);
             this.y += ny * speed; this.resolveCollisions(false, activeWalls);
@@ -155,7 +174,7 @@ export class ActiveMob {
     }
     draw(ctx) {
         const color = this.staggerTimer > 0 ? '#7f8c8d' : (this.flash > 0 ? '#fff' : '#c0392b');
-        drawSprite(ctx, this.sprite, this.x, this.y, this.w, this.h, { color });
+        drawMobVisual(ctx, this, color);
         drawMobAttackWarning(ctx, this);
         drawMobAttackArea(ctx, this, '#e74c3c');
         drawMobHealthBar(ctx, this);
@@ -166,6 +185,7 @@ export class Slime {
     constructor(x, y, big = false, habitat = null) {
         this.x = x; this.y = y; this.big = big;
         this.sprite = big ? 'bigSlime' : 'slime';
+        this.atlasId = big ? 'bigSlime' : 'slime'; this.spriteDirection = 'down'; this.isMoving = false;
         this.habitat = habitat;
         this.w = big ? 30 : 18; this.h = big ? 30 : 18;
         this.speed = 0.6;
@@ -181,6 +201,7 @@ export class Slime {
     }
     takeHit(dmg) { this.flash = 10; this.hp -= dmg; this.mergeTimer = 0; }
     update(allSlimes, player) {
+        this.isMoving = false;
         if (this.flash > 0) this.flash--;
         if (this.staggerTimer > 0) { this.staggerTimer--; return; }
         if (this.slowTimer > 0) this.slowTimer--;
@@ -206,10 +227,12 @@ export class Slime {
         const targetDistance = Math.hypot(targetDx, targetDy);
         const targetStopDistance = target === player ? this.attackRange * 0.72 : 18;
         if (this.attackWarningTimer <= 0 && this.attackTimer <= 0 && playerDetected && targetDistance > targetStopDistance) {
+            setMobMovement(this, (targetDx / targetDistance) * speed, (targetDy / targetDistance) * speed);
             this.x += (targetDx / targetDistance) * speed;
             this.y += (targetDy / targetDistance) * speed;
         } else if (!player || playerDistance >= 180) {
             this.wanderAngle += (Math.random() - 0.5) * 0.2;
+            setMobMovement(this, Math.cos(this.wanderAngle) * speed, Math.sin(this.wanderAngle) * speed);
             this.x += Math.cos(this.wanderAngle) * speed;
             this.y += Math.sin(this.wanderAngle) * speed;
         }
@@ -235,8 +258,7 @@ export class Slime {
         if (this.hp <= 0 && !this.lootGranted) { this.lootGranted = true; grantMobLoot(this.big ? 'granSlime' : 'slime'); }
     }
     draw(ctx) {
-        drawSprite(ctx, this.sprite, this.x, this.y, this.w, this.h,
-            { color: this.flash > 0 ? '#fff' : undefined });
+        drawMobVisual(ctx, this, this.flash > 0 ? '#fff' : undefined);
         drawMobAttackWarning(ctx, this);
         drawMobAttackArea(ctx, this, '#2ecc71');
         drawMobHealthBar(ctx, this);
@@ -247,6 +269,7 @@ export class Wolf {
     constructor(x, y, habitat = null) {
         this.x = x; this.y = y; this.w = 32; this.h = 32; this.speed = 1.9;
         this.sprite = 'wolf';
+        this.atlasId = 'wolf'; this.spriteDirection = 'down'; this.isMoving = false;
         this.habitat = habitat;
         this.hp = MOBS.lobo.baseHp; this.maxHp = this.hp; this.flash = 0;
         this.attackCooldown = 0; this.attackTimer = 0; this.attackWarningTimer = 0;
@@ -255,6 +278,7 @@ export class Wolf {
     }
     takeHit(dmg) { this.flash = 10; this.hp -= dmg; }
     update(player, deerList) {
+        this.isMoving = false;
         if (this.flash > 0) this.flash--;
         if (this.staggerTimer > 0) { this.staggerTimer--; return; }
         if (this.slowTimer > 0) this.slowTimer--;
@@ -270,7 +294,10 @@ export class Wolf {
         const dy = (target.y + target.h/2) - (this.y + this.h/2);
         const d = Math.hypot(dx, dy);
         const desiredDistance = target === player ? this.attackRange * 0.72 : 4;
-        if (this.attackWarningTimer <= 0 && this.attackTimer <= 0 && d > desiredDistance) { this.x += (dx/d) * speed; this.y += (dy/d) * speed; }
+        if (this.attackWarningTimer <= 0 && this.attackTimer <= 0 && d > desiredDistance) {
+            setMobMovement(this, (dx/d) * speed, (dy/d) * speed);
+            this.x += (dx/d) * speed; this.y += (dy/d) * speed;
+        }
 
         clampToArea(this, this.habitat);
 
@@ -282,7 +309,7 @@ export class Wolf {
         if (this.hp <= 0 && !this.lootGranted) { this.lootGranted = true; grantMobLoot('lobo'); }
     }
     draw(ctx) {
-        drawSprite(ctx, this.sprite, this.x, this.y, this.w, this.h, { color: this.flash > 0 ? '#fff' : undefined });
+        drawMobVisual(ctx, this, this.flash > 0 ? '#fff' : undefined);
         drawMobAttackWarning(ctx, this);
         drawMobAttackArea(ctx, this, '#bdc3c7');
         drawMobHealthBar(ctx, this);
@@ -293,10 +320,12 @@ export class Deer {
     constructor(x, y, habitat = null) {
         this.x = x; this.y = y; this.w = 28; this.h = 28; this.speed = 1.6;
         this.sprite = 'deer';
+        this.atlasId = 'deer'; this.spriteDirection = 'down'; this.isMoving = false;
         this.hp = MOBS.ciervo.baseHp; this.maxHp = this.hp; this.flash = 0;
         this.habitat = habitat;
     }
     update(player, wolves) {
+        this.isMoving = false;
         if (this.flash > 0) this.flash--;
         if (this.slowTimer > 0) this.slowTimer--;
         const speed = this.speed * (this.slowTimer > 0 ? (this.slowMultiplier || 0.5) : 1);
@@ -308,6 +337,7 @@ export class Deer {
             const dx = (this.x + this.w/2) - (fleeFrom.x + fleeFrom.w/2);
             const dy = (this.y + this.h/2) - (fleeFrom.y + fleeFrom.h/2);
             const d = Math.hypot(dx, dy) || 1;
+            setMobMovement(this, (dx/d) * speed, (dy/d) * speed);
             this.x += (dx/d) * speed; this.y += (dy/d) * speed;
         }
         clampToArea(this, this.habitat);
@@ -315,7 +345,7 @@ export class Deer {
     }
     takeHit(dmg) { this.flash = 10; this.hp -= dmg; }
     draw(ctx) {
-        drawSprite(ctx, this.sprite, this.x, this.y, this.w, this.h, { color: this.flash > 0 ? '#fff' : undefined });
+        drawMobVisual(ctx, this, this.flash > 0 ? '#fff' : undefined);
         drawMobHealthBar(ctx, this);
     }
 }
@@ -324,6 +354,7 @@ export class GoblinExplorer {
     constructor(x, y, habitat = null) {
         this.x = x; this.y = y; this.w = 30; this.h = 30; this.speed = 1.5;
         this.sprite = 'goblin';
+        this.atlasId = 'goblin'; this.spriteDirection = 'down'; this.isMoving = false;
         this.habitat = habitat;
         this.hp = MOBS.goblin.baseHp; this.maxHp = this.hp; this.flash = 0; this.attackCooldown = 0;
         this.attackTimer = 0; this.attackWarningTimer = 0; this.attackRange = 62; this.attackDamage = 5; this.attackInterval = 120;
@@ -332,6 +363,7 @@ export class GoblinExplorer {
     }
     takeHit(dmg) { this.flash = 10; this.hp -= dmg; this.hostile = true; }
     update(player) {
+        this.isMoving = false;
         if (this.flash > 0) this.flash--;
         if (this.staggerTimer > 0) { this.staggerTimer--; return; }
         if (this.slowTimer > 0) this.slowTimer--;
@@ -348,9 +380,11 @@ export class GoblinExplorer {
         const d = Math.hypot(dx, dy) || 1;
 
         if (fleeing) {
+            setMobMovement(this, -(dx/d) * speed, -(dy/d) * speed);
             this.x -= (dx/d) * speed; this.y -= (dy/d) * speed;
         } else if (d < 200) {
             if (this.attackWarningTimer <= 0 && this.attackTimer <= 0 && d > this.attackRange * 0.72) {
+                setMobMovement(this, (dx/d) * speed, (dy/d) * speed);
                 this.x += (dx/d) * speed; this.y += (dy/d) * speed;
             }
             beginMobAttack(this, player);
@@ -364,7 +398,7 @@ export class GoblinExplorer {
     }
     draw(ctx) {
         const color = this.flash > 0 ? '#fff' : (this.hp/this.maxHp < 0.2 ? '#f39c12' : '#27ae60');
-        drawSprite(ctx, this.sprite, this.x, this.y, this.w, this.h, { color });
+        drawMobVisual(ctx, this, color);
         drawMobAttackWarning(ctx, this);
         drawMobAttackArea(ctx, this, '#f1c40f');
         drawMobHealthBar(ctx, this);
