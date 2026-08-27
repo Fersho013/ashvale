@@ -3,7 +3,7 @@
    ===================================================================== */
 import { checkRectCollision, dist } from '../core/physics.js';
 import { drawEntity } from '../core/assets.js';
-import { getActiveWalls, clampToZone3, clampToArea, randomPointInArea } from '../world/map.js';
+import { getActiveWalls, clampToZone3, clampToArea } from '../world/map.js';
 import { MOBS } from '../data/mobs.js';
 import { grantMobLoot } from '../systems/inventory.js';
 
@@ -53,7 +53,7 @@ function resolveMobAttack(mob, player) {
 
 function drawMobAttackWarning(ctx, mob) {
     if (mob.attackWarningTimer <= 0) return;
-    const x = mob.x + mob.w / 2, y = mob.y - 17;
+    const x = mob.x + mob.w / 2, y = mob.y - 26;
     const pulse = 1 + Math.sin(mob.attackWarningTimer * 0.2) * 0.08;
     ctx.save();
     ctx.translate(x, y); ctx.scale(pulse, pulse);
@@ -61,6 +61,16 @@ function drawMobAttackWarning(ctx, mob) {
     ctx.fillStyle = '#fff'; ctx.font = 'bold 17px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText('!', 0, 1);
     ctx.restore();
+}
+
+function drawMobHealthBar(ctx, mob) {
+    const width = Math.max(32, mob.w);
+    const x = mob.x + mob.w / 2 - width / 2, y = mob.y - 10;
+    const ratio = Math.max(0, Math.min(1, mob.hp / mob.maxHp));
+    ctx.fillStyle = '#2c2c2c'; ctx.fillRect(x - 1, y - 1, width + 2, 6);
+    ctx.fillStyle = '#1f1f1f'; ctx.fillRect(x, y, width, 4);
+    ctx.fillStyle = ratio > 0.5 ? '#2ecc71' : (ratio > 0.25 ? '#f1c40f' : '#e74c3c');
+    ctx.fillRect(x, y, width * ratio, 4);
 }
 
 function drawMobAttackArea(ctx, mob, color) {
@@ -103,7 +113,7 @@ export class DummyMob {
 export class ActiveMob {
     constructor(x, y) {
         this.x = x; this.y = y; this.w = 34; this.h = 34;
-        this.speed = 1.7; this.flash = 0; this.maxHp = 40; this.hp = 40;
+        this.speed = 1.7; this.flash = 0; this.maxHp = MOBS.mobArena.baseHp; this.hp = this.maxHp;
         this.attackCooldown = 0; this.attackTimer = 0; this.attackWarningTimer = 0; this.staggerTimer = 0;
         this.attackRange = 62; this.attackDamage = 10; this.attackInterval = 120;
         this.attackDuration = 18; this.attackImpactFrame = 9;
@@ -132,7 +142,6 @@ export class ActiveMob {
         beginMobAttack(this, player);
         resolveMobAttack(this, player);
         if (this.attackCooldown > 0) this.attackCooldown--;
-        if (this.hp <= 0) { this.x = 1800 + Math.random()*200; this.y = 160 + Math.random()*300; this.hp = this.maxHp; }
     }
     resolveCollisions(isXAxis, activeWalls) {
         for (const wall of activeWalls) {
@@ -147,8 +156,7 @@ export class ActiveMob {
         drawEntity(ctx, 'goblin', this.x, this.y, this.w, this.h, color, 'rect', 'M');
         drawMobAttackWarning(ctx, this);
         drawMobAttackArea(ctx, this, '#e74c3c');
-        ctx.fillStyle = '#444'; ctx.fillRect(this.x, this.y - 8, this.w, 4);
-        ctx.fillStyle = '#e74c3c'; ctx.fillRect(this.x, this.y - 8, Math.max(0,(this.hp/this.maxHp))*this.w, 4);
+        drawMobHealthBar(ctx, this);
     }
 }
 
@@ -213,6 +221,7 @@ export class Slime {
             this.flash > 0 ? '#fff' : (this.big ? '#16a085' : '#2ecc71'), 'circle');
         drawMobAttackWarning(ctx, this);
         drawMobAttackArea(ctx, this, '#2ecc71');
+        drawMobHealthBar(ctx, this);
     }
 }
 
@@ -251,26 +260,24 @@ export class Wolf {
         // ya había iniciado debe completar su animación, no quedarse activo.
         resolveMobAttack(this, player);
         if (this.attackCooldown > 0) this.attackCooldown--;
-        if (this.hp <= 0) {
-            grantMobLoot('lobo');
-            this.hp = this.maxHp;
-            const spawn = randomPointInArea(this.habitat, this);
-            this.x = spawn.x; this.y = spawn.y;
-        }
+        if (this.hp <= 0 && !this.lootGranted) { this.lootGranted = true; grantMobLoot('lobo'); }
     }
     draw(ctx) {
         drawEntity(ctx, 'wolf', this.x, this.y, this.w, this.h, this.flash > 0 ? '#fff' : '#7f8c8d', 'rect', 'L');
         drawMobAttackWarning(ctx, this);
         drawMobAttackArea(ctx, this, '#bdc3c7');
+        drawMobHealthBar(ctx, this);
     }
 }
 
 export class Deer {
     constructor(x, y, habitat = null) {
-        this.x = x; this.y = y; this.w = 28; this.h = 28; this.speed = 1.6; this.hp = 15; this.maxHp = 15;
+        this.x = x; this.y = y; this.w = 28; this.h = 28; this.speed = 1.6;
+        this.hp = MOBS.ciervo.baseHp; this.maxHp = this.hp; this.flash = 0;
         this.habitat = habitat;
     }
     update(player, wolves) {
+        if (this.flash > 0) this.flash--;
         if (this.slowTimer > 0) this.slowTimer--;
         const speed = this.speed * (this.slowTimer > 0 ? (this.slowMultiplier || 0.5) : 1);
         let fleeFrom = null, best = 9999;
@@ -285,7 +292,11 @@ export class Deer {
         }
         clampToArea(this, this.habitat);
     }
-    draw(ctx) { drawEntity(ctx, 'deer', this.x, this.y, this.w, this.h, '#d2b48c', 'rect', 'C'); }
+    takeHit(dmg) { this.flash = 10; this.hp -= dmg; }
+    draw(ctx) {
+        drawEntity(ctx, 'deer', this.x, this.y, this.w, this.h, this.flash > 0 ? '#fff' : '#d2b48c', 'rect', 'C');
+        drawMobHealthBar(ctx, this);
+    }
 }
 
 export class GoblinExplorer {
@@ -327,17 +338,13 @@ export class GoblinExplorer {
         resolveMobAttack(this, player);
         if (this.attackCooldown > 0) this.attackCooldown--;
         clampToArea(this, this.habitat);
-        if (this.hp <= 0) {
-            grantMobLoot('goblin');
-            this.hp = this.maxHp; this.hostile = false;
-            const spawn = randomPointInArea(this.habitat, this);
-            this.x = spawn.x; this.y = spawn.y;
-        }
+        if (this.hp <= 0 && !this.lootGranted) { this.lootGranted = true; grantMobLoot('goblin'); }
     }
     draw(ctx) {
         const color = this.flash > 0 ? '#fff' : (this.hp/this.maxHp < 0.2 ? '#f39c12' : '#27ae60');
         drawEntity(ctx, 'goblin', this.x, this.y, this.w, this.h, color, 'rect', 'G');
         drawMobAttackWarning(ctx, this);
         drawMobAttackArea(ctx, this, '#f1c40f');
+        drawMobHealthBar(ctx, this);
     }
 }
