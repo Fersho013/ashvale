@@ -6,7 +6,7 @@ import { game } from './core/gameContext.js';
 import { Input } from './core/input.js';
 import { ScreenManager } from './core/screenManager.js';
 import { Camera } from './core/camera.js';
-import { drawEntity, CHARACTER_SPRITE_SIZE } from './core/assets.js';
+import { drawEntity, drawSprite, hasSprite } from './core/assets.js';
 import { Player } from './entities/player.js';
 import { DummyMob, ActiveMob, Slime, Wolf, Deer, GoblinExplorer } from './entities/mobs.js';
 import { setupDebugPanel, DEBUG } from './systems/debug.js';
@@ -102,15 +102,15 @@ function render() {
         if (DEBUG.showHitboxes) { ctx.strokeStyle = d.open ? '#2ecc71' : '#e74c3c'; ctx.strokeRect(d.x, d.y, d.w, d.h); }
     }
 
-    workTables.forEach(t => drawEntity(ctx, 'work_table', t.x, t.y, t.w, t.h, '#8d6e4f', 'rect'));
-    drawEntity(ctx, 'npc_elder', npc.x, npc.y, npc.w, npc.h, '#f1c40f', 'rect', 'A', CHARACTER_SPRITE_SIZE);
-    drawEntity(ctx, 'bed', respawnBed.x, respawnBed.y, respawnBed.w, respawnBed.h, '#ffffff', 'rect');
-    drawEntity(ctx, 'campfire', campfire.x, campfire.y, campfire.w, campfire.h, '#e67e22', 'circle');
-    drawEntity(ctx, 'alchemy_table', alchemyTable.x, alchemyTable.y, alchemyTable.w, alchemyTable.h, '#2980b9', 'rect');
-    drawEntity(ctx, 'build_table', buildTable.x, buildTable.y, buildTable.w, buildTable.h, '#8d6e4f', 'rect', 'M');
-    drawEntity(ctx, 'chest', chestObj.x, chestObj.y, chestObj.w, chestObj.h, '#a0642f', 'rect', 'C');
-    drawEntity(ctx, 'chest', weaponsChestObj.x, weaponsChestObj.y, weaponsChestObj.w, weaponsChestObj.h, '#c0392b', 'rect', 'A');
-    drawEntity(ctx, 'chest', toolsChestObj.x, toolsChestObj.y, toolsChestObj.w, toolsChestObj.h, '#7f8c8d', 'rect', 'H');
+    workTables.forEach(t => drawSprite(ctx, 'workTable', t.x, t.y, t.w, t.h));
+    drawSprite(ctx, 'npc', npc.x, npc.y, npc.w, npc.h);
+    drawSprite(ctx, 'bed', respawnBed.x, respawnBed.y, respawnBed.w, respawnBed.h);
+    drawSprite(ctx, 'campfire', campfire.x, campfire.y, campfire.w, campfire.h);
+    drawSprite(ctx, 'alchemy', alchemyTable.x, alchemyTable.y, alchemyTable.w, alchemyTable.h);
+    drawSprite(ctx, 'buildTable', buildTable.x, buildTable.y, buildTable.w, buildTable.h);
+    drawSprite(ctx, 'chest', chestObj.x, chestObj.y, chestObj.w, chestObj.h);
+    drawSprite(ctx, 'chest', weaponsChestObj.x, weaponsChestObj.y, weaponsChestObj.w, weaponsChestObj.h, { color: '#c0392b', label: 'A' });
+    drawSprite(ctx, 'chest', toolsChestObj.x, toolsChestObj.y, toolsChestObj.w, toolsChestObj.h, { color: '#7f8c8d', label: 'H' });
 
     for (const rack of weaponRacks) {
         const w = WEAPONS[rack.weapon];
@@ -126,7 +126,9 @@ function render() {
     for (const node of harvestNodes) {
         const recovering = Date.now() < node.recoveryUntil;
         ctx.globalAlpha = recovering ? 0.35 : 1;
-        if (node.type === 'tree') {
+        if (hasSprite(node.sprite)) {
+            drawSprite(ctx, node.sprite, node.x, node.y, node.w, node.h);
+        } else if (node.type === 'tree') {
             ctx.fillStyle = '#6e4b2a';
             ctx.fillRect(node.x + 18, node.y + 30, 12, 34);
             ctx.fillStyle = '#238b45';
@@ -146,7 +148,7 @@ function render() {
     world.deers.forEach(d => d.draw(ctx));
     world.goblins.forEach(g => g.draw(ctx));
 
-    drawEntity(ctx, 'horn', bocinaVigia.x, bocinaVigia.y, bocinaVigia.w, bocinaVigia.h, '#9b59b6', 'circle', 'B');
+    drawSprite(ctx, 'horn', bocinaVigia.x, bocinaVigia.y, bocinaVigia.w, bocinaVigia.h);
 
     world.projectiles.forEach(p => p.draw(ctx));
 
