@@ -375,7 +375,7 @@ export function update() {
         world.projectiles.push(new Projectile({
             x: pp.x, y: pp.y, dirX: pp.dirX, dirY: pp.dirY, dmg: pp.dmg,
             speed: pp.speed ?? cfg.speed, size: pp.size ?? cfg.size, color: pp.color ?? cfg.color,
-            rangeBlocks: pp.rangeBlocks ?? cfg.rangeBlocks, piercing: pp.piercing, knockback: pp.knockback,
+            rangeBlocks: pp.rangeBlocks ?? cfg.rangeBlocks, sprite: pp.sprite ?? cfg.sprite, piercing: pp.piercing, knockback: pp.knockback,
             homing: pp.homing, explosionRadius: pp.explosionRadius, magic: pp.magic
         }));
         player.pendingProjectile = null;
