@@ -17,9 +17,17 @@ export const MOBS = {
     slime: {
         id: 'slime', name: 'Slime', baseHp: 30,
         loot: [
-            { name: 'Botella',           qty: 1, chance: 1 },
-            { name: 'Oro',               qty: 5, chance: 1 },
+            { name: 'Bola de Baba',      qty: 1, chance: 1 },
+            { name: 'Botella',           qty: 1, chance: 0.50 },
             { name: 'Armadura de Cuero', qty: 1, chance: 0.05 } // 5%
+        ]
+    },
+    granSlime: {
+        id: 'granSlime', name: 'Gran Slime', baseHp: 90,
+        loot: [
+            { name: 'Bola de Baba',      qty: 3, chance: 1 },
+            { name: 'Botella',           qty: 2, chance: 0.75 },
+            { name: 'Armadura de Cuero', qty: 1, chance: 0.10 }
         ]
     },
     lobo: {
@@ -39,7 +47,12 @@ export const MOBS = {
         ]
     },
     ciervo: {
-        id: 'ciervo', name: 'Ciervo', baseHp: 50, loot: []
+        id: 'ciervo', name: 'Ciervo', baseHp: 50,
+        loot: [
+            { name: 'Cuerno', qty: 1, chance: 1 },
+            { name: 'Cuero',  qty: 1, chance: 1 },
+            { name: 'Carne',  qty: 1, chance: 1 }
+        ]
     },
     mobArena: {
         id: 'mobArena', name: 'Mob de Arena', baseHp: 90, loot: []
