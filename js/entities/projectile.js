@@ -6,15 +6,16 @@
    atraviesan para golpear a más de uno (ver systems/worldInteraction.js).
    ===================================================================== */
 import { BLOCK_SIZE } from '../world/map.js';
+import { drawSprite } from '../core/assets.js';
 
 export class Projectile {
-    constructor({ x, y, dirX, dirY, dmg, speed, size, color, rangeBlocks, piercing = false, knockback = 0, homing = 0, explosionRadius = 0, magic = false }) {
+    constructor({ x, y, dirX, dirY, dmg, speed, size, color, sprite = 'arcaneBolt', rangeBlocks, piercing = false, knockback = 0, homing = 0, explosionRadius = 0, magic = false }) {
         this.w = size; this.h = size;
         // x,y de entrada son el punto de origen (centro del jugador); se
         // convierten a la esquina superior izquierda del hitbox del proyectil.
         this.x = x - this.w / 2; this.y = y - this.h / 2;
         this.dirX = dirX; this.dirY = dirY;
-        this.speed = speed; this.dmg = dmg; this.color = color;
+        this.speed = speed; this.dmg = dmg; this.color = color; this.sprite = sprite;
         this.maxDistance = rangeBlocks * BLOCK_SIZE;
         this.traveled = 0;
         this.hasHit = false; // true en cuanto golpea a su primer (y único) objetivo
@@ -52,9 +53,6 @@ export class Projectile {
     }
     get expired() { return (!this.piercing && this.hasHit) || this.traveled >= this.maxDistance; }
     draw(ctx) {
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x + this.w / 2, this.y + this.h / 2, this.w / 2, 0, Math.PI * 2);
-        ctx.fill();
+        drawSprite(ctx, this.sprite, this.x, this.y, this.w, this.h, { color: this.color });
     }
 }
