@@ -47,7 +47,8 @@ export const ALCHEMY_RECIPES = {
 };
 
 export const BUILD_RECIPES = {
-    'Madera+Metal Oxidado': 'Espada Oxidada'
+    'Madera+Metal Oxidado': 'Espada Oxidada',
+    'Cuero+Cuero+Cuero': 'Armadura de Cuero'
 };
 
 // Ítem "fallback" de la Hoguera: combinar comidas que no calzan con
