@@ -8,11 +8,11 @@
    ===================================================================== */
 export const TOOLS = {
     hacha: {
-        id: 'hacha', name: 'Hacha', color: '#8d6e4f', asset: 'tool_hacha',
+        id: 'hacha', name: 'Hacha', color: '#8d6e4f', asset: 'tool_hacha', atlasFrame: 'axe',
         description: 'Corta madera de los árboles.' // árboles: próximamente
     },
     pico: {
-        id: 'pico', name: 'Pico', color: '#95a5a6', asset: 'tool_pico',
+        id: 'pico', name: 'Pico', color: '#95a5a6', asset: 'tool_pico', atlasFrame: 'pickaxe',
         description: 'Pica piedra de rocas y minerales.' // rocas/minerales: próximamente
     }
 };
