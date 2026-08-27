@@ -5,7 +5,7 @@ import { state } from '../state.js';
 import { game } from '../core/gameContext.js';
 import { Input } from '../core/input.js';
 import { checkRectCollision, dist } from '../core/physics.js';
-import { Inventory } from './inventory.js';
+import { Inventory, grantMobLoot } from './inventory.js';
 import { Slime } from '../entities/mobs.js';
 import { Projectile } from '../entities/projectile.js';
 import { doors } from '../world/map.js';
@@ -17,6 +17,7 @@ import { openCraftPanel } from '../ui/craftingUI.js';
 import { openChestPanel } from '../ui/inventoryUI.js';
 import { anyModalOpen } from '../ui/menu.js';
 import { updateHUD } from '../ui/hud.js';
+import { maintainMobPopulations, MOB_POPULATION_LIMITS } from './mobSpawner.js';
 
 const HARVEST_DURATION_MS = 3 * 1000;
 const HARVEST_RECOVERY_MS = 3 * 60 * 1000;
@@ -141,6 +142,14 @@ function damageEnemy(mob, damage) {
     // ActiveMob usa el segundo parámetro para el parry; para las habilidades
     // de Espadachín no se activa ese efecto adicional.
     if (mob.takeHit) mob.takeHit(damage, false);
+}
+
+function grantDefeatedLoot(list, mobKey) {
+    for (const mob of list) {
+        if (mob.hp > 0 || mob.lootGranted) continue;
+        mob.lootGranted = true;
+        grantMobLoot(typeof mobKey === 'function' ? mobKey(mob) : mobKey);
+    }
 }
 
 function breakPosture(mob, duration = 90) {
@@ -342,10 +351,15 @@ export function update() {
     world.activeMobs.forEach(m => m.update(player));
     world.slimes.forEach(s => s.update(world.slimes, player));
     const fused = world.slimes.filter(s => s.fused);
-    if (fused.length >= 2) {
+    const bigSlimeCount = world.slimes.filter(s => s.big).length;
+    if (fused.length >= 2 && bigSlimeCount < MOB_POPULATION_LIMITS.bigSlimes) {
         const [a, b] = fused;
         world.slimes = world.slimes.filter(s => s !== a && s !== b);
         world.slimes.push(new Slime((a.x + b.x)/2, (a.y + b.y)/2, true, a.habitat));
+    } else if (fused.length >= 2) {
+        // Al alcanzarse el máximo de tres Grandes, los normales permanecen
+        // separados y no se pierde ninguna unidad por una fusión inválida.
+        fused.forEach(s => { s.fused = false; s.mergeTimer = 0; });
     }
     world.wolves.forEach(w => w.update(player, world.deers));
     world.deers.forEach(d => d.update(player, world.wolves));
@@ -395,11 +409,19 @@ export function update() {
         world.deers.forEach(d => { if (checkRectCollision(box, d) && d.flash === 0) { d.takeHit(dmg); player.bars = Math.min(player.barCapacity, player.bars + 0.5); } });
         world.goblins.forEach(g => { if (checkRectCollision(box, g) && g.flash === 0) { g.takeHit(dmg); player.bars = Math.min(player.barCapacity, player.bars + 0.5); } });
     }
+    // Las habilidades y ataques básicos pueden matar después de que las
+    // entidades ya se actualizaron este cuadro. El botín se resuelve aquí
+    // antes de retirarlas, garantizando una única entrega por muerte.
+    grantDefeatedLoot(world.slimes, slime => slime.big ? 'granSlime' : 'slime');
+    grantDefeatedLoot(world.wolves, 'lobo');
+    grantDefeatedLoot(world.deers, 'ciervo');
+    grantDefeatedLoot(world.goblins, 'goblin');
     world.slimes = world.slimes.filter(s => s.hp > 0);
     world.activeMobs = world.activeMobs.filter(m => m.hp > 0);
     world.wolves = world.wolves.filter(w => w.hp > 0);
     world.deers = world.deers.filter(d => d.hp > 0);
     world.goblins = world.goblins.filter(g => g.hp > 0);
+    maintainMobPopulations(world);
 
     camera.follow(player);
 
