@@ -15,7 +15,7 @@
    ===================================================================== */
 export const MOBS = {
     slime: {
-        id: 'slime', name: 'Slime', baseHp: 10,
+        id: 'slime', name: 'Slime', baseHp: 30,
         loot: [
             { name: 'Botella',           qty: 1, chance: 1 },
             { name: 'Oro',               qty: 5, chance: 1 },
@@ -23,7 +23,7 @@ export const MOBS = {
         ]
     },
     lobo: {
-        id: 'lobo', name: 'Lobo', baseHp: 25,
+        id: 'lobo', name: 'Lobo', baseHp: 60,
         loot: [
             { name: 'Carne',    qty: 1, chance: 1 },
             { name: 'Cuero',    qty: 1, chance: 1 },
@@ -31,12 +31,18 @@ export const MOBS = {
         ]
     },
     goblin: {
-        id: 'goblin', name: 'Goblin', baseHp: 20,
+        id: 'goblin', name: 'Goblin', baseHp: 80,
         loot: [
             { name: 'Oro',                     qty: 10, chance: 1 },
             { name: 'Espada Corta de Goblin',  qty: 1,  chance: 0.05 }, // 5%, ver data/weapons.js
             { name: 'Metal Oxidado',           qty: 1,  chance: 1 }
         ]
+    },
+    ciervo: {
+        id: 'ciervo', name: 'Ciervo', baseHp: 50, loot: []
+    },
+    mobArena: {
+        id: 'mobArena', name: 'Mob de Arena', baseHp: 90, loot: []
     }
 };
 
