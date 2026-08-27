@@ -6,6 +6,8 @@ import { drawEntity, CHARACTER_SPRITE_SIZE } from '../core/assets.js';
 import { drawAtlasAnimation } from '../core/atlas.js';
 import { checkRectCollision } from '../core/physics.js';
 import { getActiveWalls } from '../world/map.js';
+import { getStaticSolidColliders } from '../world/worldObjects.js';
+import { game } from '../core/gameContext.js';
 import { WEAPONS, PLAYER_SPRITE_KEYS, getWeaponFamily, weaponSupportsSkill } from '../data/weapons.js';
 import { Inventory } from '../systems/inventory.js';
 import { DEBUG } from '../systems/debug.js';
@@ -135,9 +137,9 @@ export class Player {
 
         if (this.channeling && moving) this.cancelChannel();
 
-        const activeWalls = getActiveWalls();
-        this.x += dx * this.speed; this.resolveCollisions(true, activeWalls);
-        this.y += dy * this.speed; this.resolveCollisions(false, activeWalls);
+        const solidColliders = this.getSolidColliders();
+        this.x += dx * this.speed; this.resolveCollisions(true, solidColliders);
+        this.y += dy * this.speed; this.resolveCollisions(false, solidColliders);
 
         if (moving) { this.facing.x = dx; this.facing.y = dy; }
 
@@ -202,9 +204,9 @@ export class Player {
             this.dualSteelFrenzyTimer--;
             // Movimiento continuo, con colisiones, para que el frenesí sea
             // agresivo pero no atraviese paredes.
-            const activeWalls = getActiveWalls();
-            this.x += this.facing.x * 2.4; this.resolveCollisions(true, activeWalls);
-            this.y += this.facing.y * 2.4; this.resolveCollisions(false, activeWalls);
+            const solidColliders = this.getSolidColliders();
+            this.x += this.facing.x * 2.4; this.resolveCollisions(true, solidColliders);
+            this.y += this.facing.y * 2.4; this.resolveCollisions(false, solidColliders);
             if (this.dualSteelFrenzyTimer === 0) this.isAttacking = false;
         }
         if (this.archerThornRainTimer > 0) this.archerThornRainTimer--;
@@ -244,8 +246,8 @@ export class Player {
             this.swordThrustHits = new Set();
             this.isAttacking = true; this.attackTimer = 8;
             this.x += this.facing.x * 90; this.y += this.facing.y * 90;
-            const activeWalls = getActiveWalls();
-            this.resolveCollisions(true, activeWalls); this.resolveCollisions(false, activeWalls);
+            const solidColliders = this.getSolidColliders();
+            this.resolveCollisions(true, solidColliders); this.resolveCollisions(false, solidColliders);
             return;
         }
         if (skill.id === 'sword_storm') {
@@ -272,8 +274,8 @@ export class Player {
             this.knightCataclysmResolved = false;
             this.isAttacking = true; this.attackTimer = 24;
             this.x += this.facing.x * 75; this.y += this.facing.y * 75;
-            const activeWalls = getActiveWalls();
-            this.resolveCollisions(true, activeWalls); this.resolveCollisions(false, activeWalls);
+            const solidColliders = this.getSolidColliders();
+            this.resolveCollisions(true, solidColliders); this.resolveCollisions(false, solidColliders);
             return;
         }
         if (skill.id === 'dual_cross_slash') {
@@ -312,8 +314,8 @@ export class Player {
             this.lancerPhalanxHits = new Set();
             this.isAttacking = true; this.attackTimer = 12;
             this.x += this.facing.x * 110; this.y += this.facing.y * 110;
-            const activeWalls = getActiveWalls();
-            this.resolveCollisions(true, activeWalls); this.resolveCollisions(false, activeWalls);
+            const solidColliders = this.getSolidColliders();
+            this.resolveCollisions(true, solidColliders); this.resolveCollisions(false, solidColliders);
             return;
         }
         if (skill.id === 'lancer_impaling_whirlwind') {
@@ -366,6 +368,16 @@ export class Player {
                 else { if (this.y < wall.y) this.y = wall.y - this.h; else this.y = wall.y + wall.h; }
             }
         }
+    }
+
+    getSolidColliders() {
+        const world = game.world;
+        const mobs = world ? [
+            ...(world.dummies || []), ...(world.activeMobs || []),
+            ...(world.slimes || []), ...(world.wolves || []),
+            ...(world.deers || []), ...(world.goblins || [])
+        ] : [];
+        return [...getActiveWalls(), ...getStaticSolidColliders(), ...mobs];
     }
 
     takeDamage(amount, attacker = null) {
