@@ -5,6 +5,7 @@
    ===================================================================== */
 import { WEAPONS } from '../data/weapons.js';
 import { TOOLS } from '../data/tools.js';
+import { ARMORS, findArmorKeyByName } from '../data/armor.js';
 import { CONSUMABLE_EFFECTS } from '../data/recipes.js';
 import { rollLoot } from '../data/mobs.js';
 import { showDialog } from '../ui/dialog.js';
@@ -133,6 +134,29 @@ export const Inventory = {
         }
     },
 
+    equipArmorFromSlot(arr, index) {
+        const item = arr[index];
+        const foundKey = item && findArmorKeyByName(item.name);
+        if (!foundKey) return;
+        const currentEquipped = this.equipment.armor;
+        this.equipment.armor = foundKey;
+        item.qty--; if (item.qty <= 0) arr[index] = null;
+        if (currentEquipped && ARMORS[currentEquipped]) this.addMaterial(ARMORS[currentEquipped].name, 1);
+        syncPlayerHpToEquipment();
+        showDialog('Equipamiento', `Has equipado: ${ARMORS[foundKey].name} (${ARMORS[foundKey].description}).`);
+        refreshInventoryUI();
+    },
+
+    unequipArmor() {
+        const armor = ARMORS[this.equipment.armor];
+        if (!armor) return;
+        if (!this.addMaterial(armor.name, 1)) { showDialog('Inventario', '¡Inventario lleno para guardar la armadura!'); return; }
+        this.equipment.armor = null;
+        syncPlayerHpToEquipment();
+        showDialog('Equipamiento', `Desequipado: ${armor.name}.`);
+        refreshInventoryUI();
+    },
+
     // Movimiento RÁPIDO (click derecho) — pasa el stack completo al otro contenedor de inmediato
     quickMoveToChest(chestId, globalIdx) {
         const item = this.global[globalIdx];
@@ -176,6 +200,8 @@ export const Inventory = {
         this.quickbar.fill(null); this.global.fill(null);
         this.equipment.weapon = null;
         this.equipment.tool = null;
+        this.equipment.armor = null;
+        syncPlayerHpToEquipment();
     }
 };
 
@@ -220,6 +246,11 @@ export function tryConsumeItem(arr, index) {
             Inventory.equipToolFromSlot(arr, index);
             return;
         }
+    }
+
+    if (findArmorKeyByName(item.name)) {
+        Inventory.equipArmorFromSlot(arr, index);
+        return;
     }
 
     const effect = CONSUMABLE_EFFECTS[item.name];
@@ -273,6 +304,13 @@ export function isWeaponItem(item) {
 // true si el ítem es un consumible (tiene efecto definido en CONSUMABLE_EFFECTS)
 export function isConsumableItem(item) {
     return !!(item && CONSUMABLE_EFFECTS[item.name]);
+}
+
+export function isArmorItem(item) { return !!(item && findArmorKeyByName(item.name)); }
+
+function syncPlayerHpToEquipment() {
+    const player = game.player;
+    if (player) player.hp = Math.min(player.hp, player.maxHp);
 }
 
 // Se llama al morir un enemigo (ver entities/mobs.js y systems/worldInteraction.js)
