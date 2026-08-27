@@ -4,9 +4,10 @@
    cuadrito con las acciones disponibles (ver js/ui/itemActionMenu.js).
    Reemplaza al arrastre, poco confiable en móvil, PC y mando.
    ===================================================================== */
-import { Inventory, tryConsumeItem, isWeaponItem, isConsumableItem } from '../systems/inventory.js';
+import { Inventory, tryConsumeItem, isWeaponItem, isConsumableItem, isArmorItem } from '../systems/inventory.js';
 import { WEAPONS } from '../data/weapons.js';
 import { TOOLS } from '../data/tools.js';
+import { ARMORS } from '../data/armor.js';
 import { openItemActionMenu } from './itemActionMenu.js';
 
 // Varios cofres (punto 2): cuál está abierto ahora mismo en #chest-panel.
@@ -35,6 +36,8 @@ function buildOwnedItemActions(arr, index, item, moveAction, includeDelete = fal
         actions.push({ label: 'Equipar', onClick: () => { tryConsumeItem(arr, index); refreshAll(); } });
     } else if (isToolItem(item)) {
         actions.push({ label: 'Equipar herramienta', onClick: () => { tryConsumeItem(arr, index); refreshAll(); } });
+    } else if (isArmorItem(item)) {
+        actions.push({ label: 'Equipar armadura', onClick: () => { tryConsumeItem(arr, index); refreshAll(); } });
     } else if (isConsumableItem(item)) {
         actions.push({ label: 'Usar', onClick: () => { tryConsumeItem(arr, index); refreshAll(); } });
     }
@@ -47,6 +50,7 @@ function attachSlotTap(div, arr, index, actionsBuilder) {
     div.onclick = () => {
         const item = arr[index];
         if (!item) return;
+        div.dataset.itemName = item.name;
         openItemActionMenu(div, actionsBuilder(item));
     };
 }
@@ -104,11 +108,13 @@ export function refreshInventoryUI() {
     };
 
     const eqArmor = document.getElementById('eq-armor');
-    eqArmor.innerText = 'Armadura\n' + (Inventory.equipment.armor || 'Ninguna');
+    const armor = Inventory.equipment.armor ? ARMORS[Inventory.equipment.armor] : null;
+    eqArmor.innerHTML = `<strong>Armadura</strong><br>${armor ? armor.name : 'Ninguna'}${armor ? `<small>${armor.description}</small>` : ''}`;
+    eqArmor.dataset.itemName = armor?.name || '';
     eqArmor.onclick = () => {
         if (!Inventory.equipment.armor) return;
         openItemActionMenu(eqArmor, [
-            { label: 'Desequipar', onClick: () => { Inventory.equipment.armor = null; refreshAll(); } }
+            { label: 'Desequipar', onClick: () => { Inventory.unequipArmor(); refreshAll(); } }
         ]);
     };
 
