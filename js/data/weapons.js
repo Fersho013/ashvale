@@ -55,13 +55,13 @@ export const WEAPONS = {
     baculo: {
         id: 'baculo', name: 'Báculo', color: '#e74c3c', asset: 'weapon_especial', // TODO: sprite propio cuando exista arte dedicado al báculo
         dmg: 10, attackCooldown: 60, ranged: true, family: 'staff', skillBranch: 'arcane',
-        projectile: { rangeBlocks: 3, speed: 9, size: 12, color: '#e74c3c' },
+        projectile: { rangeBlocks: 3, speed: 9, size: 12, color: '#e74c3c', sprite: 'arcaneBolt' },
         ability1: 'Proyectil de Éter', ability2: 'Vórtice del Vacío'
     },
     arco: {
         id: 'arco', name: 'Arco', color: '#2ecc71', asset: 'weapon_arco',
         dmg: 10, attackCooldown: 60, ranged: true, family: 'bow', skillBranch: 'archer',
-        projectile: { rangeBlocks: 4, speed: 11, size: 8, color: '#2ecc71' },
+        projectile: { rangeBlocks: 4, speed: 11, size: 8, color: '#2ecc71', sprite: 'arrow' },
         ability1: 'Disparo Perforante', ability2: 'Lluvia de Flechas'
     },
     // Loot de baja probabilidad del Goblin (5%, ver data/mobs.js). No se
