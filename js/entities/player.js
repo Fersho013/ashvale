@@ -10,6 +10,7 @@ import { getStaticSolidColliders } from '../world/worldObjects.js';
 import { game } from '../core/gameContext.js';
 import { WEAPONS, PLAYER_SPRITE_KEYS, getWeaponFamily, weaponSupportsSkill } from '../data/weapons.js';
 import { Inventory } from '../systems/inventory.js';
+import { ARMORS } from '../data/armor.js';
 import { DEBUG } from '../systems/debug.js';
 import { SkillBook } from '../systems/skills.js';
 import { showDialog } from '../ui/dialog.js';
@@ -18,7 +19,7 @@ export class Player {
     constructor(x, y) {
         this.x = x; this.y = y; this.w = 34; this.h = 34;
         this.baseSpeed = 3.3;
-        this.maxHp = 100; this.hp = 100;
+        this.baseMaxHp = 100; this.hp = this.baseMaxHp;
         this.facing = { x: 1, y: 0 };
 
         // Dirección lógica para el sprite (centro=abajo, derecha, arriba, izquierda)
@@ -107,6 +108,9 @@ export class Player {
     get currentWeapon() {
         return Inventory.equipment.weapon ? WEAPONS[Inventory.equipment.weapon] : WEAPONS.desarmado;
     }
+    get equippedArmor() { return ARMORS[Inventory.equipment.armor] || null; }
+    get maxHp() { return this.baseMaxHp + (this.equippedArmor?.maxHpBonus || 0); }
+    get defense() { return this.equippedArmor?.defense || 0; }
     get speed() {
         const b = Inventory.getBuff('Velocidad');
         return this.baseSpeed + (b ? b.value : 0);
@@ -402,6 +406,7 @@ export class Player {
         // resta un valor plano fijo.
         const defensa = Inventory.getBuff('Defensa');
         if (defensa) amount = Math.floor(amount * (1 - defensa.value));
+        amount = Math.max(0, amount - this.defense);
 
         const espinas = Inventory.getBuff('Espinas');
         if (espinas && attacker && typeof attacker.hp === 'number') {
