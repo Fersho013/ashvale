@@ -65,6 +65,7 @@ function checkProjectileHit(p) {
         { list: world.activeMobs, parry: true },
         { list: world.slimes,     parry: false },
         { list: world.wolves,     parry: false },
+        { list: world.deers,      parry: false },
         { list: world.goblins,    parry: false }
     ];
     for (const { list, parry } of groups) {
@@ -133,7 +134,7 @@ function applyArcaneSkills(player, world) {
 }
 
 function getEnemyGroups(world) {
-    return [world.dummies, world.activeMobs, world.slimes, world.wolves, world.goblins];
+    return [world.dummies, world.activeMobs, world.slimes, world.wolves, world.deers, world.goblins];
 }
 
 function damageEnemy(mob, damage) {
@@ -391,9 +392,14 @@ export function update() {
         world.activeMobs.forEach(m => { if (checkRectCollision(box, m) && m.flash === 0) { m.takeHit(dmg, false); player.bars = Math.min(player.barCapacity, player.bars + 0.5); } });
         world.slimes.forEach(s => { if (checkRectCollision(box, s) && s.flash === 0) { s.takeHit(dmg); player.bars = Math.min(player.barCapacity, player.bars + 0.5); } });
         world.wolves.forEach(w => { if (checkRectCollision(box, w) && w.flash === 0) { w.takeHit(dmg); player.bars = Math.min(player.barCapacity, player.bars + 0.5); } });
+        world.deers.forEach(d => { if (checkRectCollision(box, d) && d.flash === 0) { d.takeHit(dmg); player.bars = Math.min(player.barCapacity, player.bars + 0.5); } });
         world.goblins.forEach(g => { if (checkRectCollision(box, g) && g.flash === 0) { g.takeHit(dmg); player.bars = Math.min(player.barCapacity, player.bars + 0.5); } });
     }
     world.slimes = world.slimes.filter(s => s.hp > 0);
+    world.activeMobs = world.activeMobs.filter(m => m.hp > 0);
+    world.wolves = world.wolves.filter(w => w.hp > 0);
+    world.deers = world.deers.filter(d => d.hp > 0);
+    world.goblins = world.goblins.filter(g => g.hp > 0);
 
     camera.follow(player);
 
