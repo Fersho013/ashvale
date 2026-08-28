@@ -3,7 +3,7 @@
    ===================================================================== */
 export const dialogState = { timer: 0, fullText: '', visibleChars: 0, typeTimer: 0, onNext: null };
 const TYPE_INTERVAL_FRAMES = 3;
-const DISPLAY_AFTER_COMPLETE_FRAMES = 5 * 60;
+const DISPLAY_AFTER_COMPLETE_FRAMES = 2 * 60;
 
 function setDialogButtons(onNext) {
     const next = document.getElementById('dialog-next-btn');
