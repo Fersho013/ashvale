@@ -38,6 +38,17 @@ export const npc = {
     ],
     msgIndex: 0
 };
+// A las afueras de la Zona 3, aún del lado de la Zona 1 y debajo de la
+// puerta de la arena. Sus misiones viven en systems/quests.js.
+export const noviceKnight = {
+    id: 'novice_knight', name: 'Caballero Novato', x: 1510, y: 395, w: 36, h: 36,
+    interactionRadius: 64,
+    messages: [
+        'Saludos',
+        'Algunos enemigos tienen probabilidad de dar botín especial',
+        'Hay que salvar al mundo'
+    ]
+};
 export const respawnBed   = { ...pos(160, 60),  w: 30, h: 24, interactionRadius: 50 };
 export const campfire     = { ...pos(80, 160),  w: 30, h: 30, interactionRadius: 50 };
 export const alchemyTable = { ...pos(160, 160), w: 30, h: 30, interactionRadius: 50 };
@@ -65,7 +76,7 @@ export const harvestNodes = [
 // NPC, mobiliario, cofres, estantes, recursos ni la Bocina del Vigía.
 export function getStaticSolidColliders() {
     return [
-        npc, respawnBed, campfire, alchemyTable, buildTable, chestObj,
+        npc, noviceKnight, respawnBed, campfire, alchemyTable, buildTable, chestObj,
         weaponsChestObj, toolsChestObj, bocinaVigia,
         ...workTables, ...weaponRacks, ...toolRacks, ...harvestNodes
     ];
