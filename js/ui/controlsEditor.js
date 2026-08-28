@@ -98,7 +98,9 @@ function buildOverlay() {
         <div id="ce-toolbar-msg"></div>
     `;
     document.body.appendChild(overlayEl);
-    document.getElementById('ce-toolbar-drag-handle').addEventListener('pointerdown', onToolbarPointerDown);
+    // Todo el panel se puede mover para no bloquear la edición; los botones
+    // conservan su comportamiento normal y no inician un arrastre.
+    overlayEl.addEventListener('pointerdown', onToolbarPointerDown);
 
     handlesEl = document.createElement('div');
     handlesEl.id = 'controls-editor-handles';
@@ -174,6 +176,7 @@ function onControlPointerDown(e) {
 }
 
 function onToolbarPointerDown(e) {
+    if (e.target.closest('button')) return;
     e.preventDefault();
     const rect = overlayEl.getBoundingClientRect();
     toolbarDrag = {
