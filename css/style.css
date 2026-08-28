@@ -33,8 +33,10 @@
         position: absolute; top: 10px; left: 10px;
         background: rgba(0,0,0,0.75); padding: 10px 14px;
         border-radius: 6px; border: 1px solid #444;
-        pointer-events: none; font-size: 12px; line-height: 1.5; min-width: 230px; z-index: 10;
+        pointer-events: none; font-size: 12px; line-height: 1.5; min-width: 0; z-index: 10;
     }
+    #ui-overlay { --hud-scale: 1; font-size: calc(12px * var(--hud-scale)); }
+    #ui-overlay .stat-bar { width: calc(140px * var(--hud-scale)); height: calc(10px * var(--hud-scale)); }
     .stat-bar { width: 140px; height: 10px; background: #444; border-radius: 3px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 6px; }
     .stat-fill { height: 100%; width: 100%; transition: width 0.1s ease; }
     #skill-gauge { display: flex; gap: 3px; margin-top: 4px; flex-wrap: wrap; max-width: 220px; }
@@ -43,11 +45,13 @@
 
     /* ---------- BUFFS ---------- */
     #buffs-panel { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; z-index: 10; }
+    #buffs-panel { --hud-scale: 1; gap: calc(6px * var(--hud-scale)); }
     .buff-icon {
         width: 46px; height: 46px; background: rgba(0,0,0,0.8); border: 2px solid #f1c40f;
         border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center;
         font-size: 9px; color: #f1c40f; text-align: center; position: relative;
     }
+    #buffs-panel .buff-icon { width: calc(46px * var(--hud-scale)); height: calc(46px * var(--hud-scale)); font-size: calc(9px * var(--hud-scale)); }
     .buff-icon .timer { position: absolute; bottom: 1px; right: 3px; font-size: 8px; color: #fff; }
 
     /* ---------- QUICKBAR ---------- */
@@ -56,11 +60,14 @@
         display: flex; gap: 4px; background: rgba(0,0,0,0.7); padding: 5px; border-radius: 6px; border: 1px solid #444;
         pointer-events: all; z-index: 10;
     }
+    #quickbar { --hud-scale: 1; gap: calc(4px * var(--hud-scale)); padding: calc(5px * var(--hud-scale)); }
+    #quickbar { justify-content: center; align-items: center; }
     .qb-slot {
         width: 40px; height: 40px; background: #1e1e1e; border: 1px solid #555; border-radius: 4px;
         display: flex; align-items: center; justify-content: center; font-size: 9px; position: relative; color: #ccc;
         cursor: pointer;
     }
+    #quickbar .qb-slot { width: calc(40px * var(--hud-scale)); height: calc(40px * var(--hud-scale)); font-size: calc(9px * var(--hud-scale)); }
     .qb-slot .qty { position: absolute; bottom: 1px; right: 3px; font-size: 9px; color: #f1c40f; }
     .qb-slot .key { position: absolute; top: 1px; left: 3px; font-size: 8px; color: #777; }
 
@@ -104,6 +111,9 @@
         border-radius: 6px; padding: 10px 14px; font-size: 12px; display: none; color: #f0f0f0; z-index: 10;
     }
     #dialog-box .name { color: #f1c40f; font-weight: bold; margin-bottom: 4px; }
+    .dialog-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 9px; }
+    .dialog-actions button { padding: 5px 9px; border: 1px solid #f1c40f; border-radius: 4px; background: #222; color: #f1c40f; font-family: inherit; font-size: 10px; cursor: pointer; }
+    .dialog-actions button:hover, .dialog-actions button:active { background: #f1c40f; color: #111; }
 
     /* ---------- MODAL PANEL BASE (Inventario / Cofre / Crafting) ---------- */
     .modal-panel {
@@ -349,7 +359,10 @@
     /* Mientras el editor está activo, resalta con un borde punteado los
        controles arrastrables para que quede claro qué se puede mover. */
     body.controls-editing .t-btn,
-    body.controls-editing .joy-base {
+    body.controls-editing .joy-base,
+    body.controls-editing #ui-overlay,
+    body.controls-editing #quickbar,
+    body.controls-editing #buffs-panel {
         outline: 2px dashed rgba(241, 196, 15, 0.8); outline-offset: 2px;
     }
 
