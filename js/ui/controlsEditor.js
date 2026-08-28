@@ -22,6 +22,7 @@ let liveLayout = null;
 let cameFromPause = false;
 let forcedGameContainer = false;
 let activeDrag = null;
+let toolbarDrag = null;
 let msgTimeout = null;
 
 function getContainer() { return document.getElementById('game-container'); }
@@ -68,6 +69,7 @@ export function closeControlsEditor() {
     if (cameFromPause) document.getElementById('pause-overlay').style.display = 'flex';
 
     activeDrag = null;
+    toolbarDrag = null;
 }
 
 function flashToolbarMsg(text) {
@@ -84,6 +86,9 @@ function buildOverlay() {
     overlayEl = document.createElement('div');
     overlayEl.id = 'controls-editor-toolbar';
     overlayEl.innerHTML = `
+        <div id="ce-toolbar-drag-handle" title="Arrastra esta franja para mover el panel">
+            <span aria-hidden="true">⠿</span><span>Mover panel</span><span aria-hidden="true">↕</span>
+        </div>
         <p>Arrastra un control o bloque del HUD para moverlo. Usa el círculo ⤡ para cambiar su tamaño.${previewNote}</p>
         <div class="controls-editor-buttons">
             <button id="ce-save" type="button">Guardar</button>
@@ -93,6 +98,7 @@ function buildOverlay() {
         <div id="ce-toolbar-msg"></div>
     `;
     document.body.appendChild(overlayEl);
+    document.getElementById('ce-toolbar-drag-handle').addEventListener('pointerdown', onToolbarPointerDown);
 
     handlesEl = document.createElement('div');
     handlesEl.id = 'controls-editor-handles';
@@ -167,6 +173,17 @@ function onControlPointerDown(e) {
     try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) { /* noop */ }
 }
 
+function onToolbarPointerDown(e) {
+    e.preventDefault();
+    const rect = overlayEl.getBoundingClientRect();
+    toolbarDrag = {
+        pointerId: e.pointerId,
+        startClientX: e.clientX, startClientY: e.clientY,
+        startLeft: rect.left, startTop: rect.top
+    };
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) { /* noop */ }
+}
+
 function onHandlePointerDown(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -180,6 +197,13 @@ function onHandlePointerDown(e) {
 }
 
 function onPointerMove(e) {
+    if (toolbarDrag && e.pointerId === toolbarDrag.pointerId) {
+        const maxLeft = Math.max(0, window.innerWidth - overlayEl.offsetWidth);
+        const maxTop = Math.max(0, window.innerHeight - overlayEl.offsetHeight);
+        overlayEl.style.left = `${Math.max(0, Math.min(maxLeft, toolbarDrag.startLeft + e.clientX - toolbarDrag.startClientX))}px`;
+        overlayEl.style.top = `${Math.max(0, Math.min(maxTop, toolbarDrag.startTop + e.clientY - toolbarDrag.startClientY))}px`;
+        return;
+    }
     if (!activeDrag || e.pointerId !== activeDrag.pointerId) return;
     const dx = e.clientX - activeDrag.startClientX;
     const dy = e.clientY - activeDrag.startClientY;
@@ -207,6 +231,10 @@ function onPointerMove(e) {
 }
 
 function onPointerUp(e) {
+    if (toolbarDrag && e.pointerId === toolbarDrag.pointerId) {
+        toolbarDrag = null;
+        return;
+    }
     if (!activeDrag || e.pointerId !== activeDrag.pointerId) return;
     activeDrag = null;
 }
