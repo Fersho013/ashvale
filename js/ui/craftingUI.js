@@ -4,6 +4,7 @@
 import { Inventory, addStackToArray } from '../systems/inventory.js';
 import { COOK_RECIPES, ALCHEMY_RECIPES, BUILD_RECIPES, MASA_EXTRANA_NAME } from '../data/recipes.js';
 import { openItemActionMenu } from './itemActionMenu.js';
+import { QuestLog } from '../systems/quests.js';
 
 let craftContext = null;
 
@@ -78,6 +79,7 @@ document.getElementById('craft-action-btn').addEventListener('click', () => {
 
     if (resultName) {
         addStackToArray(Inventory.global, resultName, 1, 100);
+        QuestLog.recordCrafted(resultName);
         document.getElementById('craft-msg').innerText = 'Resultado: ' + resultName;
     } else if (craftContext.type === 'cook') {
         // La Hoguera, a diferencia de la Máquina de Pociones y la Mesa
