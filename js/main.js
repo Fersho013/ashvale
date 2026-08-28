@@ -16,9 +16,10 @@ import { buildQuickbarUI } from './ui/hud.js';
 import { toggleInventory } from './ui/inventoryUI.js';
 import { togglePause } from './ui/pause.js';
 import { toggleSkillTree } from './ui/skillTreeUI.js';
+import { toggleQuestLog } from './ui/questUI.js';
 import { anyModalOpen, closeAllModals } from './ui/menu.js';
 import { ZONES, MAP_W, MAP_H, walls, doors, BIOME_AREAS } from './world/map.js';
-import { npc, respawnBed, campfire, alchemyTable, buildTable, chestObj, workTables, weaponsChestObj, toolsChestObj, weaponRacks, toolRacks, bocinaVigia, harvestNodes } from './world/worldObjects.js';
+import { npc, noviceKnight, respawnBed, campfire, alchemyTable, buildTable, chestObj, workTables, weaponsChestObj, toolsChestObj, weaponRacks, toolRacks, bocinaVigia, harvestNodes } from './world/worldObjects.js';
 import { WEAPONS } from './data/weapons.js';
 import { TOOLS } from './data/tools.js';
 import './systems/saveLoad.js';
@@ -68,6 +69,7 @@ document.addEventListener('keydown', e => {
     if (state.gamePaused) return;
     if (e.code === 'KeyI' || e.code === 'Tab') toggleInventory();
     if (e.code === 'KeyO') toggleSkillTree();
+    if (e.code === 'KeyH') toggleQuestLog();
     if (e.code === 'Backquote' || e.code === 'F2') {
         DEBUG.panelOpen = !DEBUG.panelOpen;
         document.getElementById('debug-panel').style.display = DEBUG.panelOpen ? 'block' : 'none';
@@ -119,6 +121,7 @@ function render() {
 
     workTables.forEach(t => drawWorldFrame('work_table', t.x, t.y, t.w, t.h, () => drawSprite(ctx, 'workTable', t.x, t.y, t.w, t.h)));
     if (!drawAtlasAnimation(ctx, 'npc', 'idle', 'down', performance.now(), npc.x, npc.y, npc.w, npc.h, { anchor: 'feet', spriteSize: ATLAS_DISPLAY_SIZES.npc })) drawSprite(ctx, 'npc', npc.x, npc.y, npc.w, npc.h);
+    if (!drawAtlasAnimation(ctx, 'npc', 'idle', 'down', performance.now(), noviceKnight.x, noviceKnight.y, noviceKnight.w, noviceKnight.h, { anchor: 'feet', spriteSize: ATLAS_DISPLAY_SIZES.npc })) drawSprite(ctx, 'npc', noviceKnight.x, noviceKnight.y, noviceKnight.w, noviceKnight.h, { color: '#5dade2', label: 'C' });
     drawWorldFrame('bed', respawnBed.x, respawnBed.y, respawnBed.w, respawnBed.h, () => drawSprite(ctx, 'bed', respawnBed.x, respawnBed.y, respawnBed.w, respawnBed.h));
     drawWorldFrame('campfire', campfire.x, campfire.y, campfire.w, campfire.h, () => drawSprite(ctx, 'campfire', campfire.x, campfire.y, campfire.w, campfire.h));
     drawWorldFrame('alchemy_table', alchemyTable.x, alchemyTable.y, alchemyTable.w, alchemyTable.h, () => drawSprite(ctx, 'alchemy', alchemyTable.x, alchemyTable.y, alchemyTable.w, alchemyTable.h));
