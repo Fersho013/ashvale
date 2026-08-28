@@ -26,8 +26,13 @@ export function renderCraftSlots() {
     document.querySelectorAll('.craft-slot').forEach((el, i) => {
         const item = craftContext.slots[i];
         el.innerText = item ? item.name : '(vacío)';
+        el.dataset.itemName = item?.name || '';
         el.onclick = () => {
-            if (item) { addStackToArray(Inventory.global, item.name, 1, 100); craftContext.slots[i] = null; renderCraftSlots(); renderCraftInvGrid(); }
+            if (!item) return;
+            openItemActionMenu(el, [{
+                label: 'Retirar ingrediente',
+                onClick: () => { addStackToArray(Inventory.global, item.name, 1, 100); craftContext.slots[i] = null; renderCraftSlots(); renderCraftInvGrid(); }
+            }]);
         };
     });
 }
@@ -39,6 +44,7 @@ export function renderCraftInvGrid() {
         const div = document.createElement('div'); div.className = 'inv-slot';
         if (item) {
             div.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
+            div.dataset.itemName = item.name;
             div.onclick = () => {
                 const current = Inventory.global[i];
                 if (!current) return;
