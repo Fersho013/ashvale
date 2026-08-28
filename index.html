@@ -39,8 +39,8 @@
             <button id="btn-toggle-fullscreen" style="width:100%;">🎮 Modo Móvil / Pantalla Completa</button>
         </div>
         <!-- Exclusivo de Modo Móvil: oculto en PC por ScreenManager._refreshMobileOnlyUI() -->
-        <div class="settings-row mobile-only-ui" style="justify-content:center;">
-            <button id="btn-customize-controls" style="width:100%;">🎛️ Personalizar Controles Táctiles</button>
+        <div class="settings-row" style="justify-content:center;">
+            <button id="btn-customize-controls" style="width:100%;">🎛️ Personalizar HUD y Controles</button>
         </div>
     </div>
     <button id="btn-settings-back">← Volver</button>
@@ -71,7 +71,10 @@
 
     <div id="interaction-prompt">Presiona [E]</div>
 
-    <div id="dialog-box"><div class="name">Anciano</div><div id="dialog-text"></div></div>
+    <div id="dialog-box">
+        <div class="name">Anciano</div><div id="dialog-text"></div>
+        <div class="dialog-actions"><button id="dialog-next-btn" type="button">Siguiente</button><button id="dialog-close-btn" type="button">Cerrar</button></div>
+    </div>
 
     <div id="escape-bar-container">
         <div id="escape-bar-bg"><div id="escape-bar-fill"></div></div>
@@ -133,7 +136,7 @@
                 <button id="btn-resume">Reanudar</button>
                 <button id="btn-toggle-touch-controls">Controles Táctiles: Activados</button>
                 <!-- Exclusivo de Modo Móvil: oculto en PC por ScreenManager._refreshMobileOnlyUI() -->
-                <button id="btn-customize-controls-pause" class="mobile-only-ui">🎛️ Personalizar Controles</button>
+                <button id="btn-customize-controls-pause">🎛️ Personalizar HUD y Controles</button>
                 <button id="btn-pause-exit">Salir al Menú Principal</button>
             </div>
         </div>
