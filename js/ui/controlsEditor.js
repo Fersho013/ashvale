@@ -84,7 +84,7 @@ function buildOverlay() {
     overlayEl = document.createElement('div');
     overlayEl.id = 'controls-editor-toolbar';
     overlayEl.innerHTML = `
-        <p>Arrastra un control para moverlo. Usa el círculo ⤡ para cambiar su tamaño.${previewNote}</p>
+        <p>Arrastra un control o bloque del HUD para moverlo. Usa el círculo ⤡ para cambiar su tamaño.${previewNote}</p>
         <div class="controls-editor-buttons">
             <button id="ce-save" type="button">Guardar</button>
             <button id="ce-reset" type="button">Restablecer</button>
@@ -129,8 +129,8 @@ function positionResizeHandles() {
     if (!handlesEl) return;
     handlesEl.querySelectorAll('.ce-resize-handle').forEach(h => {
         const l = liveLayout[h.dataset.target];
-        h.style.left = `${l.left + l.size - 11}px`;
-        h.style.top = `${l.top + l.size - 11}px`;
+        h.style.left = `${l.left + l.width - 11}px`;
+        h.style.top = `${l.top + l.height - 11}px`;
     });
 }
 
@@ -174,7 +174,7 @@ function onHandlePointerDown(e) {
     activeDrag = {
         id, mode: 'resize', pointerId: e.pointerId,
         startClientX: e.clientX, startClientY: e.clientY,
-        startSize: liveLayout[id].size
+        startWidth: liveLayout[id].width, startHeight: liveLayout[id].height
     };
     try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) { /* noop */ }
 }
@@ -188,14 +188,19 @@ function onPointerMove(e) {
     const l = liveLayout[activeDrag.id];
 
     if (activeDrag.mode === 'move') {
-        l.left = Math.max(0, Math.min(w - l.size, activeDrag.startLeft + dx));
-        l.top = Math.max(0, Math.min(h - l.size, activeDrag.startTop + dy));
+        l.left = Math.max(0, Math.min(w - l.width, activeDrag.startLeft + dx));
+        l.top = Math.max(0, Math.min(h - l.height, activeDrag.startTop + dy));
     } else {
         const limits = SIZE_LIMITS[CONTROL_TYPES[activeDrag.id]];
-        let newSize = activeDrag.startSize + Math.max(dx, dy);
-        newSize = Math.max(limits.min, Math.min(limits.max, newSize));
-        newSize = Math.min(newSize, w - l.left, h - l.top); // no salirse del contenedor
-        l.size = newSize;
+        if (limits.min) {
+            let newSize = activeDrag.startWidth + Math.max(dx, dy);
+            newSize = Math.max(limits.min, Math.min(limits.max, newSize));
+            newSize = Math.min(newSize, w - l.left, h - l.top);
+            l.width = newSize; l.height = newSize;
+        } else {
+            l.width = Math.max(limits.minW, Math.min(limits.maxW, activeDrag.startWidth + dx, w - l.left));
+            l.height = Math.max(limits.minH, Math.min(limits.maxH, activeDrag.startHeight + dy, h - l.top));
+        }
     }
     applyLiveLayoutPx(liveLayout);
     positionResizeHandles();
