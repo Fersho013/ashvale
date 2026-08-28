@@ -369,8 +369,17 @@
     #controls-editor-toolbar {
         position: fixed; top: 8px; left: 8px; max-width: 230px; z-index: 500;
         background: rgba(10, 10, 10, 0.95); border: 2px solid #f1c40f; border-radius: 8px;
-        padding: 10px 12px; font-size: 11px; color: #ddd; box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+        padding: 0 12px 10px; font-size: 11px; color: #ddd; box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+        overflow: hidden;
     }
+    #ce-toolbar-drag-handle {
+        display: flex; align-items: center; justify-content: space-between; gap: 7px;
+        margin: 0 -12px 9px; padding: 7px 10px;
+        background: #f1c40f; border-bottom: 3px solid #d99d00; color: #1a1600;
+        font-weight: bold; font-size: 10px; letter-spacing: 0.2px;
+        cursor: grab; user-select: none; touch-action: none;
+    }
+    #ce-toolbar-drag-handle:active { cursor: grabbing; background: #ffd84d; }
     #controls-editor-toolbar p { line-height: 1.5; margin: 0 0 8px; }
     .controls-editor-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
     .controls-editor-buttons button {
