@@ -62,6 +62,12 @@
     }
     #quickbar { --hud-scale: 1; gap: calc(4px * var(--hud-scale)); padding: calc(5px * var(--hud-scale)); }
     #quickbar { justify-content: center; align-items: center; }
+    #quest-menu-btn {
+        position: absolute; top: 68px; right: 10px; z-index: 12;
+        padding: 7px 10px; border: 1px solid #f1c40f; border-radius: 5px;
+        background: rgba(10,10,10,0.85); color: #f1c40f; font: 11px monospace; cursor: pointer;
+    }
+    #quest-menu-btn:hover, #quest-menu-btn:active { background: #f1c40f; color: #111; }
     .qb-slot {
         width: 40px; height: 40px; background: #1e1e1e; border: 1px solid #555; border-radius: 4px;
         display: flex; align-items: center; justify-content: center; font-size: 9px; position: relative; color: #ccc;
@@ -183,6 +189,44 @@
     }
     .close-modal:hover, .close-modal:active { background: #e74c3c; color: #fff; }
 
+    /* ---------- MISIONES / MENÚ DEL CABALLERO NOVATO ---------- */
+    .quest-panel { width: min(480px, calc(100vw - 38px)); }
+    .quest-intro { color: #bbb; font-size: 11px; line-height: 1.5; margin: 5px 0 12px; }
+    .quest-entry-button {
+        width: 100%; margin: 0 0 8px; padding: 10px; display: flex; flex-direction: column;
+        gap: 4px; text-align: left; background: #1b2026; border: 1px solid #52616e;
+        color: #e8edf2; border-radius: 5px; font-family: inherit; cursor: pointer;
+    }
+    .quest-entry-button strong { font-size: 12px; color: #f1c40f; }
+    .quest-entry-button small { font-size: 10px; color: #b6c1ca; }
+    .quest-entry-button:hover, .quest-entry-button:active { border-color: #f1c40f; background: #29323a; }
+    .quest-entry-button.quest-ready { border-color: #2ecc71; background: #142c20; }
+    .quest-entry-button.quest-ready strong, .quest-entry-button.quest-ready small { color: #8df0ad; }
+    .quest-description { color: #d8d8d8; font-size: 11px; line-height: 1.55; white-space: normal; }
+    .quest-progress { color: #f1c40f; font-size: 11px; margin: 11px 0; }
+    .quest-panel-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+    .quest-panel-actions button {
+        padding: 7px 10px; background: #222; border: 1px solid #f1c40f; border-radius: 4px;
+        color: #f1c40f; font: 11px monospace; cursor: pointer;
+    }
+    .quest-panel-actions button:disabled { opacity: 0.45; cursor: default; }
+    .quest-panel-actions button:not(:disabled):hover, .quest-panel-actions button:not(:disabled):active { background: #f1c40f; color: #111; }
+    #quest-abandon-btn { border-color: #e74c3c; color: #ff9a94; }
+    #quest-abandon-btn:hover, #quest-abandon-btn:active { background: #e74c3c; color: #fff; }
+    .npc-action-menu {
+        position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 1002;
+        display: flex; flex-direction: column; gap: 7px; width: min(210px, calc(100vw - 30px));
+        padding: 14px; background: rgba(10,10,10,0.98); border: 2px solid #f1c40f; border-radius: 8px;
+        box-shadow: 0 8px 22px rgba(0,0,0,0.75);
+    }
+    .npc-action-menu h3 { margin: 0 0 5px; text-align: center; color: #f1c40f; font-size: 14px; }
+    .npc-action-menu button { padding: 9px; border: 1px solid #777; border-radius: 4px; background: #222; color: #eee; font: 12px monospace; cursor: pointer; }
+    .npc-action-menu button:hover, .npc-action-menu button:active { background: #f1c40f; color: #111; border-color: #f1c40f; }
+    .npc-action-menu .npc-deliver { border-color: #2ecc71; color: #8df0ad; }
+    body.npc-menu-open #ui-overlay, body.npc-menu-open #buffs-panel, body.npc-menu-open #quickbar,
+    body.npc-menu-open #zone-label, body.npc-menu-open #interaction-prompt, body.npc-menu-open #touch-controls,
+    body.npc-menu-open #touch-pause-btn, body.npc-menu-open #quest-menu-btn { visibility: hidden; pointer-events: none; }
+
     /* ---------- ÁRBOL DE HABILIDADES ---------- */
     #skill-tree-panel { width: min(500px, calc(100vw - 38px)); }
     .skill-tree-intro { font-size: 11px; color: #bbb; line-height: 1.45; margin: 2px 0 14px; }
@@ -248,6 +292,7 @@
         touch-action: none; box-shadow: 0 4px 6px rgba(0,0,0,0.5);
     }
     .t-btn:active { transform: scale(0.9); background: rgba(241, 196, 15, 0.4); }
+    body.mobile-mode-active #quest-menu-btn { display: none; }
 
     /* ---------- DEBUG PANEL ---------- */
     #debug-panel {
