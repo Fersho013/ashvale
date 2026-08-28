@@ -9,7 +9,7 @@ import { Inventory, grantMobLoot } from './inventory.js';
 import { Slime } from '../entities/mobs.js';
 import { Projectile } from '../entities/projectile.js';
 import { doors } from '../world/map.js';
-import { npc, respawnBed, campfire, alchemyTable, buildTable, chestObj, weaponsChestObj, toolsChestObj, weaponRacks, toolRacks, bocinaVigia, harvestNodes } from '../world/worldObjects.js';
+import { npc, noviceKnight, respawnBed, campfire, alchemyTable, buildTable, chestObj, weaponsChestObj, toolsChestObj, weaponRacks, toolRacks, bocinaVigia, harvestNodes } from '../world/worldObjects.js';
 import { WEAPONS } from '../data/weapons.js';
 import { TOOLS } from '../data/tools.js';
 import { showDialog, showNpcDialogue, updateDialog } from '../ui/dialog.js';
@@ -17,6 +17,8 @@ import { openCraftPanel } from '../ui/craftingUI.js';
 import { openChestPanel } from '../ui/inventoryUI.js';
 import { anyModalOpen } from '../ui/menu.js';
 import { updateHUD } from '../ui/hud.js';
+import { openNoviceKnightMenu, isNpcMenuOpen } from '../ui/questUI.js';
+import { QuestLog } from './quests.js';
 import { maintainMobPopulations, MOB_POPULATION_LIMITS } from './mobSpawner.js';
 
 const HARVEST_DURATION_MS = 3 * 1000;
@@ -148,7 +150,9 @@ function grantDefeatedLoot(list, mobKey) {
     for (const mob of list) {
         if (mob.hp > 0 || mob.lootGranted) continue;
         mob.lootGranted = true;
-        grantMobLoot(typeof mobKey === 'function' ? mobKey(mob) : mobKey);
+        const defeatedKey = typeof mobKey === 'function' ? mobKey(mob) : mobKey;
+        QuestLog.recordDefeat(defeatedKey);
+        grantMobLoot(defeatedKey);
     }
 }
 
@@ -346,6 +350,9 @@ export function update() {
 
     player.update();
     Inventory.updateBuffs();
+    // Las misiones de entrega se completan en cuanto el jugador lleva los
+    // materiales requeridos, aunque hayan sido obtenidos fuera de combate.
+    QuestLog.sync();
 
     world.dummies.forEach(d => d.update());
     world.activeMobs.forEach(m => m.update(player));
@@ -412,6 +419,7 @@ export function update() {
     // Las habilidades y ataques básicos pueden matar después de que las
     // entidades ya se actualizaron este cuadro. El botín se resuelve aquí
     // antes de retirarlas, garantizando una única entrega por muerte.
+    grantDefeatedLoot(world.activeMobs, 'mobArena');
     grantDefeatedLoot(world.slimes, slime => slime.big ? 'granSlime' : 'slime');
     grantDefeatedLoot(world.wolves, 'lobo');
     grantDefeatedLoot(world.deers, 'ciervo');
@@ -436,7 +444,7 @@ export function update() {
     const eDown = Input.isDown(['KeyE']) || Input.gamepad.buttons.interact || Input.touch.interact;
     let promptText = null;
     let interactTarget = null;
-    const modalOpen = anyModalOpen();
+    const modalOpen = anyModalOpen() || isNpcMenuOpen();
 
     if (!modalOpen) {
         const harvestNode = harvestNodes.find(node => dist(player, node) < node.interactionRadius);
@@ -455,6 +463,9 @@ export function update() {
                 if (eDown && !state.actionHeld) startHarvest(harvestNode);
             }
             interactTarget = harvestNode;
+        } else if (dist(player, noviceKnight) < noviceKnight.interactionRadius) {
+            promptText = 'Hablar con el Caballero Novato [E]'; interactTarget = noviceKnight;
+            if (eDown && !state.actionHeld) openNoviceKnightMenu(noviceKnight);
         } else if (dist(player, npc) < npc.interactionRadius) {
             promptText = 'Hablar con el Anciano [E]'; interactTarget = npc;
             if (eDown && !state.actionHeld) showNpcDialogue(npc);
