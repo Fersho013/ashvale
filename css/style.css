@@ -365,6 +365,9 @@
     body.controls-editing #buffs-panel {
         outline: 2px dashed rgba(241, 196, 15, 0.8); outline-offset: 2px;
     }
+    /* En juego el HUD no intercepta toques, pero dentro del editor debe
+       recibirlos para que la barra de HP pueda arrastrarse. */
+    body.controls-editing #ui-overlay { pointer-events: all; }
 
     #controls-editor-toolbar {
         position: fixed; top: 8px; left: 8px; max-width: 230px; z-index: 500;
