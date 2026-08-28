@@ -111,7 +111,12 @@
         border-radius: 6px; padding: 10px 14px; font-size: 12px; display: none; color: #f0f0f0; z-index: 10;
     }
     #dialog-box .name { color: #f1c40f; font-weight: bold; margin-bottom: 4px; }
-    .dialog-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 9px; }
+    /* Las acciones se sitúan visualmente fuera del diálogo para que el
+       cuadro de texto conserve solo el espacio necesario para el mensaje. */
+    .dialog-actions {
+        position: absolute; right: 0; bottom: calc(100% + 6px);
+        display: flex; gap: 8px; justify-content: flex-end; margin: 0;
+    }
     .dialog-actions button { padding: 5px 9px; border: 1px solid #f1c40f; border-radius: 4px; background: #222; color: #f1c40f; font-family: inherit; font-size: 10px; cursor: pointer; }
     .dialog-actions button:hover, .dialog-actions button:active { background: #f1c40f; color: #111; }
 
