@@ -12,7 +12,10 @@
    ===================================================================== */
 import { state } from '../state.js';
 
-export const CONTROL_IDS = ['left-joy-base', 'btn-atk', 'btn-blk', 'btn-q', 'btn-r', 'btn-inv', 'btn-skills', 'touch-pause-btn'];
+export const CONTROL_IDS = [
+    'left-joy-base', 'btn-atk', 'btn-blk', 'btn-q', 'btn-r', 'btn-inv', 'btn-skills', 'touch-pause-btn',
+    'ui-overlay', 'quickbar', 'buffs-panel'
+];
 
 export const CONTROL_TYPES = {
     'left-joy-base':   'joystick',
@@ -22,13 +25,19 @@ export const CONTROL_TYPES = {
     'btn-r':           'button',
     'btn-inv':         'button',
     'btn-skills':      'button',
-    'touch-pause-btn': 'button'
+    'touch-pause-btn': 'button',
+    'ui-overlay':      'hudPanel',
+    'quickbar':        'hudBar',
+    'buffs-panel':     'hudBuffs'
 };
 
 // Tamaño mínimo/máximo (px) permitido al redimensionar cada tipo de control.
 export const SIZE_LIMITS = {
     joystick: { min: 70, max: 170 },
-    button:   { min: 34, max: 88 }
+    button:   { min: 34, max: 88 },
+    hudPanel: { minW: 160, maxW: 420, minH: 70, maxH: 260 },
+    hudBar:   { minW: 180, maxW: 760, minH: 42, maxH: 130 },
+    hudBuffs: { minW: 80, maxW: 360, minH: 42, maxH: 150 }
 };
 
 // Posiciones por defecto: aproximan el layout visual original (joystick
@@ -43,7 +52,10 @@ const DEFAULT_LAYOUT = {
     'btn-q':           { anchor: 'bottom-right', offsetX: 123, offsetY: 69, size: 46 },
     'btn-r':           { anchor: 'bottom-right', offsetX: 15,  offsetY: 15, size: 46 },
     'btn-inv':         { anchor: 'bottom-right', offsetX: 69,  offsetY: 15, size: 46 },
-    'btn-skills':      { anchor: 'top-right',    offsetX: 15,  offsetY: 69, size: 46 }
+    'btn-skills':      { anchor: 'top-right',    offsetX: 15,  offsetY: 69, size: 46 },
+    'ui-overlay':      { anchor: 'top-left',     offsetX: 10,  offsetY: 10, width: 230, height: 82 },
+    'quickbar':        { anchor: 'bottom-center', offsetX: 0, offsetY: 10, width: 448, height: 50 },
+    'buffs-panel':     { anchor: 'top-right',    offsetX: 10,  offsetY: 10, width: 156, height: 46 }
 };
 
 const STORAGE_KEY = 'ashvale_controls_layout_v1';
@@ -52,14 +64,16 @@ function getContainer() { return document.getElementById('game-container'); }
 
 function computeDefaultPx(id, w, h) {
     const d = DEFAULT_LAYOUT[id];
+    const width = d.width || d.size, height = d.height || d.size;
     let left, top;
     switch (d.anchor) {
-        case 'bottom-left':  left = d.offsetX;              top = h - d.offsetY - d.size; break;
-        case 'bottom-right': left = w - d.offsetX - d.size; top = h - d.offsetY - d.size; break;
-        case 'top-right':    left = w - d.offsetX - d.size; top = d.offsetY;              break;
+        case 'bottom-left':  left = d.offsetX;              top = h - d.offsetY - height; break;
+        case 'bottom-right': left = w - d.offsetX - width;  top = h - d.offsetY - height; break;
+        case 'bottom-center': left = w / 2 - width / 2;     top = h - d.offsetY - height; break;
+        case 'top-right':    left = w - d.offsetX - width;  top = d.offsetY;              break;
         default:              left = d.offsetX;              top = d.offsetY;              break; // top-left
     }
-    return { left, top, size: d.size };
+    return { left, top, width, height };
 }
 
 export function loadSavedLayout() {
@@ -89,10 +103,12 @@ export function computeEffectiveLayoutPx() {
         if (saved[id]) {
             const s = saved[id];
             const limits = SIZE_LIMITS[CONTROL_TYPES[id]];
+            const oldSize = (s.sizePct / 100) * w;
             result[id] = {
                 left: (s.leftPct / 100) * w,
                 top: (s.topPct / 100) * h,
-                size: Math.max(limits.min, Math.min(limits.max, (s.sizePct / 100) * w))
+                width: limits.min ? Math.max(limits.min, Math.min(limits.max, oldSize)) : Math.max(limits.minW, Math.min(limits.maxW, (s.widthPct ?? s.sizePct) / 100 * w)),
+                height: limits.min ? Math.max(limits.min, Math.min(limits.max, oldSize)) : Math.max(limits.minH, Math.min(limits.maxH, (s.heightPct ?? s.sizePct) / 100 * h))
             };
         } else {
             result[id] = computeDefaultPx(id, w, h);
@@ -111,13 +127,18 @@ function applyLayoutToDOM(layoutById) {
         el.style.top = `${l.top}px`;
         el.style.right = 'auto';
         el.style.bottom = 'auto';
-        el.style.width = `${l.size}px`;
-        el.style.height = `${l.size}px`;
+        el.style.width = `${l.width}px`;
+        el.style.height = `${l.height}px`;
+        if (CONTROL_TYPES[id].startsWith('hud')) {
+            el.style.transform = 'none';
+            const defaultHeight = DEFAULT_LAYOUT[id].height;
+            el.style.setProperty('--hud-scale', String(l.height / defaultHeight));
+        }
     });
     // El "stick" interior del joystick se escala junto con su base.
     const stick = document.getElementById('left-joy-stick');
     if (stick && layoutById['left-joy-base']) {
-        const s = layoutById['left-joy-base'].size * 0.4;
+        const s = layoutById['left-joy-base'].width * 0.4;
         stick.style.width = `${s}px`;
         stick.style.height = `${s}px`;
     }
@@ -144,7 +165,7 @@ export function persistLayoutPx(layoutById) {
     const pct = {};
     CONTROL_IDS.forEach(id => {
         const l = layoutById[id];
-        pct[id] = { leftPct: (l.left / w) * 100, topPct: (l.top / h) * 100, sizePct: (l.size / w) * 100 };
+        pct[id] = { leftPct: (l.left / w) * 100, topPct: (l.top / h) * 100, widthPct: (l.width / w) * 100, heightPct: (l.height / h) * 100 };
     });
     saveLayoutToStorage(pct);
 }
