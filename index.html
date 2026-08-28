@@ -145,7 +145,7 @@
 
     <!-- Inventario / Equipamiento -->
     <div id="inventory-panel" class="modal-panel">
-        <span class="close-modal" data-close="inventory-panel">[X]</span>
+        <button class="close-modal" type="button" data-close="inventory-panel" aria-label="Cerrar inventario">×</button>
         <h3 class="panel-title-row"><span>Menú de Equipamiento</span><span id="gold-display">🪙 <span id="gold-text">0</span></span></h3>
         <p style="font-size: 10px; color: #aaa; margin-bottom: 6px;">Toca un arma o herramienta de tu inventario para equiparla. Toca el slot de equipamiento para desequiparla.</p>
         <div id="equip-slots">
@@ -162,7 +162,7 @@
 
     <!-- Cofre (menú de acciones por toque) -->
     <div id="chest-panel" class="modal-panel">
-        <span class="close-modal" data-close="chest-panel">[X]</span>
+        <button class="close-modal" type="button" data-close="chest-panel" aria-label="Cerrar cofre">×</button>
         <h3 id="chest-panel-title">Cofre (40 Slots) — Toca un ítem para ver sus opciones</h3>
         <div id="chest-grid" class="grid-10"></div>
         <h3>Tu Inventario — Toca un ítem para ver sus opciones</h3>
@@ -171,7 +171,7 @@
 
     <!-- Crafting: Hoguera / Máquina de Pociones -->
     <div id="craft-panel" class="modal-panel">
-        <span class="close-modal" data-close="craft-panel">[X]</span>
+        <button class="close-modal" type="button" data-close="craft-panel" aria-label="Cerrar estación de creación">×</button>
         <h3 id="craft-title">Hoguera — Cocinar</h3>
         <div id="craft-slots">
             <div class="craft-slot" data-idx="0">(vacío)</div>
@@ -187,7 +187,7 @@
     <!-- Árbol de Habilidades: las ramas se definen aquí; sus habilidades se
          agregarán posteriormente sin cambiar los accesos al menú. -->
     <div id="skill-tree-panel" class="modal-panel">
-        <span class="close-modal" data-close="skill-tree-panel">[X]</span>
+        <button class="close-modal" type="button" data-close="skill-tree-panel" aria-label="Cerrar árbol de habilidades">×</button>
         <h3>Árbol de Habilidades</h3>
         <p class="skill-tree-intro">Elige una rama para consultar su progreso.</p>
         <div id="skill-branches" class="skill-tree-buttons">
