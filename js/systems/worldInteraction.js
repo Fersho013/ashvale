@@ -12,7 +12,7 @@ import { doors } from '../world/map.js';
 import { npc, respawnBed, campfire, alchemyTable, buildTable, chestObj, weaponsChestObj, toolsChestObj, weaponRacks, toolRacks, bocinaVigia, harvestNodes } from '../world/worldObjects.js';
 import { WEAPONS } from '../data/weapons.js';
 import { TOOLS } from '../data/tools.js';
-import { showDialog, dialogState } from '../ui/dialog.js';
+import { showDialog, showNpcDialogue, updateDialog } from '../ui/dialog.js';
 import { openCraftPanel } from '../ui/craftingUI.js';
 import { openChestPanel } from '../ui/inventoryUI.js';
 import { anyModalOpen } from '../ui/menu.js';
@@ -457,7 +457,7 @@ export function update() {
             interactTarget = harvestNode;
         } else if (dist(player, npc) < npc.interactionRadius) {
             promptText = 'Hablar con el Anciano [E]'; interactTarget = npc;
-            if (eDown && !state.actionHeld) { showDialog('Anciano', npc.messages[npc.msgIndex]); npc.msgIndex = (npc.msgIndex + 1) % npc.messages.length; }
+            if (eDown && !state.actionHeld) showNpcDialogue(npc);
         } else if (dist(player, respawnBed) < respawnBed.interactionRadius) {
             promptText = 'Dormir para fijar Respawn [E]'; interactTarget = respawnBed;
             if (eDown && !state.actionHeld) { player.respawn = { x: player.x, y: player.y }; showDialog('Sistema', 'Punto de respawn actualizado.'); }
@@ -533,7 +533,7 @@ export function update() {
     if (promptText && !modalOpen) { promptEl.style.display = 'block'; promptEl.innerText = promptText; }
     else promptEl.style.display = 'none';
 
-    if (dialogState.timer > 0) { dialogState.timer--; if (dialogState.timer === 0) document.getElementById('dialog-box').style.display = 'none'; }
+    updateDialog();
 
     updateHUD();
 }
