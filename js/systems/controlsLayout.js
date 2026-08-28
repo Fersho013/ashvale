@@ -103,7 +103,11 @@ export function computeEffectiveLayoutPx() {
         if (saved[id]) {
             const s = saved[id];
             const limits = SIZE_LIMITS[CONTROL_TYPES[id]];
-            const oldSize = (s.sizePct / 100) * w;
+            // Las versiones actuales persisten widthPct/heightPct para todos
+            // los controles. Se conserva sizePct solo como compatibilidad con
+            // layouts antiguos; leer únicamente sizePct producía NaN tras
+            // guardar y hacía que joystick y botones perdieran su tamaño.
+            const oldSize = ((s.widthPct ?? s.sizePct) / 100) * w;
             result[id] = {
                 left: (s.leftPct / 100) * w,
                 top: (s.topPct / 100) * h,
