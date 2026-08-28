@@ -171,7 +171,17 @@
     .equip-slot:hover { border-color: #2ecc71; color: #fff; }
     .equip-slot small { display: block; margin-top: 3px; color: #f1c40f; font-size: 7px; line-height: 1.2; }
     .equip-slot.selected { background: #14261a; border-color: #2ecc71; box-shadow: 0 0 0 2px rgba(46,204,113,0.5); }
-    .close-modal { position: absolute; top: 8px; right: 10px; cursor: pointer; color: #e74c3c; font-weight: bold; pointer-events: all; }
+    /* Botón de cierre persistente: al ser sticky dentro del panel que se
+       desplaza, siempre permanece disponible en su esquina superior. */
+    .close-modal {
+        position: sticky; top: 0; z-index: 3; float: right;
+        width: 28px; height: 28px; margin: -7px -7px 4px 9px; padding: 0;
+        display: flex; align-items: center; justify-content: center;
+        background: #3a1616; border: 1px solid #e74c3c; border-radius: 5px;
+        color: #ff8e86; font: bold 19px/1 Arial, sans-serif; cursor: pointer;
+        pointer-events: all; box-shadow: 0 2px 7px rgba(0,0,0,0.65);
+    }
+    .close-modal:hover, .close-modal:active { background: #e74c3c; color: #fff; }
 
     /* ---------- ÁRBOL DE HABILIDADES ---------- */
     #skill-tree-panel { width: min(500px, calc(100vw - 38px)); }
