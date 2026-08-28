@@ -5,6 +5,7 @@ import { state } from '../state.js';
 import { toggleInventory } from '../ui/inventoryUI.js';
 import { togglePause } from '../ui/pause.js';
 import { toggleSkillTree } from '../ui/skillTreeUI.js';
+import { toggleQuestLog } from '../ui/questUI.js';
 
 export const Input = {
     keys: {}, keysPressed: {},
@@ -144,6 +145,14 @@ export const Input = {
             skillsBtn.addEventListener('touchstart', e => {
                 if (state.controlsEditMode || state.gamePaused) return;
                 e.preventDefault(); toggleSkillTree();
+            }, { passive: false });
+        }
+
+        const questsBtn = document.getElementById('btn-quests');
+        if (questsBtn) {
+            questsBtn.addEventListener('touchstart', e => {
+                if (state.controlsEditMode || state.gamePaused) return;
+                e.preventDefault(); toggleQuestLog();
             }, { passive: false });
         }
 
