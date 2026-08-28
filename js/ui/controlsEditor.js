@@ -70,6 +70,7 @@ export function closeControlsEditor() {
 
     activeDrag = null;
     toolbarDrag = null;
+    window.removeEventListener('mousemove', onToolbarMouseMove);
 }
 
 function flashToolbarMsg(text) {
@@ -98,9 +99,14 @@ function buildOverlay() {
         <div id="ce-toolbar-msg"></div>
     `;
     document.body.appendChild(overlayEl);
-    // Todo el panel se puede mover para no bloquear la edición; los botones
-    // conservan su comportamiento normal y no inician un arrastre.
-    overlayEl.addEventListener('pointerdown', onToolbarPointerDown);
+    // El panel se mueve desde su franja amarilla mediante eventos aislados.
+    // No comparte los eventos pointer globales que usa el editor del HUD.
+    const toolbarHandle = document.getElementById('ce-toolbar-drag-handle');
+    toolbarHandle.addEventListener('touchstart', onToolbarTouchStart, { passive: false });
+    toolbarHandle.addEventListener('touchmove', onToolbarTouchMove, { passive: false });
+    toolbarHandle.addEventListener('touchend', onToolbarTouchEnd, { passive: false });
+    toolbarHandle.addEventListener('touchcancel', onToolbarTouchEnd, { passive: false });
+    toolbarHandle.addEventListener('mousedown', onToolbarMouseDown);
 
     handlesEl = document.createElement('div');
     handlesEl.id = 'controls-editor-handles';
@@ -175,16 +181,57 @@ function onControlPointerDown(e) {
     try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) { /* noop */ }
 }
 
-function onToolbarPointerDown(e) {
-    if (e.target.closest('button')) return;
-    e.preventDefault();
+function beginToolbarDrag(pointerId, clientX, clientY) {
     const rect = overlayEl.getBoundingClientRect();
     toolbarDrag = {
-        pointerId: e.pointerId,
-        startClientX: e.clientX, startClientY: e.clientY,
+        pointerId,
+        startClientX: clientX, startClientY: clientY,
         startLeft: rect.left, startTop: rect.top
     };
-    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) { /* noop */ }
+}
+
+function moveToolbar(clientX, clientY) {
+    if (!toolbarDrag || !overlayEl) return;
+    const maxLeft = Math.max(0, window.innerWidth - overlayEl.offsetWidth);
+    const maxTop = Math.max(0, window.innerHeight - overlayEl.offsetHeight);
+    overlayEl.style.left = `${Math.max(0, Math.min(maxLeft, toolbarDrag.startLeft + clientX - toolbarDrag.startClientX))}px`;
+    overlayEl.style.top = `${Math.max(0, Math.min(maxTop, toolbarDrag.startTop + clientY - toolbarDrag.startClientY))}px`;
+}
+
+function onToolbarTouchStart(e) {
+    const touch = e.changedTouches[0];
+    if (!touch) return;
+    e.preventDefault();
+    beginToolbarDrag(touch.identifier, touch.clientX, touch.clientY);
+}
+
+function onToolbarTouchMove(e) {
+    if (!toolbarDrag) return;
+    const touch = [...e.changedTouches].find(t => t.identifier === toolbarDrag.pointerId);
+    if (!touch) return;
+    e.preventDefault();
+    moveToolbar(touch.clientX, touch.clientY);
+}
+
+function onToolbarTouchEnd(e) {
+    if ([...e.changedTouches].some(t => t.identifier === toolbarDrag?.pointerId)) toolbarDrag = null;
+}
+
+function onToolbarMouseDown(e) {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    beginToolbarDrag('mouse', e.clientX, e.clientY);
+    window.addEventListener('mousemove', onToolbarMouseMove);
+    window.addEventListener('mouseup', onToolbarMouseUp, { once: true });
+}
+
+function onToolbarMouseMove(e) {
+    if (toolbarDrag?.pointerId === 'mouse') moveToolbar(e.clientX, e.clientY);
+}
+
+function onToolbarMouseUp() {
+    toolbarDrag = null;
+    window.removeEventListener('mousemove', onToolbarMouseMove);
 }
 
 function onHandlePointerDown(e) {
@@ -200,13 +247,6 @@ function onHandlePointerDown(e) {
 }
 
 function onPointerMove(e) {
-    if (toolbarDrag && e.pointerId === toolbarDrag.pointerId) {
-        const maxLeft = Math.max(0, window.innerWidth - overlayEl.offsetWidth);
-        const maxTop = Math.max(0, window.innerHeight - overlayEl.offsetHeight);
-        overlayEl.style.left = `${Math.max(0, Math.min(maxLeft, toolbarDrag.startLeft + e.clientX - toolbarDrag.startClientX))}px`;
-        overlayEl.style.top = `${Math.max(0, Math.min(maxTop, toolbarDrag.startTop + e.clientY - toolbarDrag.startClientY))}px`;
-        return;
-    }
     if (!activeDrag || e.pointerId !== activeDrag.pointerId) return;
     const dx = e.clientX - activeDrag.startClientX;
     const dy = e.clientY - activeDrag.startClientY;
@@ -234,10 +274,6 @@ function onPointerMove(e) {
 }
 
 function onPointerUp(e) {
-    if (toolbarDrag && e.pointerId === toolbarDrag.pointerId) {
-        toolbarDrag = null;
-        return;
-    }
     if (!activeDrag || e.pointerId !== activeDrag.pointerId) return;
     activeDrag = null;
 }
