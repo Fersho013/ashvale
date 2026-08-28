@@ -68,6 +68,7 @@
     <div id="buffs-panel"></div>
 
     <div id="quickbar"></div>
+    <button id="quest-menu-btn" type="button" aria-label="Abrir misiones">📜 Misiones [H]</button>
 
     <div id="interaction-prompt">Presiona [E]</div>
 
@@ -99,6 +100,7 @@
             <button id="btn-r" class="t-btn" aria-label="Habilidad 2">🌙</button>
             <button id="btn-inv" class="t-btn" aria-label="Inventario">🎒</button>
             <button id="btn-skills" class="t-btn" aria-label="Árbol de habilidades">🌳</button>
+            <button id="btn-quests" class="t-btn" aria-label="Misiones">📜</button>
         </div>
     </div>
 
@@ -125,6 +127,7 @@
                     <p><strong>Habilidad 2:</strong> [R] / LB / 🌙</p>
                     <p><strong>Inventario:</strong> [I] / Y / 🎒</p>
                     <p><strong>Árbol de habilidades:</strong> [O] / Select-Share / 🌳</p>
+                    <p><strong>Misiones:</strong> [H] / 📜</p>
                     <p><strong>Pausa:</strong> [P][Esc] / Options / ⏸</p>
                     <p><strong>Debug:</strong> [~] / [F2]</p>
                 </div>
@@ -213,6 +216,19 @@
                 <div class="skill-future-node">Próximas habilidades<br>más poderosas</div>
             </div>
         </div>
+    </div>
+
+    <!-- Diario del jugador y ofertas de misión de NPC. Son paneles separados
+         para que el diario pueda abrirse desde cualquier lugar. -->
+    <div id="quest-panel" class="modal-panel quest-panel">
+        <button id="quest-panel-close" class="close-modal" type="button" aria-label="Cerrar misiones">×</button>
+        <h3>Misiones activas</h3>
+        <div id="quest-list"></div>
+    </div>
+    <div id="quest-offer-panel" class="modal-panel quest-panel">
+        <button id="quest-offer-close" class="close-modal" type="button" aria-label="Cerrar misiones del NPC">×</button>
+        <h3>Misiones — Caballero Novato</h3>
+        <div id="quest-offer-content"></div>
     </div>
 
     <div id="debug-panel">
