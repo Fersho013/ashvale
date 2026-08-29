@@ -100,7 +100,12 @@ function resolveAttackOn(mob, target) {
         const distance = Math.hypot(dx, dy) || 1;
         const facing = (dx / distance) * mob.attackDirX + (dy / distance) * mob.attackDirY;
         if (distance <= mob.attackRange + Math.max(target.w, target.h) / 2 && facing >= Math.cos(Math.PI * 55 / 180)) {
-            if (typeof target.takeHit === 'function') target.takeHit(mob.attackDamage);
+            if (typeof target.takeHit === 'function') {
+                // Punto 3 corrección: distinguir quién mató al ciervo para el loot
+                const attackerTag = mob instanceof Wolf ? 'wolf' : 'unknown';
+                // Deer.takeHit acepta (dmg, attacker)
+                try { target.takeHit(mob.attackDamage, attackerTag); } catch (_) { target.takeHit(mob.attackDamage); }
+            }
         }
         mob.attackHit = true;
     }
@@ -415,6 +420,27 @@ export class Deer {
         this.habitat = habitat;
         // Punto 3 — estado Alerta tras recibir daño
         this.alert = false; this.alertTimer = 0; this.lastFleeX = 0; this.lastFleeY = 0;
+        // Corrección: evitar quedar atrapado en paredes/límites y control de loot por último golpe
+        this.lastHitBy = null; this.stuckFrames = 0; this._prevX = x; this._prevY = y;
+    }
+    _resolveWalls() {
+        const walls = getActiveWalls();
+        for (const wall of walls) {
+            if (checkRectCollision(this, wall)) {
+                const prevX = this._prevX, prevY = this._prevY;
+                // Empujar fuera por el eje de menor penetración
+                const overlapX = Math.min(this.x + this.w - wall.x, wall.x + wall.w - this.x);
+                const overlapY = Math.min(this.y + this.h - wall.y, wall.y + wall.h - this.y);
+                if (overlapX < overlapY) {
+                    this.x = prevX;
+                    // Desviar en Y para buscar salida
+                    this.lastFleeY += (Math.random() > 0.5 ? 1 : -1) * 8;
+                } else {
+                    this.y = prevY;
+                    this.lastFleeX += (Math.random() > 0.5 ? 1 : -1) * 8;
+                }
+            }
+        }
     }
     update(player, wolves) {
         this.isMoving = false;
@@ -439,6 +465,8 @@ export class Deer {
         }
 
         const shouldFlee = !!fleeFrom || this.alert;
+        // Guardar posición previa para detectar atasco contra pared/límite
+        this._prevX = this.x; this._prevY = this.y;
         if (shouldFlee) {
             let fx, fy;
             if (fleeFrom) {
@@ -446,7 +474,6 @@ export class Deer {
                 fy = (this.y + this.h/2) - (fleeFrom.y + fleeFrom.h/2);
                 this.lastFleeX = fx; this.lastFleeY = fy;
             } else {
-                // En alerta sin amenaza inmediata: sigue huyendo con la última dirección + deriva hacia el centro
                 if (this.habitat) {
                     const cx = this.habitat.x + this.habitat.w/2, cy = this.habitat.y + this.habitat.h/2;
                     const toCenterX = cx - (this.x + this.w/2), toCenterY = cy - (this.y + this.h/2);
@@ -458,7 +485,7 @@ export class Deer {
                 }
             }
             let d = Math.hypot(fx, fy) || 1; fx /= d; fy /= d;
-            // Evitar orillas: si está cerca del borde del bioma, mezclar dirección hacia el interior
+            // Evitar orillas del bioma antes de moverse
             if (this.habitat) {
                 const margin = 85;
                 const leftDist = this.x - this.habitat.x;
@@ -472,23 +499,56 @@ export class Deer {
                 if (bottomDist < margin) iy -= 1;
                 if (ix !== 0 || iy !== 0) {
                     const len = Math.hypot(ix, iy) || 1; ix /= len; iy /= len;
-                    const blend = 0.38;
+                    const blend = 0.42;
                     fx = fx * (1 - blend) + ix * blend;
                     fy = fy * (1 - blend) + iy * blend;
                     const nl = Math.hypot(fx, fy) || 1; fx /= nl; fy /= nl;
                 }
             }
-            // Si en la huida aparece otro lobo dentro del radio ampliado, fleeFrom ya lo habrá capturado; si hay varios, el más cercano domina
+            // Si está atascado contra pared, forzar desvío perpendicular
+            if (this.stuckFrames > 10) {
+                const perpX = -fy, perpY = fx;
+                const sign = Math.random() > 0.5 ? 1 : -1;
+                fx = fx * 0.35 + perpX * sign * 0.65;
+                fy = fy * 0.35 + perpY * sign * 0.65;
+                const nl = Math.hypot(fx, fy) || 1; fx /= nl; fy /= nl;
+                if (this.habitat) {
+                    const cx = this.habitat.x + this.habitat.w/2, cy = this.habitat.y + this.habitat.h/2;
+                    fx = fx * 0.7 + (cx - this.x) * 0.0006;
+                    fy = fy * 0.7 + (cy - this.y) * 0.0006;
+                }
+            }
             setMobMovement(this, fx * speed, fy * speed);
             this.x += fx * speed; this.y += fy * speed;
+            // Resolver colisión contra muros sólidos y límites del bioma
+            this._resolveWalls();
+            clampToArea(this, this.habitat);
+            // Detección de atasco: si apenas avanzó pese a intentar huir
+            const moved = Math.hypot(this.x - this._prevX, this.y - this._prevY);
+            if (moved < speed * 0.38) this.stuckFrames++;
+            else if (this.stuckFrames > 0) this.stuckFrames = Math.max(0, this.stuckFrames - 2);
+            // Si detecta pared inmediata al frente, incrementar atascamiento
+            const walls = getActiveWalls();
+            const probeX = this.x + fx * (this.w + 6), probeY = this.y + fy * (this.h + 6);
+            const probe = { x: probeX, y: probeY, w: this.w, h: this.h };
+            if (walls.some(w => checkRectCollision(probe, w))) this.stuckFrames += 2;
+        } else {
+            this.stuckFrames = 0;
+            clampToArea(this, this.habitat);
         }
-        clampToArea(this, this.habitat);
-        if (this.hp <= 0 && !this.lootGranted) { this.lootGranted = true; grantMobLoot('ciervo'); }
+        if (this.hp <= 0 && !this.lootGranted) {
+            this.lootGranted = true;
+            // Solo el jugador cobra loot si fue el último en golpear; si lo mató el lobo, se pierde
+            if (this.lastHitBy !== 'wolf') grantMobLoot('ciervo');
+        }
     }
-    takeHit(dmg) {
+    takeHit(dmg, attacker) {
         this.flash = 10; this.hp -= dmg;
         // Punto 3 — entra en Alerta al recibir daño de lobo o jugador
         this.alert = true; this.alertTimer = 75;
+        if (typeof attacker === 'string') this.lastHitBy = attacker;
+        else if (attacker && attacker.id === 'lobo') this.lastHitBy = 'wolf';
+        else this.lastHitBy = 'player';
     }
     draw(ctx) {
         if (this.alert) {
