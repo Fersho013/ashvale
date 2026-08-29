@@ -29,7 +29,8 @@ export const weaponsChestObj = { ...pos(550, 200), w: 32, h: 26, interactionRadi
 export const toolsChestObj   = { ...pos(630, 200), w: 32, h: 26, interactionRadius: 50 };
 
 export const npc = {
-    ...pos(80, 60), w: 36, h: 36, interactionRadius: 60,
+    // El Anciano recibe al jugador junto a la Hoguera, al inicio del centro.
+    x: 365, y: 300, w: 36, h: 36, interactionRadius: 60,
     messages: [
         "¡Bienvenido al Sandbox de Ashvale! Usa WASD o los controles táctiles para moverte.",
         "Al este de esta sala hay Estantes de Armas/Herramientas (puedes tomar de ahí las veces que quieras) y, más abajo, un Cofre de Armas y uno de Herramientas con existencias limitadas. Presiona [E] junto a cualquiera.",
@@ -49,15 +50,17 @@ export const noviceKnight = {
         'Hay que salvar al mundo'
     ]
 };
-export const respawnBed   = { ...pos(160, 60),  w: 30, h: 24, interactionRadius: 50 };
-export const campfire     = { ...pos(80, 160),  w: 30, h: 30, interactionRadius: 50 };
-export const alchemyTable = { ...pos(160, 160), w: 30, h: 30, interactionRadius: 50 };
-export const chestObj      = { ...pos(250, 160), w: 32, h: 26, interactionRadius: 50 };
+// Distribución inicial del Centro de Mando: cama a la izquierda del spawn,
+// Anciano y Hoguera al frente, cofre a su derecha y estaciones debajo.
+export const respawnBed   = { x: 220, y: 300, w: 30, h: 24, interactionRadius: 50 };
+export const campfire     = { x: 420, y: 300, w: 30, h: 30, interactionRadius: 50 };
+export const chestObj      = { x: 470, y: 300, w: 32, h: 26, interactionRadius: 50 };
+export const alchemyTable = { x: 420, y: 390, w: 30, h: 30, interactionRadius: 50 };
 // Mesa Constructora (punto 2): arma craftable a partir de materiales de
 // mob-loot (ver data/mobs.js) — espadas, herramientas y armaduras (ver
 // data/recipes.js -> BUILD_RECIPES). Ubicada junto al resto de estaciones
 // de crafteo, en un hueco libre de muros de la Zona 1.
-export const buildTable    = { ...pos(320, 160), w: 30, h: 30, interactionRadius: 50 };
+export const buildTable    = { x: 500, y: 390, w: 30, h: 30, interactionRadius: 50 };
 export const workTables = [ { ...pos(250, 40), w: 40, h: 26 }, { ...pos(310, 40), w: 40, h: 26 }, { ...pos(60, 230), w: 40, h: 26 } ];
 
 export const bocinaVigia = { ...pos(950, 750), w: 34, h: 34, interactionRadius: 55 };
