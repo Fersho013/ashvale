@@ -223,6 +223,17 @@
     .npc-action-menu button { padding: 9px; border: 1px solid #777; border-radius: 4px; background: #222; color: #eee; font: 12px monospace; cursor: pointer; }
     .npc-action-menu button:hover, .npc-action-menu button:active { background: #f1c40f; color: #111; border-color: #f1c40f; }
     .npc-action-menu .npc-deliver { border-color: #2ecc71; color: #8df0ad; }
+    .guide-panel { width: min(590px, calc(100vw - 38px)); }
+    .guide-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .guide-entry-button {
+        min-height: 54px; padding: 9px; border: 1px solid #596a75; border-radius: 5px;
+        background: #1b2529; color: #e5f3f6; font: 11px monospace; text-align: left; cursor: pointer;
+    }
+    .guide-entry-button:hover, .guide-entry-button:active { background: #2a3c42; border-color: #f1c40f; color: #fff4be; }
+    .guide-detail { color: #ddd; font-size: 11px; line-height: 1.55; }
+    .guide-detail ul { margin: 8px 0; padding-left: 18px; }
+    .guide-recipe { margin: 6px 0; padding: 6px 8px; border-left: 3px solid #2ecc71; background: #15231b; color: #c9f4d5; }
+    @media (max-width: 520px) { .guide-grid { grid-template-columns: 1fr; } }
     body.npc-menu-open #ui-overlay, body.npc-menu-open #buffs-panel, body.npc-menu-open #quickbar,
     body.npc-menu-open #zone-label, body.npc-menu-open #interaction-prompt, body.npc-menu-open #touch-controls,
     body.npc-menu-open #touch-pause-btn, body.npc-menu-open #quest-menu-btn { visibility: hidden; pointer-events: none; }
