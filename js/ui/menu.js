@@ -13,7 +13,8 @@ export function anyModalOpen() {
         || document.getElementById('craft-panel').style.display === 'block'
         || document.getElementById('skill-tree-panel').style.display === 'block'
         || document.getElementById('quest-panel').style.display === 'block'
-        || document.getElementById('quest-offer-panel').style.display === 'block';
+        || document.getElementById('quest-offer-panel').style.display === 'block'
+        || document.getElementById('guide-panel').style.display === 'block';
 }
 
 export function closeAllModals() {
@@ -23,6 +24,8 @@ export function closeAllModals() {
     document.getElementById('skill-tree-panel').style.display = 'none';
     document.getElementById('quest-panel').style.display = 'none';
     document.getElementById('quest-offer-panel').style.display = 'none';
+    document.getElementById('guide-panel').style.display = 'none';
+    document.body.classList.remove('npc-menu-open');
 }
 
 export function showScreen(id) {
