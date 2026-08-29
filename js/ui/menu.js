@@ -14,7 +14,9 @@ export function anyModalOpen() {
         || document.getElementById('skill-tree-panel').style.display === 'block'
         || document.getElementById('quest-panel').style.display === 'block'
         || document.getElementById('quest-offer-panel').style.display === 'block'
-        || document.getElementById('guide-panel').style.display === 'block';
+        || document.getElementById('guide-panel').style.display === 'block'
+        || document.getElementById('merchant-buy-panel')?.style.display === 'block'
+        || document.getElementById('merchant-sell-panel')?.style.display === 'block';
 }
 
 export function closeAllModals() {
@@ -25,6 +27,8 @@ export function closeAllModals() {
     document.getElementById('quest-panel').style.display = 'none';
     document.getElementById('quest-offer-panel').style.display = 'none';
     document.getElementById('guide-panel').style.display = 'none';
+    const mb = document.getElementById('merchant-buy-panel'); if (mb) mb.style.display = 'none';
+    const ms = document.getElementById('merchant-sell-panel'); if (ms) ms.style.display = 'none';
     document.body.classList.remove('npc-menu-open');
 }
 
