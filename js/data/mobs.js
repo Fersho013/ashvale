@@ -55,7 +55,7 @@ export const MOBS = {
         ]
     },
     mobArena: {
-        id: 'mobArena', name: 'Mob de Arena', baseHp: 90, loot: []
+        id: 'mobArena', name: 'Mob de Arena', baseHp: 150, loot: []
     }
 };
 
