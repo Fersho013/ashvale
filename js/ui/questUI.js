@@ -17,7 +17,7 @@ function closeNpcMenu(restoreHud = true) {
     if (restoreHud) document.body.classList.remove('npc-menu-open');
 }
 
-export function isNpcMenuOpen() { return !!npcMenuEl; }
+export function isNpcMenuOpen() { return !!npcMenuEl && document.body.contains(npcMenuEl); }
 
 export function openNoviceKnightMenu(npc) {
     closeNpcMenu();
