@@ -90,7 +90,12 @@ function checkProjectileHit(p) {
                     }
                     return true;
                 }
-                if (parry) m.takeHit(p.dmg, false); else m.takeHit(p.dmg);
+                if (parry) m.takeHit(p.dmg, false);
+                else {
+                    // Para ciervo el golpe de proyectil (jugador) debe quedar registrado como 'player'
+                    if (m.constructor && m.constructor.name === 'Deer') m.takeHit(p.dmg, 'player');
+                    else m.takeHit(p.dmg);
+                }
                 p.hitTargets.add(m);
                 if (p.knockback > 0) {
                     const dx = (m.x + m.w / 2) - (p.x + p.w / 2);
@@ -142,14 +147,22 @@ function getEnemyGroups(world) {
 }
 
 function damageEnemy(mob, damage) {
-    // ActiveMob usa el segundo parámetro para el parry; para las habilidades
-    // de Espadachín no se activa ese efecto adicional.
+    // Corrección: para ciervo el segundo parámetro debe marcar quién golpeó para el loot
+    if (mob.constructor && mob.constructor.name === 'Deer') {
+        if (mob.takeHit) mob.takeHit(damage, 'player');
+        return;
+    }
     if (mob.takeHit) mob.takeHit(damage, false);
 }
 
 function grantDefeatedLoot(list, mobKey) {
     for (const mob of list) {
         if (mob.hp > 0 || mob.lootGranted) continue;
+        // Corrección: para ciervo, el loot y la misión solo cuentan si el último golpe fue del jugador
+        if (mob.lastHitBy === 'wolf' && (mobKey === 'ciervo' || (typeof mobKey === 'function' && mobKey(mob) === 'ciervo'))) {
+            mob.lootGranted = true;
+            continue;
+        }
         mob.lootGranted = true;
         const defeatedKey = typeof mobKey === 'function' ? mobKey(mob) : mobKey;
         QuestLog.recordDefeat(defeatedKey);
@@ -414,7 +427,7 @@ export function update() {
         world.activeMobs.forEach(m => { if (checkRectCollision(box, m) && m.flash === 0) { m.takeHit(dmg, false); player.bars = Math.min(player.barCapacity, player.bars + 0.5); } });
         world.slimes.forEach(s => { if (checkRectCollision(box, s) && s.flash === 0) { s.takeHit(dmg); player.bars = Math.min(player.barCapacity, player.bars + 0.5); } });
         world.wolves.forEach(w => { if (checkRectCollision(box, w) && w.flash === 0) { w.takeHit(dmg); player.bars = Math.min(player.barCapacity, player.bars + 0.5); } });
-        world.deers.forEach(d => { if (checkRectCollision(box, d) && d.flash === 0) { d.takeHit(dmg); player.bars = Math.min(player.barCapacity, player.bars + 0.5); } });
+        world.deers.forEach(d => { if (checkRectCollision(box, d) && d.flash === 0) { d.takeHit(dmg, 'player'); player.bars = Math.min(player.barCapacity, player.bars + 0.5); } });
         world.goblins.forEach(g => { if (checkRectCollision(box, g) && g.flash === 0) { g.takeHit(dmg); player.bars = Math.min(player.barCapacity, player.bars + 0.5); } });
     }
     // Las habilidades y ataques básicos pueden matar después de que las
