@@ -19,12 +19,13 @@ import { toggleSkillTree } from './ui/skillTreeUI.js';
 import { toggleQuestLog } from './ui/questUI.js';
 import { anyModalOpen, closeAllModals } from './ui/menu.js';
 import { ZONES, MAP_W, MAP_H, walls, doors, BIOME_AREAS } from './world/map.js';
-import { npc, noviceKnight, respawnBed, campfire, alchemyTable, buildTable, chestObj, workTables, weaponsChestObj, toolsChestObj, weaponRacks, toolRacks, bocinaVigia, harvestNodes } from './world/worldObjects.js';
+import { npc, noviceKnight, merchant, respawnBed, campfire, alchemyTable, buildTable, chestObj, workTables, weaponsChestObj, toolsChestObj, weaponRacks, toolRacks, bocinaVigia, harvestNodes } from './world/worldObjects.js';
 import { WEAPONS } from './data/weapons.js';
 import { TOOLS } from './data/tools.js';
 import './systems/saveLoad.js';
 import './ui/craftingUI.js';
 import './ui/atlasTheme.js';
+import './ui/merchantUI.js';
 import { initHudVisibility } from './ui/hudVisibility.js';
 initHudVisibility();
 
@@ -124,6 +125,7 @@ function render() {
     workTables.forEach(t => drawWorldFrame('work_table', t.x, t.y, t.w, t.h, () => drawSprite(ctx, 'workTable', t.x, t.y, t.w, t.h)));
     if (!drawAtlasAnimation(ctx, 'npc', 'idle', 'down', performance.now(), npc.x, npc.y, npc.w, npc.h, { anchor: 'feet', spriteSize: ATLAS_DISPLAY_SIZES.npc })) drawSprite(ctx, 'npc', npc.x, npc.y, npc.w, npc.h);
     if (!drawAtlasAnimation(ctx, 'npc', 'idle', 'down', performance.now(), noviceKnight.x, noviceKnight.y, noviceKnight.w, noviceKnight.h, { anchor: 'feet', spriteSize: ATLAS_DISPLAY_SIZES.npc })) drawSprite(ctx, 'npc', noviceKnight.x, noviceKnight.y, noviceKnight.w, noviceKnight.h, { color: '#5dade2', label: 'C' });
+    if (!drawAtlasAnimation(ctx, 'npc', 'idle', 'down', performance.now(), merchant.x, merchant.y, merchant.w, merchant.h, { anchor: 'feet', spriteSize: ATLAS_DISPLAY_SIZES.npc })) drawSprite(ctx, 'npc', merchant.x, merchant.y, merchant.w, merchant.h, { color: '#f1c40f', label: 'M' });
     drawWorldFrame('bed', respawnBed.x, respawnBed.y, respawnBed.w, respawnBed.h, () => drawSprite(ctx, 'bed', respawnBed.x, respawnBed.y, respawnBed.w, respawnBed.h));
     drawWorldFrame('campfire', campfire.x, campfire.y, campfire.w, campfire.h, () => drawSprite(ctx, 'campfire', campfire.x, campfire.y, campfire.w, campfire.h));
     drawWorldFrame('alchemy_table', alchemyTable.x, alchemyTable.y, alchemyTable.w, alchemyTable.h, () => drawSprite(ctx, 'alchemy', alchemyTable.x, alchemyTable.y, alchemyTable.w, alchemyTable.h));
