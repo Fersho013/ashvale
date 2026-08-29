@@ -65,6 +65,15 @@ export const workTables = [ { ...pos(250, 40), w: 40, h: 26 }, { ...pos(310, 40)
 
 export const bocinaVigia = { ...pos(950, 750), w: 34, h: 34, interactionRadius: 55 };
 
+// Mercader — Zona 4 (Ecosistema y Bioma vivo), al lado de la Bocina del Vigía
+export const merchant = {
+    id: 'merchant', name: 'Mercader', x: 1940, y: 1450, w: 36, h: 36, interactionRadius: 64,
+    messages: [
+        'Tengo varios articulos utiles',
+        'Vendeme todo lo que tengas'
+    ]
+};
+
 // Recursos renovables de la Zona 4: Ecosistema y Bioma Vivo. Cada nodo se
 // puede recolectar cinco veces antes de quedar en recuperación por 3 min.
 export const harvestNodes = [
@@ -79,7 +88,7 @@ export const harvestNodes = [
 // NPC, mobiliario, cofres, estantes, recursos ni la Bocina del Vigía.
 export function getStaticSolidColliders() {
     return [
-        npc, noviceKnight, respawnBed, campfire, alchemyTable, buildTable, chestObj,
+        npc, noviceKnight, merchant, respawnBed, campfire, alchemyTable, buildTable, chestObj,
         weaponsChestObj, toolsChestObj, bocinaVigia,
         ...workTables, ...weaponRacks, ...toolRacks, ...harvestNodes
     ];
