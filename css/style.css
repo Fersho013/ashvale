@@ -237,6 +237,10 @@
     body.npc-menu-open #ui-overlay, body.npc-menu-open #buffs-panel, body.npc-menu-open #quickbar,
     body.npc-menu-open #zone-label, body.npc-menu-open #interaction-prompt, body.npc-menu-open #touch-controls,
     body.npc-menu-open #touch-pause-btn, body.npc-menu-open #quest-menu-btn { visibility: hidden; pointer-events: none; }
+    /* Punto 1 — inmersión: HUD oculto mientras cualquier menú inmersivo esté abierto (inventario, cofres, hoguera/mesa/pociones, árbol, misiones) */
+    body.hud-hidden #ui-overlay, body.hud-hidden #buffs-panel, body.hud-hidden #quickbar,
+    body.hud-hidden #zone-label, body.hud-hidden #interaction-prompt, body.hud-hidden #touch-controls,
+    body.hud-hidden #touch-pause-btn, body.hud-hidden #quest-menu-btn { visibility: hidden; pointer-events: none; }
 
     /* ---------- ÁRBOL DE HABILIDADES ---------- */
     #skill-tree-panel { width: min(500px, calc(100vw - 38px)); }
