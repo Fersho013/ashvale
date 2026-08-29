@@ -13,7 +13,9 @@ const IMMERSIVE_PANELS = [
     'skill-tree-panel',
     'quest-panel',
     'quest-offer-panel',
-    'guide-panel'
+    'guide-panel',
+    'merchant-buy-panel',
+    'merchant-sell-panel'
 ];
 
 export function syncHudVisibility() {
