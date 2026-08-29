@@ -42,10 +42,29 @@ function resolveMobAttack(mob, player) {
         // Abanico frontal de 110°. El radio incluye el centro del jugador
         // para que el área coincida visualmente con el golpe mostrado.
         const facing = (dx / distance) * mob.attackDirX + (dy / distance) * mob.attackDirY;
-        if (distance <= mob.attackRange + Math.max(player.w, player.h) / 2 && facing >= Math.cos(Math.PI * 55 / 180)) {
+        const hit = distance <= mob.attackRange + Math.max(player.w, player.h) / 2 && facing >= Math.cos(Math.PI * 55 / 180);
+        if (hit) {
             const wasParried = typeof player.onHitParryCheck === 'function' && player.onHitParryCheck();
             player.takeDamage(mob.attackDamage, mob);
             if (wasParried) mob.staggerTimer = 0.8 * 60;
+            // Punto 2 — mob de arena: al conectar un golpe se resetean los fallos y se sale de furia
+            if ('consecutiveMisses' in mob) {
+                mob.consecutiveMisses = 0;
+                if (mob.fury) {
+                    mob.fury = false;
+                    mob.attackInterval = mob.baseAttackInterval;
+                }
+            }
+        } else {
+            // Fallo: el jugador esquivó el cono frontal / salió del rango
+            if ('consecutiveMisses' in mob) {
+                mob.consecutiveMisses = (mob.consecutiveMisses || 0) + 1;
+                if (mob.consecutiveMisses >= 6 && !mob.fury) {
+                    mob.fury = true;
+                    // Ataques más frecuentes en furia
+                    mob.attackInterval = Math.max(24, Math.floor(mob.baseAttackInterval * 0.5));
+                }
+            }
         }
         mob.attackHit = true;
     }
@@ -135,10 +154,12 @@ export class ActiveMob {
         this.x = x; this.y = y; this.w = 34; this.h = 34;
         this.sprite = 'arenaMob';
         this.atlasId = 'arenaMob'; this.spriteSize = ATLAS_DISPLAY_SIZES.arenaMob; this.spriteDirection = 'down'; this.isMoving = false;
-        this.speed = 1.7; this.flash = 0; this.maxHp = MOBS.mobArena.baseHp; this.hp = this.maxHp;
+        this.baseSpeed = 1.7; this.speed = 1.7; this.flash = 0; this.maxHp = MOBS.mobArena.baseHp; this.hp = this.maxHp;
         this.attackCooldown = 0; this.attackTimer = 0; this.attackWarningTimer = 0; this.staggerTimer = 0;
-        this.attackRange = 62; this.attackDamage = 10; this.attackInterval = 60;
+        this.attackRange = 62; this.attackDamage = 20; this.baseAttackInterval = 60; this.attackInterval = 60;
         this.attackDuration = 18; this.attackImpactFrame = 9;
+        // Punto 2 — furia tras 6 fallos consecutivos
+        this.consecutiveMisses = 0; this.fury = false;
     }
     takeHit(dmg, wasParried) {
         this.flash = 12; this.hp -= dmg;
@@ -149,12 +170,17 @@ export class ActiveMob {
         if (this.flash > 0) this.flash--;
         if (this.staggerTimer > 0) { this.staggerTimer--; clampToZone3(this); return; }
         if (this.slowTimer > 0) this.slowTimer--;
-        const speed = this.speed * (this.slowTimer > 0 ? (this.slowMultiplier || 0.5) : 1);
+        const furyMul = this.fury ? 1.75 : 1;
+        const speed = this.speed * furyMul * (this.slowTimer > 0 ? (this.slowMultiplier || 0.5) : 1);
 
         const dx = (player.x + player.w/2) - (this.x + this.w/2);
         const dy = (player.y + player.h/2) - (this.y + this.h/2);
         const d = Math.hypot(dx, dy);
-        if (this.attackWarningTimer <= 0 && this.attackTimer <= 0 && d > this.attackRange * 0.72) {
+        // En furia persigue sin descanso hasta conectar: ignora el umbral de parada habitual
+        const shouldChase = this.fury
+            ? (this.attackTimer <= 0 && this.attackWarningTimer <= 0)
+            : (this.attackWarningTimer <= 0 && this.attackTimer <= 0 && d > this.attackRange * 0.72);
+        if (shouldChase && d > 1) {
             const nx = dx/d, ny = dy/d;
             setMobMovement(this, nx * speed, ny * speed);
             const activeWalls = getActiveWalls();
@@ -176,11 +202,28 @@ export class ActiveMob {
         }
     }
     draw(ctx) {
-        const color = this.staggerTimer > 0 ? '#7f8c8d' : (this.flash > 0 ? '#fff' : '#c0392b');
+        // Aura de furia: anillo rojizo pulsante
+        if (this.fury) {
+            const cx = this.x + this.w / 2, cy = this.y + this.h / 2;
+            const pulse = 1 + Math.sin(performance.now() * 0.012) * 0.12;
+            ctx.save();
+            ctx.globalAlpha = 0.22;
+            ctx.fillStyle = '#ff2a2a';
+            ctx.beginPath(); ctx.arc(cx, cy, 28 * pulse, 0, Math.PI * 2); ctx.fill();
+            ctx.globalAlpha = 0.9;
+            ctx.strokeStyle = '#ff6b6b'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(cx, cy, 28 * pulse, 0, Math.PI * 2); ctx.stroke();
+            ctx.restore();
+        }
+        const color = this.fury ? '#ff3b30' : (this.staggerTimer > 0 ? '#7f8c8d' : (this.flash > 0 ? '#fff' : '#c0392b'));
         drawMobVisual(ctx, this, color);
         drawMobAttackWarning(ctx, this);
-        drawMobAttackArea(ctx, this, '#e74c3c');
+        drawMobAttackArea(ctx, this, this.fury ? '#ff2a2a' : '#e74c3c');
         drawMobHealthBar(ctx, this);
+        if (this.fury) {
+            ctx.fillStyle = '#ff6b6b'; ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center';
+            ctx.fillText('¡FURIA!', this.x + this.w / 2, this.y - 14);
+        }
     }
 }
 
