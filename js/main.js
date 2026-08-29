@@ -25,6 +25,8 @@ import { TOOLS } from './data/tools.js';
 import './systems/saveLoad.js';
 import './ui/craftingUI.js';
 import './ui/atlasTheme.js';
+import { initHudVisibility } from './ui/hudVisibility.js';
+initHudVisibility();
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
