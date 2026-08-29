@@ -9,7 +9,7 @@ import { Inventory, grantMobLoot } from './inventory.js';
 import { Slime } from '../entities/mobs.js';
 import { Projectile } from '../entities/projectile.js';
 import { doors } from '../world/map.js';
-import { npc, noviceKnight, respawnBed, campfire, alchemyTable, buildTable, chestObj, weaponsChestObj, toolsChestObj, weaponRacks, toolRacks, bocinaVigia, harvestNodes } from '../world/worldObjects.js';
+import { npc, noviceKnight, merchant, respawnBed, campfire, alchemyTable, buildTable, chestObj, weaponsChestObj, toolsChestObj, weaponRacks, toolRacks, bocinaVigia, harvestNodes } from '../world/worldObjects.js';
 import { WEAPONS } from '../data/weapons.js';
 import { TOOLS } from '../data/tools.js';
 import { showDialog, showNpcDialogue, updateDialog } from '../ui/dialog.js';
@@ -17,8 +17,10 @@ import { openCraftPanel } from '../ui/craftingUI.js';
 import { openChestPanel } from '../ui/inventoryUI.js';
 import { anyModalOpen } from '../ui/menu.js';
 import { updateHUD } from '../ui/hud.js';
+import { syncHudVisibility } from '../ui/hudVisibility.js';
 import { openNoviceKnightMenu, isNpcMenuOpen } from '../ui/questUI.js';
 import { openElderMenu, isGuideMenuOpen } from '../ui/guideUI.js';
+import { openMerchantMenu, isMerchantMenuOpen } from '../ui/merchantUI.js';
 import { QuestLog } from './quests.js';
 import { maintainMobPopulations, MOB_POPULATION_LIMITS } from './mobSpawner.js';
 
@@ -458,7 +460,7 @@ export function update() {
     const eDown = Input.isDown(['KeyE']) || Input.gamepad.buttons.interact || Input.touch.interact;
     let promptText = null;
     let interactTarget = null;
-    const modalOpen = anyModalOpen() || isNpcMenuOpen() || isGuideMenuOpen();
+    const modalOpen = anyModalOpen() || isNpcMenuOpen() || isGuideMenuOpen() || isMerchantMenuOpen() || document.getElementById('merchant-buy-panel')?.style.display === 'block' || document.getElementById('merchant-sell-panel')?.style.display === 'block';
 
     if (!modalOpen) {
         const harvestNode = harvestNodes.find(node => dist(player, node) < node.interactionRadius);
@@ -480,6 +482,9 @@ export function update() {
         } else if (dist(player, noviceKnight) < noviceKnight.interactionRadius) {
             promptText = 'Hablar con el Caballero Novato [E]'; interactTarget = noviceKnight;
             if (eDown && !state.actionHeld) openNoviceKnightMenu(noviceKnight);
+        } else if (dist(player, merchant) < merchant.interactionRadius) {
+            promptText = 'Hablar con el Mercader [E]'; interactTarget = merchant;
+            if (eDown && !state.actionHeld) openMerchantMenu(merchant);
         } else if (dist(player, npc) < npc.interactionRadius) {
             promptText = 'Hablar con el Anciano [E]'; interactTarget = npc;
             if (eDown && !state.actionHeld) openElderMenu(npc);
