@@ -71,6 +71,42 @@ function resolveMobAttack(mob, player) {
     mob.attackTimer--;
 }
 
+// Punto 3 — helpers genéricos para que el lobo ataque al ciervo exactamente como al jugador
+function beginAttackOn(mob, target) {
+    if (mob.attackCooldown > 0 || mob.attackTimer > 0 || mob.attackWarningTimer > 0) return;
+    const cx = mob.x + mob.w / 2, cy = mob.y + mob.h / 2;
+    const tx = target.x + target.w / 2, ty = target.y + target.h / 2;
+    const distance = Math.hypot(tx - cx, ty - cy);
+    if (distance > mob.attackRange) return;
+    mob.attackDirX = (tx - cx) / (distance || 1);
+    mob.attackDirY = (ty - cy) / (distance || 1);
+    mob.attackWarningTimer = mob.attackInterval;
+}
+
+function resolveAttackOn(mob, target) {
+    if (mob.attackWarningTimer > 0) {
+        mob.attackWarningTimer--;
+        if (mob.attackWarningTimer === 0) {
+            mob.attackTimer = mob.attackDuration;
+            mob.attackHit = false;
+        }
+        return;
+    }
+    if (mob.attackTimer <= 0) return;
+    if (!mob.attackHit && mob.attackTimer === mob.attackImpactFrame) {
+        const cx = mob.x + mob.w / 2, cy = mob.y + mob.h / 2;
+        const tx = target.x + target.w / 2, ty = target.y + target.h / 2;
+        const dx = tx - cx, dy = ty - cy;
+        const distance = Math.hypot(dx, dy) || 1;
+        const facing = (dx / distance) * mob.attackDirX + (dy / distance) * mob.attackDirY;
+        if (distance <= mob.attackRange + Math.max(target.w, target.h) / 2 && facing >= Math.cos(Math.PI * 55 / 180)) {
+            if (typeof target.takeHit === 'function') target.takeHit(mob.attackDamage);
+        }
+        mob.attackHit = true;
+    }
+    mob.attackTimer--;
+}
+
 function drawMobAttackWarning(ctx, mob) {
     if (mob.attackWarningTimer <= 0) return;
     const x = mob.x + mob.w / 2, y = mob.y - 26;
@@ -322,6 +358,7 @@ export class Wolf {
         this.attackCooldown = 0; this.attackTimer = 0; this.attackWarningTimer = 0;
         this.attackRange = 66; this.attackDamage = 6; this.attackInterval = 60;
         this.playerDetectionRange = 560;
+        this.deerDetectionRange = 160;
         this.attackDuration = 16; this.attackImpactFrame = 8;
     }
     takeHit(dmg) { this.flash = 10; this.hp -= dmg; }
@@ -334,7 +371,7 @@ export class Wolf {
         let target = null, best = 9999;
         for (const deer of deerList) {
             const d = dist(this, deer);
-            if (d < 140 && d < best) { best = d; target = deer; }
+            if (d < this.deerDetectionRange && d < best) { best = d; target = deer; }
         }
         if (!target && player && dist(this, player) < this.playerDetectionRange) target = player;
         if (!target) { clampToArea(this, this.habitat); return; }
@@ -350,10 +387,14 @@ export class Wolf {
 
         clampToArea(this, this.habitat);
 
-        if (target === player) beginMobAttack(this, player);
-        // Si el lobo cambia de ciervo a jugador (o viceversa), un golpe que
-        // ya había iniciado debe completar su animación, no quedarse activo.
-        resolveMobAttack(this, player);
+        // Punto 3 — el lobo ataca al ciervo exactamente como al jugador
+        if (target === player) {
+            beginMobAttack(this, player);
+            resolveMobAttack(this, player);
+        } else {
+            beginAttackOn(this, target);
+            resolveAttackOn(this, target);
+        }
         if (this.attackCooldown > 0) this.attackCooldown--;
         if (this.hp <= 0 && !this.lootGranted) { this.lootGranted = true; grantMobLoot('lobo'); }
     }
@@ -367,35 +408,100 @@ export class Wolf {
 
 export class Deer {
     constructor(x, y, habitat = null) {
-        this.x = x; this.y = y; this.w = 28; this.h = 28; this.speed = 1.6;
+        this.x = x; this.y = y; this.w = 28; this.h = 28; this.baseSpeed = 1.6; this.speed = 1.6;
         this.sprite = 'deer';
         this.atlasId = 'deer'; this.spriteSize = ATLAS_DISPLAY_SIZES.deer; this.spriteDirection = 'down'; this.isMoving = false;
         this.hp = MOBS.ciervo.baseHp; this.maxHp = this.hp; this.flash = 0;
         this.habitat = habitat;
+        // Punto 3 — estado Alerta tras recibir daño
+        this.alert = false; this.alertTimer = 0; this.lastFleeX = 0; this.lastFleeY = 0;
     }
     update(player, wolves) {
         this.isMoving = false;
         if (this.flash > 0) this.flash--;
         if (this.slowTimer > 0) this.slowTimer--;
-        const speed = this.speed * (this.slowTimer > 0 ? (this.slowMultiplier || 0.5) : 1);
+        const slowMul = this.slowTimer > 0 ? (this.slowMultiplier || 0.5) : 1;
+        const speed = this.speed * (this.alert ? 2.15 : 1) * slowMul;
+        const wolfDetect = this.alert ? 220 : 120;
+        const playerDetect = this.alert ? 140 : 90;
         let fleeFrom = null, best = 9999;
-        for (const w of wolves) { const d = dist(this, w); if (d < 120 && d < best) { best = d; fleeFrom = w; } }
-        if (!fleeFrom && dist(this, player) < 90) fleeFrom = player;
+        for (const w of wolves) { const d = dist(this, w); if (d < wolfDetect && d < best) { best = d; fleeFrom = w; } }
+        if (!fleeFrom && player && dist(this, player) < playerDetect) fleeFrom = player;
 
-        if (fleeFrom) {
-            const dx = (this.x + this.w/2) - (fleeFrom.x + fleeFrom.w/2);
-            const dy = (this.y + this.h/2) - (fleeFrom.y + fleeFrom.h/2);
-            const d = Math.hypot(dx, dy) || 1;
-            setMobMovement(this, (dx/d) * speed, (dy/d) * speed);
-            this.x += (dx/d) * speed; this.y += (dy/d) * speed;
+        // Persistencia de Alerta: no para hasta que el lobo deje de seguirlo
+        if (this.alert) {
+            if (fleeFrom) {
+                this.alertTimer = 75;
+            } else {
+                this.alertTimer--;
+                if (this.alertTimer <= 0) this.alert = false;
+            }
+        }
+
+        const shouldFlee = !!fleeFrom || this.alert;
+        if (shouldFlee) {
+            let fx, fy;
+            if (fleeFrom) {
+                fx = (this.x + this.w/2) - (fleeFrom.x + fleeFrom.w/2);
+                fy = (this.y + this.h/2) - (fleeFrom.y + fleeFrom.h/2);
+                this.lastFleeX = fx; this.lastFleeY = fy;
+            } else {
+                // En alerta sin amenaza inmediata: sigue huyendo con la última dirección + deriva hacia el centro
+                if (this.habitat) {
+                    const cx = this.habitat.x + this.habitat.w/2, cy = this.habitat.y + this.habitat.h/2;
+                    const toCenterX = cx - (this.x + this.w/2), toCenterY = cy - (this.y + this.h/2);
+                    fx = this.lastFleeX * 0.6 + toCenterX * 0.4 + (Math.random()-0.5)*12;
+                    fy = this.lastFleeY * 0.6 + toCenterY * 0.4 + (Math.random()-0.5)*12;
+                } else {
+                    fx = this.lastFleeX || (Math.random()-0.5);
+                    fy = this.lastFleeY || (Math.random()-0.5);
+                }
+            }
+            let d = Math.hypot(fx, fy) || 1; fx /= d; fy /= d;
+            // Evitar orillas: si está cerca del borde del bioma, mezclar dirección hacia el interior
+            if (this.habitat) {
+                const margin = 85;
+                const leftDist = this.x - this.habitat.x;
+                const rightDist = (this.habitat.x + this.habitat.w) - (this.x + this.w);
+                const topDist = this.y - this.habitat.y;
+                const bottomDist = (this.habitat.y + this.habitat.h) - (this.y + this.h);
+                let ix = 0, iy = 0;
+                if (leftDist < margin) ix += 1;
+                if (rightDist < margin) ix -= 1;
+                if (topDist < margin) iy += 1;
+                if (bottomDist < margin) iy -= 1;
+                if (ix !== 0 || iy !== 0) {
+                    const len = Math.hypot(ix, iy) || 1; ix /= len; iy /= len;
+                    const blend = 0.38;
+                    fx = fx * (1 - blend) + ix * blend;
+                    fy = fy * (1 - blend) + iy * blend;
+                    const nl = Math.hypot(fx, fy) || 1; fx /= nl; fy /= nl;
+                }
+            }
+            // Si en la huida aparece otro lobo dentro del radio ampliado, fleeFrom ya lo habrá capturado; si hay varios, el más cercano domina
+            setMobMovement(this, fx * speed, fy * speed);
+            this.x += fx * speed; this.y += fy * speed;
         }
         clampToArea(this, this.habitat);
         if (this.hp <= 0 && !this.lootGranted) { this.lootGranted = true; grantMobLoot('ciervo'); }
     }
-    takeHit(dmg) { this.flash = 10; this.hp -= dmg; }
+    takeHit(dmg) {
+        this.flash = 10; this.hp -= dmg;
+        // Punto 3 — entra en Alerta al recibir daño de lobo o jugador
+        this.alert = true; this.alertTimer = 75;
+    }
     draw(ctx) {
-        drawMobVisual(ctx, this, this.flash > 0 ? '#fff' : undefined);
+        if (this.alert) {
+            const cx = this.x + this.w / 2, cy = this.y + this.h / 2;
+            ctx.save(); ctx.globalAlpha = 0.18; ctx.fillStyle = '#f1c40f';
+            ctx.beginPath(); ctx.arc(cx, cy, 22, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        }
+        drawMobVisual(ctx, this, this.alert ? '#f39c12' : (this.flash > 0 ? '#fff' : undefined));
         drawMobHealthBar(ctx, this);
+        if (this.alert) {
+            ctx.fillStyle = '#f1c40f'; ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
+            ctx.fillText('¡ALERTA!', this.x + this.w / 2, this.y - 12);
+        }
     }
 }
 
