@@ -145,6 +145,22 @@ export const CONSUMABLE_EFFECTS = {
         msg: 'Reduce 30% del daño recibido por 3 min'
     },
 
+    // Comercio — Mercader (Zona 4, al lado de la Bocina). Pociones de vida compradas.
+    'Pocion de salud menor': { kind: 'heal', amount: 20, msg: '+20 HP' },
+    'Pocion de salud': { kind: 'heal', amount: 50, msg: '+50 HP' },
+    'Gran Pocion de salud': { kind: 'heal', amount: 80, msg: '+80 HP' },
+    // Variantes sin tilde del Mercader para Defensa/Espinas (mismo efecto que las de alquimia)
+    'Pocion de defensa': {
+        kind: 'buff',
+        buffs: [{ name: 'Defensa', duration: 3 * 60 * 60, value: 0.20, color: '#7f8c8d' }],
+        msg: 'Reduce 20% del daño recibido por 3 min'
+    },
+    'Pocion de espinas': {
+        kind: 'buff',
+        buffs: [{ name: 'Espinas', duration: 3 * 60 * 60, value: 0.20, color: '#9b59b6' }],
+        msg: 'Refleja 20% del daño recibido por 3 min'
+    },
+
     // Resultado fallido de la Hoguera (ver COOK_RECIPES / MASA_EXTRANA_NAME
     // arriba). Los porcentajes son independientes de duración: "hp" es
     // instantáneo, y la Fuerza (cuando aplica) dura 1 min.
