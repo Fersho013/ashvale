@@ -18,6 +18,7 @@ import { openChestPanel } from '../ui/inventoryUI.js';
 import { anyModalOpen } from '../ui/menu.js';
 import { updateHUD } from '../ui/hud.js';
 import { openNoviceKnightMenu, isNpcMenuOpen } from '../ui/questUI.js';
+import { openElderMenu, isGuideMenuOpen } from '../ui/guideUI.js';
 import { QuestLog } from './quests.js';
 import { maintainMobPopulations, MOB_POPULATION_LIMITS } from './mobSpawner.js';
 
@@ -444,7 +445,7 @@ export function update() {
     const eDown = Input.isDown(['KeyE']) || Input.gamepad.buttons.interact || Input.touch.interact;
     let promptText = null;
     let interactTarget = null;
-    const modalOpen = anyModalOpen() || isNpcMenuOpen();
+    const modalOpen = anyModalOpen() || isNpcMenuOpen() || isGuideMenuOpen();
 
     if (!modalOpen) {
         const harvestNode = harvestNodes.find(node => dist(player, node) < node.interactionRadius);
@@ -468,7 +469,7 @@ export function update() {
             if (eDown && !state.actionHeld) openNoviceKnightMenu(noviceKnight);
         } else if (dist(player, npc) < npc.interactionRadius) {
             promptText = 'Hablar con el Anciano [E]'; interactTarget = npc;
-            if (eDown && !state.actionHeld) showNpcDialogue(npc);
+            if (eDown && !state.actionHeld) openElderMenu(npc);
         } else if (dist(player, respawnBed) < respawnBed.interactionRadius) {
             promptText = 'Dormir para fijar Respawn [E]'; interactTarget = respawnBed;
             if (eDown && !state.actionHeld) { player.respawn = { x: player.x, y: player.y }; showDialog('Sistema', 'Punto de respawn actualizado.'); }
