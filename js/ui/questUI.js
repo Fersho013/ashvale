@@ -11,10 +11,10 @@ let npcMenuEl = null;
 function questPanel() { return document.getElementById('quest-panel'); }
 function offerPanel() { return document.getElementById('quest-offer-panel'); }
 
-function closeNpcMenu() {
+function closeNpcMenu(restoreHud = true) {
     if (npcMenuEl) npcMenuEl.remove();
     npcMenuEl = null;
-    document.body.classList.remove('npc-menu-open');
+    if (restoreHud) document.body.classList.remove('npc-menu-open');
 }
 
 export function isNpcMenuOpen() { return !!npcMenuEl; }
@@ -33,9 +33,9 @@ export function openNoviceKnightMenu(npc) {
             const message = npc.messages[Math.floor(Math.random() * npc.messages.length)];
             showDialog('Caballero Novato', message);
         } else if (action === 'quests') {
-            closeNpcMenu(); openQuestOffers();
+            closeNpcMenu(false); openQuestOffers(true);
         } else if (action === 'deliver') {
-            closeNpcMenu(); openTurnInMenu();
+            closeNpcMenu(false); openTurnInMenu();
         } else closeNpcMenu();
     });
     document.body.appendChild(npcMenuEl);
@@ -65,7 +65,8 @@ function showOfferDetail(id) {
     document.getElementById('quest-offer-back').onclick = showOfferList;
 }
 
-export function openQuestOffers() {
+export function openQuestOffers(keepHudHidden = false) {
+    if (keepHudHidden) document.body.classList.add('npc-menu-open');
     questPanel().style.display = 'none';
     offerPanel().style.display = 'block';
     showOfferList();
@@ -85,6 +86,7 @@ function openTurnInMenu() {
             if (!delivered) return;
             refreshInventoryUI();
             offerPanel().style.display = 'none';
+            document.body.classList.remove('npc-menu-open');
             showDialog('Caballero Novato', `¡Excelente trabajo! Has entregado «${delivered.title}» y recibido ${delivered.rewardGold} Oro.`);
         };
         body.appendChild(button);
@@ -95,7 +97,7 @@ function showQuestLogList() {
     const list = document.getElementById('quest-list');
     list.innerHTML = '';
     if (QuestLog.active.length === 0) {
-        list.innerHTML = '<p class="quest-intro">No tienes misiones activas. Habla con el Caballero Novato para aceptar una.</p>';
+        list.innerHTML = '<p class="quest-intro">No has aceptado ninguna mision. No tienes misiones activas.</p>';
         return;
     }
     QuestLog.active.forEach(entry => {
@@ -125,7 +127,10 @@ export function toggleQuestLog(forceOpen) {
 }
 
 document.getElementById('quest-panel-close').addEventListener('click', () => toggleQuestLog(false));
-document.getElementById('quest-offer-close').addEventListener('click', () => { offerPanel().style.display = 'none'; });
+document.getElementById('quest-offer-close').addEventListener('click', () => {
+    offerPanel().style.display = 'none';
+    document.body.classList.remove('npc-menu-open');
+});
 document.getElementById('quest-menu-btn').addEventListener('click', () => toggleQuestLog());
 window.addEventListener('quests-updated', () => {
     if (questPanel().style.display === 'block') showQuestLogList();
