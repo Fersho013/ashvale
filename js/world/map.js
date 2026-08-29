@@ -12,9 +12,9 @@ export const BLOCK_SIZE = 60;
 
 export const ZONES = [
     { id: 1, name: 'Zona 1: Centro de Mando y Galería de Armas', x: 0,    y: 0,   w: 1600, h: 600,  color: 'rgba(46,204,113,0.05)' },
-    { id: 3, name: 'Zona 3: Laboratorio de Combate', x: 1600, y: 0,   w: 800,  h: 600,  color: 'rgba(231,76,60,0.05)' },
-    { id: 4, name: 'Zona 4: Ecosistema y Bioma Vivo', x: 0,    y: 600, w: 1600, h: 1200, color: 'rgba(39,174,96,0.06)' },
-    { id: 5, name: 'Zona 5: Escape y Portales', x: 1600, y: 600, w: 800,  h: 1200, color: 'rgba(155,89,182,0.06)' }
+    { id: 3, name: 'Zona 3: arena de pruebas y combate', x: 1600, y: 0,   w: 800,  h: 600,  color: 'rgba(231,76,60,0.05)' },
+    { id: 4, name: 'Zona 2: Ecosistema y Bioma vivo', x: 0,    y: 600, w: 1600, h: 1200, color: 'rgba(39,174,96,0.06)' },
+    { id: 5, name: 'Zona 4: Escape y portales', x: 1600, y: 600, w: 800,  h: 1200, color: 'rgba(155,89,182,0.06)' }
 ];
 
 export function getCurrentZone(entity) {
