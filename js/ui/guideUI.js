@@ -25,7 +25,7 @@ function closeElderMenu(restoreHud = true) {
     if (restoreHud) document.body.classList.remove('npc-menu-open');
 }
 
-export function isGuideMenuOpen() { return !!elderMenuEl; }
+export function isGuideMenuOpen() { return !!elderMenuEl && document.body.contains(elderMenuEl); }
 
 export function openElderMenu(npc) {
     closeElderMenu();
