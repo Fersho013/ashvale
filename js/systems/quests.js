@@ -2,6 +2,7 @@
    SISTEMA DE MISIONES — registro, progreso y entrega por NPC
    ===================================================================== */
 import { Inventory } from './inventory.js';
+import { LevelSystem, QUEST_XP } from './level.js';
 
 export const QUESTS = {
     analyze_slime: {
@@ -124,6 +125,7 @@ export const QuestLog = {
         const o = quest.objective;
         if (o.type !== 'defeat' && !removeItem(o.item, o.qty)) return null;
         Inventory.gold += quest.rewardGold;
+        LevelSystem.addXp(QUEST_XP, `Misión: ${quest.title}`);
         this.active = this.active.filter(q => q !== entry);
         notify();
         return quest;
