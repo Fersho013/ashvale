@@ -11,6 +11,7 @@ import { rollLoot } from '../data/mobs.js';
 import { showDialog } from '../ui/dialog.js';
 import { refreshInventoryUI } from '../ui/inventoryUI.js';
 import { game } from '../core/gameContext.js';
+import { LevelSystem, MOB_XP } from './level.js';
 
 export function addStackToArray(arr, name, qty, maxSlots) {
     for (let i = 0; i < maxSlots && qty > 0; i++) {
@@ -202,6 +203,7 @@ export const Inventory = {
         this.equipment.tool = null;
         this.equipment.armor = null;
         syncPlayerHpToEquipment();
+        // Reset de nivel no se hace aquí para no perder progreso al resetear stats desde debug; usar LevelSystem.reset() explícito
     }
 };
 
@@ -320,6 +322,9 @@ function syncPlayerHpToEquipment() {
 // particular se pierde (mismo comportamiento que el resto de pickups del
 // mundo, ver worldInteraction.js) pero no bloquea los demás.
 export function grantMobLoot(mobKey) {
+    // Gana EXP por enemigo (spec: slime 1, granSlime 3, lobo 2, goblin 2, etc.)
+    const xpGain = MOB_XP[mobKey] ?? 0;
+    if (xpGain > 0) LevelSystem.addXp(xpGain, mobKey);
     const drops = rollLoot(mobKey);
     if (drops.length === 0) return;
 
