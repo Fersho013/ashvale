@@ -4,6 +4,7 @@
 import { Inventory, tryConsumeItem } from '../systems/inventory.js';
 import { getCurrentZone } from '../world/map.js';
 import { game } from '../core/gameContext.js';
+import { LevelSystem, MAX_LEVEL } from '../systems/level.js';
 
 export function buildQuickbarUI() {
     const bar = document.getElementById('quickbar');
@@ -43,6 +44,22 @@ export function refreshBuffsUI() {
     }
 }
 
+function refreshXpBar() {
+    const lvlEl = document.getElementById('xp-level-text');
+    const textEl = document.getElementById('xp-text');
+    const fillEl = document.getElementById('xp-bar-fill');
+    if (!lvlEl || !textEl || !fillEl) return;
+    if (LevelSystem.isMaxLevel) {
+        lvlEl.innerText = `Nv ${MAX_LEVEL} — MAX`;
+        textEl.innerText = 'MAX';
+        fillEl.style.width = '100%';
+    } else {
+        lvlEl.innerText = `Nv ${LevelSystem.level}`;
+        textEl.innerText = `${LevelSystem.xp} / ${LevelSystem.xpToNext} XP`;
+        fillEl.style.width = `${LevelSystem.progress * 100}%`;
+    }
+}
+
 export function updateHUD() {
     const player = game.player;
     document.getElementById('hp-text').innerText = `${Math.max(0,Math.round(player.hp))}/${player.maxHp}`;
@@ -62,8 +79,17 @@ export function updateHUD() {
     const zone = getCurrentZone(player);
     document.getElementById('zone-label').innerText = zone.name;
 
+    refreshXpBar();
     refreshBuffsUI();
     refreshQuickbarUI();
+    // Escucha eventos de EXP para refresco inmediato fuera del loop
+    // (init una sola vez)
+    if (!window._xpHudListener) {
+        window._xpHudListener = true;
+        window.addEventListener('level-updated', refreshXpBar);
+        window.addEventListener('xp-gained', refreshXpBar);
+    }
+
     // Nota: NO se refrescan aquí inv-grid/chest-grid en cada frame — hacerlo
     // reconstruía esos paneles ~60 veces por segundo, lo que podía destruir
     // el <div> justo entre el mousedown y el mouseup de un click en PC y
