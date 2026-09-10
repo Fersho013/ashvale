@@ -26,4 +26,11 @@ export function setupDebugPanel(player, world) {
     document.getElementById('dbg-reset').onclick = () => {
         player.hp = player.maxHp; player.bars = player.barCapacity; Inventory.buffs = [];
     };
+    const dbgAddXp = document.getElementById('dbg-add-xp');
+    if (dbgAddXp) {
+        dbgAddXp.onclick = async () => {
+            const { LevelSystem } = await import('./level.js');
+            LevelSystem.addXp(50, 'Debug');
+        };
+    }
 }
