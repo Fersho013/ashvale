@@ -54,6 +54,24 @@
     #buffs-panel .buff-icon { width: calc(46px * var(--hud-scale)); height: calc(46px * var(--hud-scale)); font-size: calc(9px * var(--hud-scale)); }
     .buff-icon .timer { position: absolute; bottom: 1px; right: 3px; font-size: 8px; color: #fff; }
 
+    /* ---------- BARRA DE EXP (encima de quickbar) ---------- */
+    #xp-bar-container {
+        position: absolute; bottom: 62px; left: 50%; transform: translateX(-50%);
+        width: 420px; max-width: calc(100% - 20px);
+        background: rgba(0,0,0,0.7); padding: 4px 6px 5px; border-radius: 6px; border: 1px solid #444;
+        z-index: 10; pointer-events: none;
+    }
+    #xp-bar-container { --hud-scale: 1; }
+    #xp-bar-header {
+        display: flex; justify-content: space-between; align-items: center;
+        font-size: calc(9px * var(--hud-scale)); line-height: 1; margin-bottom: 3px;
+        color: #f1c40f; font-weight: bold; letter-spacing: 0.5px;
+    }
+    #xp-level-text { color: #f1c40f; }
+    #xp-text { color: #ccc; font-weight: normal; font-size: calc(8px * var(--hud-scale)); }
+    #xp-bar-bg { width: 100%; height: calc(10px * var(--hud-scale)); background: #222; border: 1px solid #555; border-radius: 3px; overflow: hidden; }
+    #xp-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg,#8e44ad,#3498db,#2ecc71); transition: width 0.25s ease; }
+
     /* ---------- QUICKBAR ---------- */
     #quickbar {
         position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
@@ -234,11 +252,11 @@
     .guide-detail ul { margin: 8px 0; padding-left: 18px; }
     .guide-recipe { margin: 6px 0; padding: 6px 8px; border-left: 3px solid #2ecc71; background: #15231b; color: #c9f4d5; }
     @media (max-width: 520px) { .guide-grid { grid-template-columns: 1fr; } }
-    body.npc-menu-open #ui-overlay, body.npc-menu-open #buffs-panel, body.npc-menu-open #quickbar,
+    body.npc-menu-open #ui-overlay, body.npc-menu-open #buffs-panel, body.npc-menu-open #quickbar, body.npc-menu-open #xp-bar-container,
     body.npc-menu-open #zone-label, body.npc-menu-open #interaction-prompt, body.npc-menu-open #touch-controls,
     body.npc-menu-open #touch-pause-btn, body.npc-menu-open #quest-menu-btn { visibility: hidden; pointer-events: none; }
     /* Punto 1 — inmersión: HUD oculto mientras cualquier menú inmersivo esté abierto (inventario, cofres, hoguera/mesa/pociones, árbol, misiones) */
-    body.hud-hidden #ui-overlay, body.hud-hidden #buffs-panel, body.hud-hidden #quickbar,
+    body.hud-hidden #ui-overlay, body.hud-hidden #buffs-panel, body.hud-hidden #quickbar, body.hud-hidden #xp-bar-container,
     body.hud-hidden #zone-label, body.hud-hidden #interaction-prompt, body.hud-hidden #touch-controls,
     body.hud-hidden #touch-pause-btn, body.hud-hidden #quest-menu-btn { visibility: hidden; pointer-events: none; }
 
@@ -437,6 +455,7 @@
     body.controls-editing .joy-base,
     body.controls-editing #ui-overlay,
     body.controls-editing #quickbar,
+    body.controls-editing #xp-bar-container,
     body.controls-editing #buffs-panel {
         outline: 2px dashed rgba(241, 196, 15, 0.8); outline-offset: 2px;
     }
