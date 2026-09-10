@@ -8,6 +8,7 @@ import { game } from '../core/gameContext.js';
 import { state } from '../state.js';
 import { SkillBook } from './skills.js';
 import { QuestLog } from './quests.js';
+import { LevelSystem } from './level.js';
 
 export const SAVE_KEY = 'ashvale_save_v1';
 
@@ -23,6 +24,7 @@ export function saveGameState() {
         harvestNodes: harvestNodes.map(node => ({ uses: node.uses, recoveryUntil: node.recoveryUntil })),
         skills: SkillBook.toSaveData(),
         quests: QuestLog.toSaveData(),
+        level: LevelSystem.toSaveData(),
         tutorialMapScale: 2
     };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch (err) { console.warn('No se pudo guardar la partida:', err); }
@@ -62,6 +64,7 @@ export function loadGameState() {
     Inventory.gold = data.inventory.gold;
     SkillBook.loadSaveData(data.skills);
     QuestLog.loadSaveData(data.quests);
+    LevelSystem.loadSaveData(data.level);
     doors.forEach((d, i) => { if (data.doors[i] !== undefined) d.open = data.doors[i]; });
     // Las partidas previas a los recursos renovables no tienen esta sección;
     // en ese caso los nodos conservan su estado inicial listo para usar.
