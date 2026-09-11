@@ -17,6 +17,7 @@ import { toggleInventory } from './ui/inventoryUI.js';
 import { togglePause } from './ui/pause.js';
 import { toggleSkillTree } from './ui/skillTreeUI.js';
 import { toggleQuestLog } from './ui/questUI.js';
+import { toggleStatsPanel } from './ui/statsUI.js';
 import { anyModalOpen, closeAllModals } from './ui/menu.js';
 import { ZONES, MAP_W, MAP_H, walls, doors, BIOME_AREAS } from './world/map.js';
 import { npc, noviceKnight, merchant, respawnBed, campfire, alchemyTable, buildTable, chestObj, workTables, weaponsChestObj, toolsChestObj, weaponRacks, toolRacks, bocinaVigia, harvestNodes } from './world/worldObjects.js';
@@ -26,6 +27,7 @@ import './systems/saveLoad.js';
 import './ui/craftingUI.js';
 import './ui/atlasTheme.js';
 import './ui/merchantUI.js';
+import './ui/statsUI.js';
 import { initHudVisibility } from './ui/hudVisibility.js';
 initHudVisibility();
 
@@ -72,6 +74,7 @@ document.addEventListener('keydown', e => {
     if (state.gamePaused) return;
     if (e.code === 'KeyI' || e.code === 'Tab') toggleInventory();
     if (e.code === 'KeyO') toggleSkillTree();
+    if (e.code === 'KeyK' || e.code === 'KeyC') toggleStatsPanel();
     if (e.code === 'KeyH') toggleQuestLog();
     if (e.code === 'Backquote' || e.code === 'F2') {
         DEBUG.panelOpen = !DEBUG.panelOpen;
