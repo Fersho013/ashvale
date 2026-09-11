@@ -11,6 +11,7 @@ const IMMERSIVE_PANELS = [
     'chest-panel',
     'craft-panel',
     'skill-tree-panel',
+    'stats-panel',
     'quest-panel',
     'quest-offer-panel',
     'guide-panel',
