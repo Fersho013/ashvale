@@ -2,6 +2,7 @@
    UI DE MISIONES — diario del jugador y menú del Caballero Novato
    ===================================================================== */
 import { QUESTS, QuestLog } from '../systems/quests.js';
+import { QUEST_XP } from '../systems/level.js';
 import { showDialog } from './dialog.js';
 import { refreshInventoryUI } from './inventoryUI.js';
 
@@ -58,7 +59,8 @@ function showOfferList() {
 function showOfferDetail(id) {
     const quest = QUESTS[id], active = QuestLog.get(id), body = document.getElementById('quest-offer-content');
     const unavailable = !active && QuestLog.active.length >= QuestLog.maxActive;
-    body.innerHTML = `<h4>${quest.title}</h4><p class="quest-description">${quest.description}</p>${active ? `<p class="quest-progress">${active.status === 'ready' ? '✓ Misión completada: vuelve con el Caballero Novato.' : QuestLog.getProgressText(active)}</p>` : ''}<div class="quest-panel-actions"><button id="quest-accept-btn" type="button" ${active || unavailable ? 'disabled' : ''}>${active ? 'Misión aceptada' : 'Aceptar misión'}</button><button id="quest-offer-back" type="button">Volver</button></div>`;
+    const rewardLine = `<p class="quest-progress" style="color:#8e44ad;">Recompensa: ${quest.rewardGold} Oro + ${QUEST_XP} EXP</p>`;
+    body.innerHTML = `<h4>${quest.title}</h4><p class="quest-description">${quest.description}</p>${rewardLine}${active ? `<p class="quest-progress">${active.status === 'ready' ? '✓ Misión completada: vuelve con el Caballero Novato.' : QuestLog.getProgressText(active)}</p>` : ''}<div class="quest-panel-actions"><button id="quest-accept-btn" type="button" ${active || unavailable ? 'disabled' : ''}>${active ? 'Misión aceptada' : 'Aceptar misión'}</button><button id="quest-offer-back" type="button">Volver</button></div>`;
     document.getElementById('quest-accept-btn').onclick = () => {
         if (QuestLog.accept(id)) showOfferDetail(id);
     };
@@ -80,14 +82,14 @@ function openTurnInMenu() {
     ready.forEach(entry => {
         const quest = QUESTS[entry.id], button = document.createElement('button');
         button.className = 'quest-entry-button quest-ready';
-        button.innerHTML = `<strong>✓ ${quest.title}</strong><small>Entregar · ${quest.rewardGold} Oro</small>`;
+        button.innerHTML = `<strong>✓ ${quest.title}</strong><small>Entregar · ${quest.rewardGold} Oro + ${QUEST_XP} EXP</small>`;
         button.onclick = () => {
             const delivered = QuestLog.turnIn(entry.id, KNIGHT_ID);
             if (!delivered) return;
             refreshInventoryUI();
             offerPanel().style.display = 'none';
             document.body.classList.remove('npc-menu-open');
-            showDialog('Caballero Novato', `¡Excelente trabajo! Has entregado «${delivered.title}» y recibido ${delivered.rewardGold} Oro.`);
+            showDialog('Caballero Novato', `¡Excelente trabajo! Has entregado «${delivered.title}» y recibido ${delivered.rewardGold} Oro + ${QUEST_XP} EXP.`);
         };
         body.appendChild(button);
     });
@@ -113,7 +115,7 @@ function showQuestLogDetail(id) {
     const entry = QuestLog.get(id), quest = entry && QUESTS[id];
     if (!entry || !quest) return showQuestLogList();
     const list = document.getElementById('quest-list');
-    list.innerHTML = `<h4>${entry.status === 'ready' ? '✓ ' : ''}${quest.title}</h4><p class="quest-description">${quest.description}</p><p class="quest-progress">${entry.status === 'ready' ? 'Misión completada. Vuelve con el Caballero Novato para entregar.' : QuestLog.getProgressText(entry)}</p><div class="quest-panel-actions"><button id="quest-abandon-btn" type="button">Abandonar misión</button><button id="quest-log-back" type="button">Volver</button></div>`;
+    list.innerHTML = `<h4>${entry.status === 'ready' ? '✓ ' : ''}${quest.title}</h4><p class="quest-description">${quest.description}</p><p class="quest-progress" style="color:#8e44ad;">Recompensa: ${quest.rewardGold} Oro + ${QUEST_XP} EXP</p><p class="quest-progress">${entry.status === 'ready' ? 'Misión completada. Vuelve con el Caballero Novato para entregar.' : QuestLog.getProgressText(entry)}</p><div class="quest-panel-actions"><button id="quest-abandon-btn" type="button">Abandonar misión</button><button id="quest-log-back" type="button">Volver</button></div>`;
     document.getElementById('quest-abandon-btn').onclick = () => { QuestLog.abandon(id); showQuestLogList(); };
     document.getElementById('quest-log-back').onclick = showQuestLogList;
 }
