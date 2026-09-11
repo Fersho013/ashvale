@@ -102,6 +102,7 @@
             <button id="btn-inv" class="t-btn" aria-label="Inventario">🎒</button>
             <button id="btn-skills" class="t-btn" aria-label="Árbol de habilidades">🌳</button>
             <button id="btn-quests" class="t-btn" aria-label="Misiones">📜</button>
+            <button id="btn-stats" class="t-btn" aria-label="Stats">📊</button>
         </div>
     </div>
 
@@ -128,6 +129,7 @@
                     <p><strong>Habilidad 2:</strong> [R] / LB / 🌙</p>
                     <p><strong>Inventario:</strong> [I] / Y / 🎒</p>
                     <p><strong>Árbol de habilidades:</strong> [O] / Select-Share / 🌳</p>
+                    <p><strong>Stats:</strong> [K][C] / 📊</p>
                     <p><strong>Misiones:</strong> [H] / 📜</p>
                     <p><strong>Pausa:</strong> [P][Esc] / Options / ⏸</p>
                     <p><strong>Debug:</strong> [~] / [F2]</p>
@@ -201,7 +203,9 @@
             <button type="button" data-skill-branch="archer">Arquero<br><small>Rama de Arcos</small></button>
             <button type="button" data-skill-branch="lancer">Lancer<br><small>Rama de Lanzas</small></button>
             <button type="button" data-skill-branch="arcane">Arcano<br><small>Magia, daño explosivo y control de masas</small></button>
+            <button type="button" data-skill-branch="passives">Pasivas<br><small>Habilidades Pasivas</small></button>
         </div>
+        <div id="skill-points-display" class="skill-points-info"></div>
         <div id="skill-branch-view" hidden>
             <button id="skill-tree-back" type="button">← Ramas</button>
             <h4 id="skill-branch-title">Espadachín — Rama de Espadas</h4>
@@ -217,6 +221,14 @@
                 <div class="skill-future-node">Próximas habilidades<br>más poderosas</div>
             </div>
         </div>
+    </div>
+
+    <!-- Panel de Stats -->
+    <div id="stats-panel" class="modal-panel">
+        <button class="close-modal" type="button" data-close="stats-panel" aria-label="Cerrar stats">×</button>
+        <h3>Atributos — <span id="stats-available">0 PS</span></h3>
+        <p class="skill-tree-intro">Asigna tus puntos de stat. Cada nivel otorga +3 (cada 5 niveles +5). Los bonuses se aplican al instante.</p>
+        <div id="stats-content"></div>
     </div>
 
     <!-- Diario del jugador y ofertas de misión de NPC. Son paneles separados
