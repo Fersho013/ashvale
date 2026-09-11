@@ -9,6 +9,7 @@ import { state } from '../state.js';
 import { SkillBook } from './skills.js';
 import { QuestLog } from './quests.js';
 import { LevelSystem } from './level.js';
+import { Stats } from './stats.js';
 
 export const SAVE_KEY = 'ashvale_save_v1';
 
@@ -25,6 +26,7 @@ export function saveGameState() {
         skills: SkillBook.toSaveData(),
         quests: QuestLog.toSaveData(),
         level: LevelSystem.toSaveData(),
+        stats: Stats.toSaveData(),
         tutorialMapScale: 2
     };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch (err) { console.warn('No se pudo guardar la partida:', err); }
@@ -65,6 +67,15 @@ export function loadGameState() {
     SkillBook.loadSaveData(data.skills);
     QuestLog.loadSaveData(data.quests);
     LevelSystem.loadSaveData(data.level);
+    if (data.stats) Stats.loadSaveData(data.stats);
+    else if (LevelSystem.level > 1) {
+        // Migración: partidas viejas sin PS — calcular total ganado por nivel
+        const lvl = LevelSystem.level;
+        const totalEarned = (lvl - 1) * 3 + Math.floor(lvl / 5) * 2;
+        const allocated = Object.values(Stats.values).reduce((a,b)=>a+b,0);
+        Stats.available = Math.max(0, totalEarned - allocated);
+        window.dispatchEvent(new CustomEvent('stats-updated', { detail: { values: { ...Stats.values }, available: Stats.available } }));
+    }
     doors.forEach((d, i) => { if (data.doors[i] !== undefined) d.open = data.doors[i]; });
     // Las partidas previas a los recursos renovables no tienen esta sección;
     // en ese caso los nodos conservan su estado inicial listo para usar.
