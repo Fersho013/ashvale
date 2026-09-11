@@ -13,6 +13,7 @@ import { Inventory } from '../systems/inventory.js';
 import { ARMORS } from '../data/armor.js';
 import { DEBUG } from '../systems/debug.js';
 import { SkillBook } from '../systems/skills.js';
+import { Stats } from '../systems/stats.js';
 import { showDialog } from '../ui/dialog.js';
 
 export class Player {
@@ -109,17 +110,23 @@ export class Player {
         return Inventory.equipment.weapon ? WEAPONS[Inventory.equipment.weapon] : WEAPONS.desarmado;
     }
     get equippedArmor() { return ARMORS[Inventory.equipment.armor] || null; }
-    get maxHp() { return this.baseMaxHp + (this.equippedArmor?.maxHpBonus || 0); }
+    get maxHp() { return this.baseMaxHp + (this.equippedArmor?.maxHpBonus || 0) + Stats.getVitalityHpBonus() + SkillBook.getPassiveHpBonus(); }
     get defense() { return this.equippedArmor?.defense || 0; }
     get speed() {
         const b = Inventory.getBuff('Velocidad');
-        return this.baseSpeed + (b ? b.value : 0);
+        return this.baseSpeed + (b ? b.value : 0) + SkillBook.getPassiveSpeedBonus();
     }
     get attackDamage() {
         const b = Inventory.getBuff('Fuerza');
-        // Math.max(0, ...): con la Masa Extraña (data/recipes.js) la Fuerza
-        // puede ser negativa (debuff) — nunca debe bajar el daño de 0.
-        return Math.max(0, this.currentWeapon.dmg + (b ? b.value : 0));
+        const family = this.currentWeapon.family || null;
+        const statBonus = family ? Stats.getDamageBonus(family) : 0;
+        const passiveBonus = family ? SkillBook.getPassiveBonus(family) : 0;
+        return Math.max(0, this.currentWeapon.dmg + (b ? b.value : 0) + statBonus + passiveBonus);
+    }
+    get effectiveAttackCooldown() {
+        const family = this.currentWeapon.family || null;
+        const reduction = family ? Stats.getCooldownReduction(family) : 0;
+        return Math.max(8, this.currentWeapon.attackCooldown - reduction);
     }
 
     update() {
@@ -173,7 +180,7 @@ export class Player {
             const weapon = this.currentWeapon;
             this.isAttacking = true;
             this.attackTimer = this.attackDuration;
-            this.attackCooldown = weapon.attackCooldown;
+            this.attackCooldown = this.effectiveAttackCooldown;
             if (weapon.ranged) {
                 this.pendingProjectile = {
                     x: this.x + this.w / 2, y: this.y + this.h / 2,
