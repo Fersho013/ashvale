@@ -12,6 +12,7 @@ export function anyModalOpen() {
         || document.getElementById('chest-panel').style.display === 'block'
         || document.getElementById('craft-panel').style.display === 'block'
         || document.getElementById('skill-tree-panel').style.display === 'block'
+        || document.getElementById('stats-panel')?.style.display === 'block'
         || document.getElementById('quest-panel').style.display === 'block'
         || document.getElementById('quest-offer-panel').style.display === 'block'
         || document.getElementById('guide-panel').style.display === 'block'
@@ -24,12 +25,14 @@ export function closeAllModals() {
     document.getElementById('chest-panel').style.display = 'none';
     document.getElementById('craft-panel').style.display = 'none';
     document.getElementById('skill-tree-panel').style.display = 'none';
+    const sp = document.getElementById('stats-panel'); if (sp) sp.style.display = 'none';
     document.getElementById('quest-panel').style.display = 'none';
     document.getElementById('quest-offer-panel').style.display = 'none';
     document.getElementById('guide-panel').style.display = 'none';
     const mb = document.getElementById('merchant-buy-panel'); if (mb) mb.style.display = 'none';
     const ms = document.getElementById('merchant-sell-panel'); if (ms) ms.style.display = 'none';
     document.body.classList.remove('npc-menu-open');
+    document.body.classList.remove('hud-hidden');
 }
 
 export function showScreen(id) {
