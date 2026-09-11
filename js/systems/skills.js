@@ -2,7 +2,10 @@
    LIBRO DE HABILIDADES — progreso, aprendizaje y asignación Q/R.
    Las dos habilidades de Espadachín comienzan aprendidas para el tutorial,
    pero el jugador debe asignarlas manualmente a Q o R antes de usarlas.
+   Las pasivas, una vez aprendidas, siempre están activas.
    ===================================================================== */
+import { LevelSystem } from './level.js';
+
 export const SKILLS = {
     sword_thrust: {
         id: 'sword_thrust', branch: 'swordsman', branchLabel: 'Espadachín', name: 'Estocada Veloz', shortLabel: 'EV',
@@ -54,6 +57,15 @@ export const SKILLS = {
     }
 };
 
+export const PASSIVE_SKILLS = {
+    passive_sword_strength: { id: 'passive_sword_strength', branch: 'passives', branchLabel: 'Pasivas', name: 'Filo Afilado', shortLabel: 'FA', weaponFamily: 'sword', description: 'Pasiva: +2 daño con espada y espadas duales. Siempre activa.' , passiveBonus: { sword: 2, dualBlades: 2 } },
+    passive_great_mighty: { id: 'passive_great_mighty', branch: 'passives', branchLabel: 'Pasivas', name: 'Fuerza Colosal', shortLabel: 'FC', weaponFamily: 'greatsword', description: 'Pasiva: +3 daño con mandoble y lanza. Siempre activa.', passiveBonus: { greatsword: 3, spear: 3 } },
+    passive_arcane_focus: { id: 'passive_arcane_focus', branch: 'passives', branchLabel: 'Pasivas', name: 'Foco Arcano', shortLabel: 'FA', weaponFamily: 'staff', description: 'Pasiva: +4 daño con báculo. Siempre activa.', passiveBonus: { staff: 4 } },
+    passive_vital_core: { id: 'passive_vital_core', branch: 'passives', branchLabel: 'Pasivas', name: 'Corazón Vigoroso', shortLabel: 'CV', description: 'Pasiva: +25 HP máximo. Siempre activa.', passiveBonus: { hp: 25 } },
+    passive_hunter_eye: { id: 'passive_hunter_eye', branch: 'passives', branchLabel: 'Pasivas', name: 'Ojo de Halcón', shortLabel: 'OH', weaponFamily: 'bow', description: 'Pasiva: +3 daño con arco y +0.3 velocidad. Siempre activa.', passiveBonus: { bow: 3, speed: 0.3 } },
+    passive_agile_steps: { id: 'passive_agile_steps', branch: 'passives', branchLabel: 'Pasivas', name: 'Pasos Ágiles', shortLabel: 'PA', description: 'Pasiva: +0.5 velocidad de movimiento. Siempre activa.', passiveBonus: { speed: 0.5 } }
+};
+
 const tutorialLearned = { sword_thrust: true, sword_storm: true };
 
 export const SkillBook = {
@@ -61,18 +73,55 @@ export const SkillBook = {
     levels: { sword_thrust: 1, sword_storm: 1 },
     assigned: { q: null, r: null },
 
-    get(id) { return SKILLS[id] || null; },
+    get(id) { return SKILLS[id] || PASSIVE_SKILLS[id] || null; },
+    isPassive(id) { return !!PASSIVE_SKILLS[id]; },
     isLearned(id) { return !!this.learned[id]; },
+    getPassiveBonus(family) {
+        let bonus = 0;
+        for (const id of Object.keys(this.learned)) {
+            if (!this.learned[id]) continue;
+            const s = PASSIVE_SKILLS[id];
+            if (!s || !s.passiveBonus) continue;
+            if (s.passiveBonus[family]) bonus += s.passiveBonus[family];
+        }
+        return bonus;
+    },
+    getPassiveHpBonus() {
+        let hp = 0;
+        for (const id of Object.keys(this.learned)) {
+            if (!this.learned[id]) continue;
+            const s = PASSIVE_SKILLS[id];
+            if (s?.passiveBonus?.hp) hp += s.passiveBonus.hp;
+        }
+        return hp;
+    },
+    getPassiveSpeedBonus() {
+        let sp = 0;
+        for (const id of Object.keys(this.learned)) {
+            if (!this.learned[id]) continue;
+            const s = PASSIVE_SKILLS[id];
+            if (s?.passiveBonus?.speed) sp += s.passiveBonus.speed;
+        }
+        return sp;
+    },
     learn(id) {
-        if (!SKILLS[id]) return false;
+        const skill = SKILLS[id] || PASSIVE_SKILLS[id];
+        if (!skill) return false;
+        if (this.isLearned(id)) return false;
+        // Las dos de tutorial ya están aprendidas sin coste; el resto consume 1 PH
+        const isTutorial = !!tutorialLearned[id];
+        if (!isTutorial) {
+            if (LevelSystem.skillPoints <= 0) return false;
+            LevelSystem.skillPoints = Math.max(0, LevelSystem.skillPoints - 1);
+            window.dispatchEvent(new CustomEvent('level-updated', { detail: { skillPoints: LevelSystem.skillPoints } }));
+        }
         this.learned[id] = true;
         this.levels[id] = Math.max(1, this.levels[id] || 0);
         return true;
     },
     assign(id, slot) {
         if (!this.isLearned(id) || !['q', 'r'].includes(slot)) return false;
-        // Una habilidad ocupa un solo botón a la vez; si se mueve, libera
-        // automáticamente el anterior para evitar asignaciones duplicadas.
+        if (this.isPassive(id)) return false;
         Object.keys(this.assigned).forEach(key => { if (this.assigned[key] === id) this.assigned[key] = null; });
         this.assigned[slot] = id;
         return true;
@@ -85,7 +134,9 @@ export const SkillBook = {
         this.levels = { sword_thrust: 1, sword_storm: 1, ...(data?.levels || {}) };
         this.assigned = { q: null, r: null, ...(data?.assigned || {}) };
         Object.keys(this.assigned).forEach(slot => {
-            if (!SKILLS[this.assigned[slot]] || !this.isLearned(this.assigned[slot])) this.assigned[slot] = null;
+            const id = this.assigned[slot];
+            if (!id || SKILLS[id] == null) this.assigned[slot] = null;
+            else if (!this.isLearned(id)) this.assigned[slot] = null;
         });
     }
 };
