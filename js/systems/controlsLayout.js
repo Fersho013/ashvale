@@ -14,7 +14,7 @@ import { state } from '../state.js';
 
 export const CONTROL_IDS = [
     'left-joy-base', 'btn-atk', 'btn-blk', 'btn-q', 'btn-r', 'btn-inv', 'btn-skills', 'btn-quests', 'touch-pause-btn',
-    'ui-overlay', 'quickbar', 'xp-bar-container', 'buffs-panel'
+    'ui-overlay', 'quickbar', 'buffs-panel'
 ];
 
 export const CONTROL_TYPES = {
@@ -29,7 +29,6 @@ export const CONTROL_TYPES = {
     'touch-pause-btn': 'button',
     'ui-overlay':      'hudPanel',
     'quickbar':        'hudBar',
-    'xp-bar-container': 'hudBar',
     'buffs-panel':     'hudBuffs'
 };
 
@@ -56,9 +55,8 @@ const DEFAULT_LAYOUT = {
     'btn-inv':         { anchor: 'bottom-right', offsetX: 69,  offsetY: 15, size: 46 },
     'btn-skills':      { anchor: 'top-right',    offsetX: 15,  offsetY: 69, size: 46 },
     'btn-quests':      { anchor: 'top-right',    offsetX: 69,  offsetY: 69, size: 46 },
-    'ui-overlay':      { anchor: 'top-left',     offsetX: 10,  offsetY: 10, width: 230, height: 82 },
+    'ui-overlay':      { anchor: 'top-left',     offsetX: 10,  offsetY: 10, width: 230, height: 98 },
     'quickbar':        { anchor: 'bottom-center', offsetX: 0, offsetY: 10, width: 448, height: 50 },
-    'xp-bar-container': { anchor: 'bottom-center', offsetX: 0, offsetY: 68, width: 420, height: 28 },
     'buffs-panel':     { anchor: 'top-right',    offsetX: 10,  offsetY: 10, width: 156, height: 46 }
 };
 
