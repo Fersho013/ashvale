@@ -4,6 +4,7 @@
    (índice 0 = 1→2, índice 68 = 69→70). Total 69 valores.
    ===================================================================== */
 import { showDialog } from '../ui/dialog.js';
+import { Stats } from './stats.js';
 
 export const MAX_LEVEL = 70;
 
@@ -32,6 +33,7 @@ export const QUEST_XP = 20;
 export const LevelSystem = {
     level: 1,
     xp: 0,
+    skillPoints: 0,
 
     get xpToNext() {
         if (this.level >= MAX_LEVEL) return 0;
@@ -52,18 +54,22 @@ export const LevelSystem = {
         if (this.isMaxLevel || amount <= 0) return;
         this.xp += amount;
         let leveled = false;
+        let levelsGained = 0;
         while (!this.isMaxLevel && this.xp >= this.xpToNext) {
             this.xp -= this.xpToNext;
             this.level++;
+            levelsGained++;
             leveled = true;
-            // Notificación por nivel
-            showDialog('¡Subiste de nivel!', `¡Nivel ${this.level}!${reason ? ' — ' + reason : ''}`);
+            // 1 punto de habilidad por nivel + stats: 3 normal, 5 cada 5 niveles
+            this.skillPoints += 1;
+            const statGain = (this.level % 5 === 0) ? 5 : 3;
+            Stats.addPoints(statGain);
+            showDialog('¡Subiste de nivel!', `¡Nivel ${this.level}! +1 PH +${statGain} PS${reason ? ' — ' + reason : ''}`);
         }
         if (this.isMaxLevel) {
             this.xp = 0; // En nivel máximo no se acumula
         }
-        // Evento para HUD / otros sistemas
-        window.dispatchEvent(new CustomEvent('level-updated', { detail: { level: this.level, xp: this.xp, xpToNext: this.xpToNext, leveled } }));
+        window.dispatchEvent(new CustomEvent('level-updated', { detail: { level: this.level, xp: this.xp, xpToNext: this.xpToNext, leveled, skillPoints: this.skillPoints, statPoints: Stats.available } }));
         if (!leveled && amount > 0) {
             window.dispatchEvent(new CustomEvent('xp-gained', { detail: { amount, reason } }));
         }
@@ -73,19 +79,27 @@ export const LevelSystem = {
     reset() {
         this.level = 1;
         this.xp = 0;
-        window.dispatchEvent(new CustomEvent('level-updated', { detail: { level: 1, xp: 0, xpToNext: XP_TABLE[0] } }));
+        this.skillPoints = 0;
+        Stats.reset();
+        window.dispatchEvent(new CustomEvent('level-updated', { detail: { level: 1, xp: 0, xpToNext: XP_TABLE[0], skillPoints: 0 } }));
     },
 
     toSaveData() {
-        return { level: this.level, xp: this.xp };
+        return { level: this.level, xp: this.xp, skillPoints: this.skillPoints };
     },
 
     loadSaveData(data) {
         if (!data) return;
         const lvl = Number(data.level);
         const xp = Number(data.xp);
+        const sp = Number(data.skillPoints);
         if (Number.isInteger(lvl) && lvl >= 1 && lvl <= MAX_LEVEL) this.level = lvl;
         if (Number.isFinite(xp) && xp >= 0) this.xp = this.isMaxLevel ? 0 : xp;
+        if (Number.isInteger(sp) && sp >= 0) this.skillPoints = sp;
+        else if (data.skillPoints === undefined && this.level > 1) {
+            // Migración de partidas viejas sin PH: otorgar 1 por nivel
+            this.skillPoints = Math.max(0, this.level - 1);
+        }
         // Clamp xp si supera el requerido (por migración de tabla antigua)
         if (!this.isMaxLevel && this.xp >= this.xpToNext) {
             // Normalizar exceso como si hubiera subido de nivel offline
@@ -98,6 +112,6 @@ export const LevelSystem = {
             this.level = curLvl;
             this.xp = curLvl >= MAX_LEVEL ? 0 : curXp;
         }
-        window.dispatchEvent(new CustomEvent('level-updated', { detail: { level: this.level, xp: this.xp, xpToNext: this.xpToNext } }));
+        window.dispatchEvent(new CustomEvent('level-updated', { detail: { level: this.level, xp: this.xp, xpToNext: this.xpToNext, skillPoints: this.skillPoints } }));
     }
 };
