@@ -326,8 +326,6 @@ export function grantMobLoot(mobKey) {
     const xpGain = MOB_XP[mobKey] ?? 0;
     if (xpGain > 0) LevelSystem.addXp(xpGain, mobKey);
     const drops = rollLoot(mobKey);
-    if (drops.length === 0) return;
-
     const parts = [];
     for (const drop of drops) {
         if (drop.name === 'Oro') {
@@ -337,6 +335,14 @@ export function grantMobLoot(mobKey) {
             parts.push(`${drop.name} x${drop.qty}`);
         }
     }
-    if (parts.length > 0) showDialog('Botín', `Has obtenido: ${parts.join(', ')}.`);
-    refreshInventoryUI();
+    // El diálogo de botín incluye la EXP obtenida para que el jugador vea la progresión
+    const xpPart = xpGain > 0 ? `+${xpGain} EXP` : null;
+    const allParts = [...parts];
+    if (xpPart) allParts.push(xpPart);
+    if (allParts.length > 0) {
+        const hasLoot = parts.length > 0;
+        const title = hasLoot ? 'Botín' : 'Experiencia';
+        showDialog(title, `Has obtenido: ${allParts.join(', ')}.`);
+    }
+    if (parts.length > 0 || xpGain > 0) refreshInventoryUI();
 }
