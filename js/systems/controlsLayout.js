@@ -57,7 +57,7 @@ const DEFAULT_LAYOUT = {
     'btn-skills':      { anchor: 'top-right',    offsetX: 15,  offsetY: 69, size: 46 },
     'btn-quests':      { anchor: 'top-right',    offsetX: 69,  offsetY: 69, size: 46 },
     'btn-stats':       { anchor: 'top-right',    offsetX: 123, offsetY: 69, size: 46 },
-    'ui-overlay':      { anchor: 'top-left',     offsetX: 10,  offsetY: 10, width: 230, height: 98 },
+    'ui-overlay':      { anchor: 'top-left',     offsetX: 10,  offsetY: 10, width: 268, height: 118 },
     'quickbar':        { anchor: 'bottom-center', offsetX: 0, offsetY: 10, width: 448, height: 50 },
     'buffs-panel':     { anchor: 'top-right',    offsetX: 10,  offsetY: 10, width: 156, height: 46 }
 };
