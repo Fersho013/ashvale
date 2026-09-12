@@ -28,19 +28,28 @@
         image-rendering: pixelated;
     }
 
-    /* ---------- UI OVERLAY (HP / Skill Gauge / Zone) ---------- */
+    /* ---------- UI OVERLAY (HP / EXP / ARMA / Habilidades) ---------- */
     #ui-overlay {
         position: absolute; top: 10px; left: 10px;
-        background: rgba(0,0,0,0.75); padding: 10px 14px;
-        border-radius: 6px; border: 1px solid #444;
+        background: rgba(0,0,0,0.78); padding: 12px 16px;
+        border-radius: 8px; border: 1px solid #444;
         pointer-events: none; font-size: 12px; line-height: 1.5; min-width: 0; z-index: 10;
+        box-sizing: border-box;
+        display: flex; flex-direction: column; gap: calc(5px * var(--hud-scale));
+        justify-content: center;
     }
     #ui-overlay { --hud-scale: 1; font-size: calc(12px * var(--hud-scale)); }
-    #ui-overlay .stat-bar { width: calc(140px * var(--hud-scale)); height: calc(10px * var(--hud-scale)); }
-    .stat-bar { width: 140px; height: 10px; background: #444; border-radius: 3px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 6px; }
+    /* Fila genérica dentro del overlay: label + barra + texto, todo alineado y centrado */
+    #ui-overlay > div {
+        display: flex; align-items: center; gap: calc(6px * var(--hud-scale));
+        width: 100%; min-height: calc(14px * var(--hud-scale));
+    }
+    #ui-overlay > div strong { flex-shrink: 0; min-width: calc(42px * var(--hud-scale)); }
+    #ui-overlay .stat-bar { width: calc(132px * var(--hud-scale)); height: calc(10px * var(--hud-scale)); flex-shrink: 0; margin-left: 0; }
+    .stat-bar { width: 132px; height: 10px; background: #444; border-radius: 3px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 0; }
     .stat-fill { height: 100%; width: 100%; transition: width 0.1s ease; }
-    #skill-gauge { display: flex; gap: 3px; margin-top: 4px; flex-wrap: wrap; max-width: 220px; }
-    .skill-pip { width: 9px; height: 14px; background: #333; border: 1px solid #555; }
+    #skill-gauge { display: flex; gap: 3px; flex-wrap: wrap; max-width: 100%; padding-left: calc(42px * var(--hud-scale)); }
+    .skill-pip { width: calc(9px * var(--hud-scale)); height: calc(14px * var(--hud-scale)); background: #333; border: 1px solid #555; }
     .skill-pip.filled { background: #f1c40f; border-color: #f39c12; }
 
     /* ---------- BUFFS ---------- */
