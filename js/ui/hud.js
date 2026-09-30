@@ -64,6 +64,12 @@ export function updateHUD() {
     const player = game.player;
     document.getElementById('hp-text').innerText = `${Math.max(0,Math.round(player.hp))}/${player.maxHp}`;
     document.getElementById('hp-fill').style.width = `${(player.hp / player.maxHp) * 100}%`;
+    const stamText = document.getElementById('stamina-text');
+    const stamFill = document.getElementById('stamina-fill');
+    if (stamText && stamFill && typeof player.stamina === 'number') {
+        stamText.innerText = `${Math.max(0,Math.round(player.stamina))}/${player.maxStamina}`;
+        stamFill.style.width = `${(player.stamina / player.maxStamina) * 100}%`;
+    }
     document.getElementById('weapon-text').innerText = player.currentWeapon.name;
     document.getElementById('gold-text').innerText = Inventory.gold;
 
