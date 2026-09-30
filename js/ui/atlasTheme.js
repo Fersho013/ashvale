@@ -15,7 +15,7 @@ const UI_FRAME_SELECTORS = {
     tooltip: ['#zone-label', '#escape-bar-container', '#harvest-bar-container'],
     hp_bar: ['.stat-bar', '#hp-fill'],
     skill_bar: ['#skill-gauge', '.skill-pip'],
-    gold_icon: ['#gold-display'],
+    gold_icon: ['.money-box', '.money-value'],
     touch_button: ['.t-btn']
 };
 
