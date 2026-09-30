@@ -16,7 +16,7 @@ export const SAVE_KEY = 'ashvale_save_v1';
 export function saveGameState() {
     const player = game.player;
     const data = {
-        player: { x: player.x, y: player.y, hp: player.hp, bars: player.bars, barCapacity: player.barCapacity, respawn: player.respawn },
+        player: { x: player.x, y: player.y, hp: player.hp, bars: player.bars, barCapacity: player.barCapacity, respawn: player.respawn, stamina: player.stamina },
         inventory: {
             quickbar: Inventory.quickbar, global: Inventory.global, chests: Inventory.chests,
             equipment: Inventory.equipment, gold: Inventory.gold
@@ -55,6 +55,7 @@ export function loadGameState() {
     const player = game.player;
     player.x = data.player.x; player.y = data.player.y; player.hp = data.player.hp;
     player.bars = data.player.bars; player.barCapacity = data.player.barCapacity; player.respawn = data.player.respawn;
+    if (typeof data.player.stamina === 'number') player.stamina = Math.max(0, Math.min(player.maxStamina, data.player.stamina));
     Inventory.quickbar = data.inventory.quickbar; Inventory.global = data.inventory.global;
     // Compatibilidad con partidas guardadas ANTES del punto 2 (un solo
     // Inventory.chest): si no existe el formato nuevo (chests), se deja el
