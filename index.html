@@ -151,21 +151,42 @@
         <p class="pause-hint">[P] / [Esc] para reanudar</p>
     </div>
 
-    <!-- Inventario / Equipamiento -->
-    <div id="inventory-panel" class="modal-panel">
+    <!-- Inventario / Equipamiento (layout 2 columnas según referencia) -->
+    <div id="inventory-panel" class="modal-panel inv-frame">
         <button class="close-modal" type="button" data-close="inventory-panel" aria-label="Cerrar inventario">×</button>
-        <h3 class="panel-title-row"><span>Menú de Equipamiento</span><span id="gold-display">🪙 <span id="gold-text">0</span></span></h3>
-        <p style="font-size: 10px; color: #aaa; margin-bottom: 6px;">Toca un arma o herramienta de tu inventario para equiparla. Toca el slot de equipamiento para desequiparla.</p>
-        <div id="equip-slots">
-            <div class="equip-slot" id="eq-weapon">Arma<br>Desarmado</div>
-            <div class="equip-slot" id="eq-tool">Herramienta<br>Ninguna</div>
-            <div class="equip-slot" id="eq-armor">Armadura<br>Ninguna</div>
-            <div class="equip-slot" id="eq-accessory">Amuleto<br>Ninguno</div>
+        <div class="inv-layout">
+            <section class="inv-left">
+                <div class="inv-header"><span class="inv-header-icon">🎒</span><h3>Inventario</h3></div>
+                <div class="inv-body">
+                    <p class="inv-hint">Barra Rápida (10) — toca un ítem para ver opciones</p>
+                    <div id="quickbar-panel-grid" class="inv-grid"></div>
+                    <p class="inv-hint">Inventario Global (100) — toca un ítem para ver opciones</p>
+                    <div id="inv-grid" class="inv-grid"></div>
+                </div>
+            </section>
+            <section class="inv-right">
+                <div class="inv-header"><span class="inv-header-icon">⚔️</span><h3>Equipamiento</h3></div>
+                <div class="equip-panel">
+                    <div class="equip-col">
+                        <div class="equip-slot" id="eq-armor">Armadura<br>Ninguna</div>
+                        <div class="equip-slot" id="eq-tool">Herramienta<br>Ninguna</div>
+                        <div class="equip-tag">Armadura</div>
+                    </div>
+                    <div class="equip-col">
+                        <div class="equip-slot" id="eq-accessory">Amuleto<br>Ninguno</div>
+                        <div class="equip-tag">Anillo</div>
+                        <div class="equip-weapons-box">
+                            <div class="equip-slot" id="eq-weapon">Arma<br>Desarmado</div>
+                        </div>
+                        <div class="equip-tag">Arma</div>
+                    </div>
+                </div>
+                <div class="money-box">
+                    <span class="money-icon">🪙</span>
+                    <div class="money-text"><span class="money-label">Dinero</span><span class="money-value"><span id="gold-text">0</span></span></div>
+                </div>
+            </section>
         </div>
-        <h3>Barra Rápida (10 Slots) — Toca un ítem para ver sus opciones</h3>
-        <div id="quickbar-panel-grid" class="grid-10"></div>
-        <h3>Inventario Global (100 Slots) — Toca un ítem para ver sus opciones</h3>
-        <div id="inv-grid" class="grid-10"></div>
     </div>
 
     <!-- Cofre (menú de acciones por toque) -->
