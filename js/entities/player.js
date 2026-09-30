@@ -103,6 +103,14 @@ export class Player {
         this.mitigationBuff = 0;
         this.mitigationPct = 0;
 
+        // Sprint + stamina: solo corre si ya camina y mantiene Shift.
+        this.maxStamina = 100;
+        this.stamina = this.maxStamina;
+        this.isSprinting = false;
+        this.sprintMultiplier = 1.6;
+        this.staminaDrainPerSec = 25;
+        this.staminaRegenPerSec = 18;
+
         this.respawn = { x: 300, y: 300 };
     }
 
@@ -146,11 +154,25 @@ export class Player {
         const moving = (dx !== 0 || dy !== 0);
         if (dx !== 0 && dy !== 0) { const l = Math.hypot(dx, dy); dx /= l; dy /= l; }
 
+        // Sprint: requiere estar caminando + mantener Shift + tener stamina.
+        // Si se deja de caminar, se deja de correr automáticamente.
+        const shiftHeld = Input.isDown(['ShiftLeft', 'ShiftRight']);
+        const wantSprint = moving && shiftHeld && !this.channeling;
+        this.isSprinting = wantSprint && this.stamina > 0;
+        if (this.isSprinting) {
+            this.stamina = Math.max(0, this.stamina - this.staminaDrainPerSec / 60);
+            if (this.stamina <= 0) this.isSprinting = false;
+        } else {
+            // Se recupera al dejar de usarlo (quieto o caminando normal).
+            this.stamina = Math.min(this.maxStamina, this.stamina + this.staminaRegenPerSec / 60);
+        }
+        const moveSpeed = this.speed * (this.isSprinting ? this.sprintMultiplier : 1);
+
         if (this.channeling && moving) this.cancelChannel();
 
         const solidColliders = this.getSolidColliders();
-        this.x += dx * this.speed; this.resolveCollisions(true, solidColliders);
-        this.y += dy * this.speed; this.resolveCollisions(false, solidColliders);
+        this.x += dx * moveSpeed; this.resolveCollisions(true, solidColliders);
+        this.y += dy * moveSpeed; this.resolveCollisions(false, solidColliders);
 
         if (moving) { this.facing.x = dx; this.facing.y = dy; }
 
