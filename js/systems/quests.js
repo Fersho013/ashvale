@@ -6,22 +6,22 @@ import { LevelSystem, QUEST_XP } from './level.js';
 
 export const QUESTS = {
     analyze_slime: {
-        id: 'analyze_slime', npcId: 'novice_knight', title: 'Analicemos la baba',
+        id: 'analyze_slime', npcId: 'novice_knight', title: 'Analicemos la baba', location: 'Humedal de Slimes',
         description: 'Esos slimes pegajosos están por todas partes, pero su viscosidad guarda propiedades fascinantes. Ve al campo, elimina a los suficientes y tráeme 20 bolas de baba para que pueda examinarlas en mi mesa de trabajo.',
         objective: { type: 'deliver', item: 'Bola de Baba', qty: 20, label: 'Bolas de Baba' }, rewardGold: 100
     },
     arena_creature: {
-        id: 'arena_creature', npcId: 'novice_knight', title: 'El bicho raro de la arena',
+        id: 'arena_creature', npcId: 'novice_knight', title: 'El bicho raro de la arena', location: 'Arena de combate',
         description: 'Hay una criatura inusual merodeando en la zona de combate de la arena. No comprendemos bien cómo reacciona ni qué tan peligrosa puede ser, así que necesito que entres allí y derrotes 5 veces al Mob de Arena para estudiar su comportamiento en batalla.',
         objective: { type: 'defeat', mob: 'mobArena', qty: 5, label: 'Mobs de Arena derrotados' }, rewardGold: 125
     },
     wolf_memories: {
-        id: 'wolf_memories', npcId: 'novice_knight', title: 'Recuerdos del lobo',
+        id: 'wolf_memories', npcId: 'novice_knight', title: 'Recuerdos del lobo', location: 'Bosque',
         description: 'Los lobos del bosque se han vuelto demasiado agresivos y están amenazando a los viajeros. Adéntrate en la arboleda, derrota a 5 lobos y tráeme 5 de sus colmillos como prueba de que la zona vuelve a ser segura.',
         objective: { type: 'defeatAndDeliver', mob: 'lobo', kills: 5, item: 'Colmillo', qty: 5, label: 'Lobos derrotados y Colmillos' }, rewardGold: 150
     },
     defense_count: {
-        id: 'defense_count', npcId: 'novice_knight', title: 'Cuanta defensa',
+        id: 'defense_count', npcId: 'novice_knight', title: 'Cuanta defensa', location: 'Centro de Mando',
         description: 'Ahí fuera los golpes duelen y vas a necesitar más que una simple armadura. Ve a la máquina de pociones, prepara 1 poción de defensa y tráemela para confirmar que estás listo para resistir ataques pesados.',
         objective: { type: 'craftAndDeliver', item: 'Poción de Defensa', qty: 1, label: 'Poción de Defensa preparada' }, rewardGold: 100
     }
