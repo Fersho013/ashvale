@@ -95,29 +95,64 @@ function openTurnInMenu() {
     });
 }
 
+let selectedQuestId = null;
+
+function questCountEl() { return document.getElementById('quest-count'); }
+function questDetailEl() { return document.getElementById('quest-detail'); }
+
 function showQuestLogList() {
     const list = document.getElementById('quest-list');
+    const count = questCountEl();
+    if (count) count.innerText = `${QuestLog.active.length}/${QuestLog.maxActive}`;
     list.innerHTML = '';
     if (QuestLog.active.length === 0) {
         list.innerHTML = '<p class="quest-intro">No has aceptado ninguna mision. No tienes misiones activas.</p>';
+        if (questDetailEl()) questDetailEl().innerHTML = '<div class="quest-empty">Selecciona una misión para ver el detalle.</div>';
         return;
     }
+    if (!QuestLog.get(selectedQuestId)) selectedQuestId = QuestLog.active[0].id;
     QuestLog.active.forEach(entry => {
         const quest = QUESTS[entry.id], button = document.createElement('button');
-        button.className = `quest-entry-button ${entry.status === 'ready' ? 'quest-ready' : ''}`;
-        button.innerHTML = `<strong>${entry.status === 'ready' ? '✓ ' : ''}${quest.title}</strong><small>${entry.status === 'ready' ? 'Completada: entrégala al Caballero Novato' : QuestLog.getProgressText(entry)}</small>`;
-        button.onclick = () => showQuestLogDetail(entry.id);
+        button.type = 'button';
+        button.className = `quest-entry-button ${entry.status === 'ready' ? 'quest-ready' : ''}${entry.id === selectedQuestId ? ' selected' : ''}`;
+        button.innerHTML = `<span class="quest-entry-icon">${entry.status === 'ready' ? '✓' : '⚔️'}</span><span class="quest-entry-text"><strong>${quest.title}</strong><small>📍 ${quest.location || 'Ashvale'}</small></span>`;
+        button.onclick = () => { selectedQuestId = entry.id; showQuestLogList(); };
         list.appendChild(button);
     });
+    showQuestLogDetail(selectedQuestId);
 }
 
 function showQuestLogDetail(id) {
-    const entry = QuestLog.get(id), quest = entry && QUESTS[id];
-    if (!entry || !quest) return showQuestLogList();
-    const list = document.getElementById('quest-list');
-    list.innerHTML = `<h4>${entry.status === 'ready' ? '✓ ' : ''}${quest.title}</h4><p class="quest-description">${quest.description}</p><p class="quest-progress" style="color:#8e44ad;">Recompensa: ${quest.rewardGold} Oro + ${QUEST_XP} EXP</p><p class="quest-progress">${entry.status === 'ready' ? 'Misión completada. Vuelve con el Caballero Novato para entregar.' : QuestLog.getProgressText(entry)}</p><div class="quest-panel-actions"><button id="quest-abandon-btn" type="button">Abandonar misión</button><button id="quest-log-back" type="button">Volver</button></div>`;
-    document.getElementById('quest-abandon-btn').onclick = () => { QuestLog.abandon(id); showQuestLogList(); };
-    document.getElementById('quest-log-back').onclick = showQuestLogList;
+    const entry = QuestLog.get(id || selectedQuestId), quest = entry && QUESTS[id || selectedQuestId];
+    const detail = questDetailEl();
+    if (!entry || !quest) { if (detail) detail.innerHTML = ''; return; }
+    selectedQuestId = entry.id;
+    document.querySelectorAll('#quest-list .quest-entry-button').forEach(btn => {
+        const isSel = btn.querySelector('strong')?.innerText === quest.title;
+        btn.classList.toggle('selected', isSel);
+    });
+    const ready = entry.status === 'ready';
+    const progress = ready ? 'Misión completada. Vuelve con el Caballero Novato para entregar.' : QuestLog.getProgressText(entry);
+    const itemReward = quest.objective?.item ? `<div class="quest-reward"><span class="quest-reward-icon">🎒</span><strong>${quest.objective.item}</strong><small>Objeto</small></div>` : '';
+    detail.innerHTML = `
+        <div class="quest-detail-head"><span class="quest-detail-icon">⚔️</span><h4>${quest.title}</h4></div>
+        <div class="quest-detail-loc">📍 ${quest.location || 'Ashvale'}</div>
+        <div class="quest-section">Descripción</div>
+        <p class="quest-description">${quest.description}</p>
+        <div class="quest-section">Objetivos</div>
+        <div class="quest-objective"><span class="quest-check${ready ? ' done' : ''}">${ready ? '✓' : ''}</span><span>${progress}</span></div>
+        <div class="quest-section">Recompensas</div>
+        <div class="quest-rewards">
+            <div class="quest-reward"><span class="quest-reward-icon">🪙</span><strong>${quest.rewardGold}</strong><small>Monedas</small></div>
+            <div class="quest-reward"><span class="quest-reward-icon">✨</span><strong>${QUEST_XP}</strong><small>EXP</small></div>
+            ${itemReward}
+        </div>
+        <div class="quest-detail-actions">
+            <button id="quest-track-btn" type="button" class="quest-primary-btn">Seguir misión</button>
+            <button id="quest-abandon-btn" type="button" class="quest-ghost-btn">Abandonar misión</button>
+        </div>`;
+    document.getElementById('quest-abandon-btn').onclick = () => { QuestLog.abandon(entry.id); selectedQuestId = null; showQuestLogList(); };
+    document.getElementById('quest-track-btn').onclick = () => toggleQuestLog(false);
 }
 
 export function toggleQuestLog(forceOpen) {
@@ -125,16 +160,22 @@ export function toggleQuestLog(forceOpen) {
     const open = panel.style.display === 'block';
     panel.style.display = typeof forceOpen === 'boolean' ? (forceOpen ? 'block' : 'none') : (open ? 'none' : 'block');
     offerPanel().style.display = 'none';
-    if (panel.style.display === 'block') showQuestLogList();
+    if (panel.style.display === 'block') { selectedQuestId = null; showQuestLogList(); }
 }
 
 document.getElementById('quest-panel-close').addEventListener('click', () => toggleQuestLog(false));
+document.querySelectorAll('#quest-panel .close-modal').forEach(btn => {
+    if (btn.id !== 'quest-panel-close') btn.addEventListener('click', () => toggleQuestLog(false));
+});
 document.getElementById('quest-offer-close').addEventListener('click', () => {
     offerPanel().style.display = 'none';
     document.body.classList.remove('npc-menu-open');
 });
 document.getElementById('quest-menu-btn').addEventListener('click', () => toggleQuestLog());
 window.addEventListener('quests-updated', () => {
-    if (questPanel().style.display === 'block') showQuestLogList();
+    if (questPanel().style.display === 'block') {
+        if (!QuestLog.get(selectedQuestId)) selectedQuestId = QuestLog.active[0]?.id || null;
+        showQuestLogList();
+    }
     if (offerPanel().style.display === 'block') showOfferList();
 });
