@@ -250,10 +250,47 @@
     }
     #inventory-panel.inv-frame .close-modal { position: absolute; top: 6px; right: 6px; float: none; margin: 0; z-index: 5; }
     @media (max-width: 720px) {
+        #inventory-panel.inv-frame { width: calc(100vw - 16px); }
         .inv-layout { flex-direction: column; }
         .inv-left { border-right: 0; border-bottom: 3px solid #3d3d3d; }
         .inv-right { flex-basis: auto; }
         .inv-body { max-height: 40vh; }
+    }
+
+    /* ---------- INVENTARIO ADAPTATIVO A MODO MÓVIL ---------- */
+    /* En Modo Móvil #game-container es fullscreen (ver ScreenManager.resizeCanvas),
+       así que el panel se mide contra el contenedor (% + dvh), no contra 880px fijos.
+       El grid usa auto-fill para que el nº de columnas cambie con el ancho real. */
+    body.mobile-mode-active #inventory-panel.inv-frame {
+        width: calc(100% - 12px); max-width: none;
+        max-height: calc(100% - 12px); height: auto;
+        display: flex; flex-direction: column;
+    }
+    body.mobile-mode-active .inv-layout { flex: 1; min-height: 0; width: 100%; }
+    body.mobile-mode-active .inv-left { min-height: 0; }
+    body.mobile-mode-active .inv-right { min-height: 0; overflow-y: auto; }
+    body.mobile-mode-active .inv-body { flex: 1; min-height: 0; max-height: none; overflow-y: auto; padding: 8px; }
+    body.mobile-mode-active .inv-grid { grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 6px; }
+    body.mobile-mode-active #inventory-panel .inv-slot { min-height: 46px; font-size: 9px; }
+    body.mobile-mode-active .equip-panel { margin: 8px; padding: 8px; gap: 8px; }
+    body.mobile-mode-active .equip-col .equip-slot { font-size: 8px; }
+    body.mobile-mode-active .inv-header { padding: 8px 10px; }
+    body.mobile-mode-active .inv-header h3 { font-size: 16px !important; }
+    /* Horizontal (landscape): poco alto → 2 columnas lado a lado, cada una con scroll propio */
+    @media (orientation: landscape) {
+        body.mobile-mode-active .inv-layout { flex-direction: row; }
+        body.mobile-mode-active .inv-left { border-right: 3px solid #3d3d3d; border-bottom: 0; }
+        body.mobile-mode-active .inv-right { flex: 0 0 min(260px, 36%); }
+        body.mobile-mode-active .money-box { margin: 0 8px 8px; padding: 6px 8px; }
+        body.mobile-mode-active .money-value { font-size: 15px; }
+    }
+    /* Vertical (portrait): apila, el inventario arriba con scroll corto y equipo debajo */
+    @media (orientation: portrait) {
+        body.mobile-mode-active .inv-layout { flex-direction: column; overflow-y: auto; }
+        body.mobile-mode-active .inv-left { border-right: 0; border-bottom: 3px solid #3d3d3d; }
+        body.mobile-mode-active .inv-right { flex-basis: auto; overflow: visible; }
+        body.mobile-mode-active .inv-body { max-height: 32dvh; flex: none; }
+        body.mobile-mode-active .equip-panel { margin: 8px; }
     }
     /* Botón de cierre persistente: al ser sticky dentro del panel que se
        desplaza, siempre permanece disponible en su esquina superior. */
