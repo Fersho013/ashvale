@@ -189,13 +189,21 @@
         </div>
     </div>
 
-    <!-- Cofre (menú de acciones por toque) -->
-    <div id="chest-panel" class="modal-panel">
-        <button class="close-modal" type="button" data-close="chest-panel" aria-label="Cerrar cofre">×</button>
-        <h3 id="chest-panel-title">Cofre (40 Slots) — Toca un ítem para ver sus opciones</h3>
-        <div id="chest-grid" class="grid-10"></div>
-        <h3>Tu Inventario — Toca un ítem para ver sus opciones</h3>
-        <div id="chest-player-grid" class="grid-10"></div>
+    <!-- Cofre (orden referencia: Cofre arriba, Inventario abajo, detalle a la derecha) -->
+    <div id="chest-panel" class="modal-panel chest-frame">
+        <div class="chest-layout">
+            <div class="chest-left">
+                <section class="chest-box">
+                    <div class="chest-header"><span class="chest-header-icon">🧰</span><h3 id="chest-panel-title">Cofre</h3><span class="chest-spaces" id="chest-spaces">Espacios: 0/40</span><button class="close-modal chest-close" type="button" data-close="chest-panel" aria-label="Cerrar cofre">×</button></div>
+                    <div id="chest-grid" class="chest-grid"></div>
+                </section>
+                <section class="chest-box">
+                    <div class="chest-header"><span class="chest-header-icon">🎒</span><h3>Inventario</h3><span class="chest-spaces" id="chest-player-spaces">Espacios: 0/100</span></div>
+                    <div id="chest-player-grid" class="chest-grid"></div>
+                </section>
+            </div>
+            <aside class="chest-detail" id="chest-detail"></aside>
+        </div>
     </div>
 
     <!-- Crafting: Hoguera / Máquina de Pociones -->
@@ -256,10 +264,16 @@
 
     <!-- Diario del jugador y ofertas de misión de NPC. Son paneles separados
          para que el diario pueda abrirse desde cualquier lugar. -->
-    <div id="quest-panel" class="modal-panel quest-panel">
-        <button id="quest-panel-close" class="close-modal" type="button" aria-label="Cerrar misiones">×</button>
-        <h3>Misiones activas</h3>
-        <div id="quest-list"></div>
+    <div id="quest-panel" class="modal-panel quest-panel quest-frame">
+        <div class="quest-titlebar"><span class="quest-title-icon">📜</span><h3>Menú de Misiones</h3><button id="quest-panel-close" class="quest-close" type="button" aria-label="Cerrar misiones">✕</button></div>
+        <div class="quest-layout">
+            <nav class="quest-rail" aria-hidden="true"><span class="quest-rail-btn active">📜</span><span class="quest-rail-btn">🎒</span><span class="quest-rail-btn">🪖</span><span class="quest-rail-btn">🗺️</span><span class="quest-rail-btn">⚙️</span></nav>
+            <section class="quest-list-panel">
+                <div class="quest-list-head"><span>◆</span><h4>Misiones Aceptadas</h4><span>◆</span><span id="quest-count">0/10</span></div>
+                <div id="quest-list"></div>
+            </section>
+            <section class="quest-detail" id="quest-detail"></section>
+        </div>
     </div>
     <div id="quest-offer-panel" class="modal-panel quest-panel">
         <button id="quest-offer-close" class="close-modal" type="button" aria-label="Cerrar misiones del NPC">×</button>
