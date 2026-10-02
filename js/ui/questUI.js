@@ -25,7 +25,7 @@ export function openNoviceKnightMenu(npc) {
     npcMenuEl = document.createElement('div');
     npcMenuEl.id = 'npc-action-menu';
     npcMenuEl.className = 'npc-action-menu';
-    npcMenuEl.innerHTML = `<h3>Caballero Novato</h3><button type="button" data-action="talk">Hablar</button><button type="button" data-action="quests">Misiones</button>${QuestLog.hasReadyForNpc(KNIGHT_ID) ? '<button class="npc-deliver" type="button" data-action="deliver">Entregar misiones ✓</button>' : ''}<button type="button" data-action="close">Cerrar</button>`;
+    npcMenuEl.innerHTML = `<h3><span>Caballero Novato</span></h3><button type="button" data-action="talk">Hablar</button><button type="button" data-action="quests">Misiones</button>${QuestLog.hasReadyForNpc(KNIGHT_ID) ? '<button class="npc-deliver" type="button" data-action="deliver">Entregar misiones ✓</button>' : ''}<button type="button" data-action="close">Cerrar</button>`;
     npcMenuEl.addEventListener('click', event => {
         const action = event.target.dataset.action;
         if (!action) return;
