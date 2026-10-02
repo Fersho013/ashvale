@@ -8,7 +8,9 @@ import { Inventory, tryConsumeItem, isWeaponItem, isConsumableItem, isArmorItem 
 import { WEAPONS } from '../data/weapons.js';
 import { TOOLS } from '../data/tools.js';
 import { ARMORS } from '../data/armor.js';
+import { CONSUMABLE_EFFECTS } from '../data/recipes.js';
 import { openItemActionMenu } from './itemActionMenu.js';
+import { showDialog } from './dialog.js';
 
 // Varios cofres (punto 2): cuál está abierto ahora mismo en #chest-panel.
 // Lo fija openChestPanel() al interactuar con cada cofre del mundo (ver
@@ -128,6 +130,52 @@ export function refreshInventoryUI() {
     };
 }
 
+function chestDetailEl() { return document.getElementById('chest-detail'); }
+
+function countUsedSlots(arr) { return arr.reduce((n, s) => n + (s ? 1 : 0), 0); }
+
+function describeChestItem(item) {
+    if (!item) return null;
+    for (const key in WEAPONS) {
+        const w = WEAPONS[key];
+        if (w.name === item.name && key !== 'desarmado') {
+            return { kind: 'Arma cuerpo a cuerpo', title: item.name, desc: `${w.name}: daño ${w.dmg}, recarga ${w.attackCooldown}f.`, stats: [`⚔️ Daño: ${w.dmg}`, `⏱️ Recarga: ${w.attackCooldown}f`], rarity: 'Común' };
+        }
+    }
+    for (const key in TOOLS) {
+        const t = TOOLS[key];
+        if (t.name === item.name) return { kind: 'Herramienta', title: item.name, desc: t.description || 'Herramienta de recolección.', stats: [], rarity: 'Común' };
+    }
+    for (const key in ARMORS) {
+        const a = ARMORS[key];
+        if (a.name === item.name) return { kind: 'Armadura', title: item.name, desc: a.description || '', stats: [`❤️ HP: +${a.maxHpBonus || 0}`, `🛡️ Defensa: +${a.defense || 0}`], rarity: 'Común' };
+    }
+    const eff = CONSUMABLE_EFFECTS[item.name];
+    if (eff) return { kind: 'Consumible', title: item.name, desc: eff.msg || '', stats: [], rarity: 'Común' };
+    return { kind: 'Material', title: item.name, desc: 'Material de crafteo o botín.', stats: [], rarity: 'Común' };
+}
+
+function renderChestDetail(item, transferLabel, onTransfer) {
+    const detail = chestDetailEl();
+    if (!detail) return;
+    if (!item) {
+        detail.innerHTML = '<div class="chest-empty">Toca un ítem para ver su detalle.</div>';
+        return;
+    }
+    const info = describeChestItem(item) || { kind: '', title: item.name, desc: '', stats: [], rarity: 'Común' };
+    detail.innerHTML = `
+        <div class="chest-detail-head"><span class="chest-detail-icon">⚔️</span><div><strong>${info.title}</strong><small>${info.kind} · x${item.qty}</small></div></div>
+        <p class="chest-detail-desc">${info.desc}</p>
+        ${info.stats.map(s => `<div class="chest-detail-stat">${s}</div>`).join('')}
+        <div class="chest-detail-stat rarity">Raridad: ${info.rarity}</div>
+        <div class="chest-detail-actions">
+            <button type="button" class="chest-transfer-btn" id="chest-transfer-btn">⤾ ${transferLabel}</button>
+            <button type="button" class="chest-ghost-btn" id="chest-detail-btn">👁 Ver detalle</button>
+        </div>`;
+    document.getElementById('chest-transfer-btn').onclick = onTransfer;
+    document.getElementById('chest-detail-btn').onclick = () => showDialog(info.title, `${info.kind} — ${info.desc}`);
+}
+
 export function refreshChestUI() {
     const chest = Inventory.chests[currentChestId];
     const chestGrid = document.getElementById('chest-grid');
@@ -137,9 +185,12 @@ export function refreshChestUI() {
         div.className = 'inv-slot';
         if (item) {
             div.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
-            attachSlotTap(div, chest, i, () => [
-                { label: 'Mover al Inventario', onClick: () => { Inventory.quickMoveToPlayer(currentChestId, i); refreshAll(); } }
-            ]);
+            div.onclick = () => {
+                renderChestDetail(item, 'Transferir', () => { Inventory.quickMoveToPlayer(currentChestId, i); refreshAll(); });
+                openItemActionMenu(div, [
+                    { label: 'Mover al Inventario', onClick: () => { Inventory.quickMoveToPlayer(currentChestId, i); refreshAll(); } }
+                ]);
+            };
         }
         chestGrid.appendChild(div);
     });
@@ -151,13 +202,22 @@ export function refreshChestUI() {
         div.className = 'inv-slot';
         if (item) {
             div.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
-            attachSlotTap(div, Inventory.global, i, (it) => buildOwnedItemActions(
-                Inventory.global, i, it,
-                { label: 'Mover al Cofre', onClick: () => { Inventory.quickMoveToChest(currentChestId, i); refreshAll(); } }
-            ));
+            div.onclick = () => {
+                renderChestDetail(item, 'Transferir', () => { Inventory.quickMoveToChest(currentChestId, i); refreshAll(); });
+                openItemActionMenu(div, buildOwnedItemActions(
+                    Inventory.global, i, item,
+                    { label: 'Mover al Cofre', onClick: () => { Inventory.quickMoveToChest(currentChestId, i); refreshAll(); } }
+                ));
+            };
         }
         playerGrid.appendChild(div);
     });
+
+    const cs = document.getElementById('chest-spaces');
+    if (cs) cs.innerText = `Espacios: ${countUsedSlots(chest)}/${chest.length}`;
+    const ps = document.getElementById('chest-player-spaces');
+    if (ps) ps.innerText = `Espacios: ${countUsedSlots(Inventory.global)}/${Inventory.global.length}`;
+    if (chestDetailEl() && !chestDetailEl().innerHTML) renderChestDetail(null);
 }
 
 // Abre #chest-panel mostrando el cofre pedido ('main' | 'weapons' | 'tools',
@@ -165,9 +225,11 @@ export function refreshChestUI() {
 // interactuar con cada cofre del mundo.
 export function openChestPanel(chestId) {
     currentChestId = chestId;
+    const detail = chestDetailEl();
+    if (detail) detail.innerHTML = '';
     refreshChestUI();
     const title = CHEST_TITLES[chestId] || 'Cofre';
-    document.getElementById('chest-panel-title').innerText = `${title} (40 Slots) — Toca un ítem para ver sus opciones`;
+    document.getElementById('chest-panel-title').innerText = title;
     document.getElementById('chest-panel').style.display = 'block';
 }
 
