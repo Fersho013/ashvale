@@ -31,7 +31,7 @@ export function openMerchantMenu(merchant) {
     merchantMenuEl = document.createElement('div');
     merchantMenuEl.id = 'merchant-action-menu';
     merchantMenuEl.className = 'npc-action-menu';
-    merchantMenuEl.innerHTML = `<h3>Mercader</h3><button type="button" data-action="talk">Hablar</button><button type="button" data-action="buy">Comprar</button><button type="button" data-action="sell">Vender</button><button type="button" data-action="close">Cerrar</button>`;
+    merchantMenuEl.innerHTML = `<h3><span>Mercader</span></h3><button type="button" data-action="talk">Hablar</button><button type="button" data-action="buy">Comprar</button><button type="button" data-action="sell">Vender</button><button type="button" data-action="close">Cerrar</button>`;
     merchantMenuEl.addEventListener('click', event => {
         const action = event.target.dataset.action;
         if (!action) return;
