@@ -31,7 +31,7 @@ export function openElderMenu(npc) {
     closeElderMenu();
     elderMenuEl = document.createElement('div');
     elderMenuEl.className = 'npc-action-menu';
-    elderMenuEl.innerHTML = '<h3>Anciano</h3><button type="button" data-action="talk">Hablar</button><button type="button" data-action="guide">Guía</button><button type="button" data-action="close">Cerrar</button>';
+    elderMenuEl.innerHTML = '<h3><span>Anciano</span></h3><button type="button" data-action="talk">Hablar</button><button type="button" data-action="guide">Guía</button><button type="button" data-action="close">Cerrar</button>';
     elderMenuEl.addEventListener('click', event => {
         const action = event.target.dataset.action;
         if (action === 'talk') { closeElderMenu(); showNpcDialogue(npc); }
