@@ -298,6 +298,17 @@
     body.mobile-mode-active .inv-header { padding: 8px 10px; }
     body.mobile-mode-active .inv-header h3 { font-size: 16px !important; }
     body.mobile-mode-active .money-box { margin: 0 6px 6px; }
+    /* Orden original: landscape lado a lado (como PC), portrait apilado.
+       En ambos casos UN solo scroll externo (el frame), sin scrolls anidados. */
+    @media (orientation: landscape) {
+        body.mobile-mode-active .inv-layout { flex-direction: row; align-items: stretch; }
+        body.mobile-mode-active .inv-left { flex: 1 1 auto; min-width: 0; border-right: 3px solid #3d3d3d; border-bottom: 0; }
+        body.mobile-mode-active .inv-right { flex: 0 0 min(230px, 34%); min-width: 0; }
+    }
+    @media (orientation: portrait) {
+        body.mobile-mode-active .inv-layout { flex-direction: column; }
+        body.mobile-mode-active .inv-left { border-right: 0; border-bottom: 3px solid #3d3d3d; }
+    }
     /* ---------- COFRE (orden referencia: Cofre / Inventario / detalle) ---------- */
     #chest-panel.chest-frame {
         width: min(880px, calc(100vw - 24px)); max-height: 92vh;
@@ -358,6 +369,15 @@
     body.mobile-mode-active .chest-grid { grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); padding: 8px; }
     body.mobile-mode-active #chest-panel .inv-slot { min-height: 44px; }
     body.mobile-mode-active .chest-header h3 { font-size: 16px !important; }
+    /* Orden original: landscape lado a lado (listas + detalle), portrait apilado. */
+    @media (orientation: landscape) {
+        body.mobile-mode-active .chest-layout { flex-direction: row; align-items: stretch; }
+        body.mobile-mode-active .chest-left { flex: 1 1 auto; min-width: 0; }
+        body.mobile-mode-active .chest-detail { flex: 0 0 min(230px, 34%); min-width: 0; border-left: 3px solid #3d3d3d; border-top: 0; }
+    }
+    @media (orientation: portrait) {
+        body.mobile-mode-active .chest-layout { flex-direction: column; }
+    }
     @media (max-width: 680px) {
         body:not(.mobile-mode-active) #chest-panel.chest-frame { width: calc(100vw - 16px); }
         body:not(.mobile-mode-active) .chest-layout { flex-direction: column; overflow-y: auto; }
@@ -466,6 +486,18 @@
     body.mobile-mode-active .quest-list-panel { border-right: 0; border-bottom: 2px solid #3d3d3d; overflow: visible; max-height: none; }
     body.mobile-mode-active #quest-panel #quest-list { overflow: visible; max-height: none; font-size: 12px; }
     body.mobile-mode-active .quest-detail { overflow: visible; max-height: none; font-size: 12px; }
+    /* Orden original: landscape rail lateral + lista + detalle (como PC),
+       portrait rail arriba + contenido apilado. Scroll único externo en ambos. */
+    @media (orientation: landscape) {
+        body.mobile-mode-active .quest-layout { flex-direction: row; align-items: stretch; }
+        body.mobile-mode-active .quest-rail { flex: 0 0 48px; flex-direction: column; border-right: 2px solid #3d3d3d; border-bottom: 0; }
+        body.mobile-mode-active .quest-rail-btn { flex: none; }
+        body.mobile-mode-active .quest-list-panel { flex: 1 1 auto; min-width: 0; border-right: 2px solid #3d3d3d; border-bottom: 0; }
+        body.mobile-mode-active .quest-detail { flex: 1 1 auto; min-width: 0; }
+    }
+    @media (orientation: portrait) {
+        body.mobile-mode-active .quest-layout { flex-direction: column; }
+    }
     @media (max-width: 640px) {
         body:not(.mobile-mode-active) #quest-panel.quest-frame { width: calc(100vw - 16px); }
         body:not(.mobile-mode-active) .quest-layout { flex-direction: column; overflow-y: auto; max-height: calc(88vh - 53px); }
