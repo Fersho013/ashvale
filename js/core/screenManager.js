@@ -38,6 +38,15 @@ export const ScreenManager = {
             this.unlockOrientation();
             if (toggleBtn) toggleBtn.innerText = "🎮 Modo Móvil / Pantalla Completa";
         }
+        // Al cambiar de modo, cerrar cualquier menú abierto para dejar
+        // solo el gameplay visible. Se hace directo por DOM (sin importar
+        // menu.js) para evitar un import circular ScreenManager→menu.
+        ['inventory-panel','chest-panel','craft-panel','skill-tree-panel','stats-panel','quest-panel','quest-offer-panel','guide-panel','merchant-buy-panel','merchant-sell-panel'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+        document.body.classList.remove('npc-menu-open');
+        document.body.classList.remove('hud-hidden');
         this.resizeCanvas();
         this._refreshMobileOnlyUI();
     },
