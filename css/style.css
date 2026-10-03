@@ -279,36 +279,42 @@
        aplica flex cuando JS realmente lo abrió (style="display:block"). */
     body.mobile-mode-active #inventory-panel.inv-frame {
         width: calc(100% - 12px); max-width: none;
-        max-height: calc(100% - 12px); height: auto;
+        height: calc(100% - 12px); max-height: calc(100% - 12px);
+        overflow: hidden;
     }
     body.mobile-mode-active #inventory-panel.inv-frame[style*="block"] {
         display: flex; flex-direction: column;
     }
-    body.mobile-mode-active .inv-layout { flex: 1; min-height: 0; width: 100%; }
-    body.mobile-mode-active .inv-left { min-height: 0; }
-    body.mobile-mode-active .inv-right { min-height: 0; overflow-y: auto; }
-    body.mobile-mode-active .inv-body { flex: 1; min-height: 0; max-height: none; overflow-y: scroll; padding: 8px; touch-action: pan-y; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
-    body.mobile-mode-active .inv-grid { grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 6px; }
-    body.mobile-mode-active #inventory-panel .inv-slot { min-height: 46px; font-size: 9px; }
-    body.mobile-mode-active .equip-panel { margin: 8px; padding: 8px; gap: 8px; }
-    body.mobile-mode-active .equip-col .equip-slot { font-size: 8px; }
+    body.mobile-mode-active .inv-layout { flex: 1; min-height: 0; min-width: 0; width: 100%; overflow: hidden; }
+    body.mobile-mode-active .inv-left { min-height: 0; min-width: 0; overflow: hidden; display: flex; flex-direction: column; }
+    body.mobile-mode-active .inv-right { min-height: 0; min-width: 0; overflow-y: auto; display: flex; flex-direction: column; touch-action: pan-y; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+    body.mobile-mode-active .inv-body { flex: 1; min-height: 0; max-height: none; overflow-y: auto; padding: 8px; touch-action: pan-y; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+    body.mobile-mode-active .inv-grid { grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 5px; }
+    body.mobile-mode-active #inventory-panel .inv-slot { min-height: 40px; font-size: 9px; }
+    body.mobile-mode-active .equip-panel { margin: 6px; padding: 6px; gap: 6px; }
+    body.mobile-mode-active .equip-col { gap: 6px; }
+    body.mobile-mode-active .equip-col .equip-slot { font-size: 8px; aspect-ratio: auto; min-height: 56px; padding: 4px; }
+    body.mobile-mode-active .equip-weapons-box { padding: 4px; gap: 4px; }
+    body.mobile-mode-active .equip-weapons-box .equip-slot { min-height: 52px; }
+    body.mobile-mode-active .equip-tag { font-size: 10px; padding: 2px 4px; }
     body.mobile-mode-active .inv-header { padding: 8px 10px; }
     body.mobile-mode-active .inv-header h3 { font-size: 16px !important; }
     /* Horizontal (landscape): poco alto → 2 columnas lado a lado, cada una con scroll propio */
     @media (orientation: landscape) {
         body.mobile-mode-active .inv-layout { flex-direction: row; }
         body.mobile-mode-active .inv-left { border-right: 3px solid #3d3d3d; border-bottom: 0; }
-        body.mobile-mode-active .inv-right { flex: 0 0 min(260px, 36%); }
-        body.mobile-mode-active .money-box { margin: 0 8px 8px; padding: 6px 8px; }
-        body.mobile-mode-active .money-value { font-size: 15px; }
+        body.mobile-mode-active .inv-right { flex: 0 0 min(230px, 34%); }
+        body.mobile-mode-active .money-box { margin: 0 6px 6px; padding: 6px 8px; }
+        body.mobile-mode-active .money-value { font-size: 14px; }
     }
     /* Vertical (portrait): apila, el inventario arriba con scroll corto y equipo debajo */
     @media (orientation: portrait) {
         body.mobile-mode-active .inv-layout { flex-direction: column; overflow-y: auto; touch-action: pan-y; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
-        body.mobile-mode-active .inv-left { border-right: 0; border-bottom: 3px solid #3d3d3d; }
-        body.mobile-mode-active .inv-right { flex-basis: auto; overflow: visible; }
+        body.mobile-mode-active .inv-left { border-right: 0; border-bottom: 3px solid #3d3d3d; overflow: visible; flex: none; }
+        body.mobile-mode-active .inv-right { flex: none; overflow: visible; }
         body.mobile-mode-active .inv-body { max-height: 32dvh; flex: none; overflow-y: auto; touch-action: pan-y; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
-        body.mobile-mode-active .equip-panel { margin: 8px; }
+        body.mobile-mode-active .equip-panel { margin: 6px; }
+        body.mobile-mode-active .money-box { margin: 0 6px 6px; }
     }
     /* ---------- COFRE (orden referencia: Cofre / Inventario / detalle) ---------- */
     #chest-panel.chest-frame {
@@ -362,8 +368,9 @@
     .chest-ghost-btn:hover { color: #fff; }
     .chest-empty { color: #777; font-size: 12px; text-align: center; margin-top: 30px; }
     /* Cofre adaptativo a modo móvil */
-    body.mobile-mode-active #chest-panel.chest-frame { width: calc(100% - 12px); max-width: none; max-height: calc(100% - 12px); }
-    body.mobile-mode-active .chest-layout { max-height: calc(100% - 0px); }
+    body.mobile-mode-active #chest-panel.chest-frame { width: calc(100% - 12px); max-width: none; height: calc(100% - 12px); max-height: calc(100% - 12px); overflow: hidden; }
+    body.mobile-mode-active #chest-panel.chest-frame[style*="block"] { display: flex; flex-direction: column; }
+    body.mobile-mode-active .chest-layout { flex: 1; min-height: 0; min-width: 0; width: 100%; max-height: none; }
     body.mobile-mode-active .chest-grid { grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); padding: 8px; }
     body.mobile-mode-active #chest-panel .inv-slot { min-height: 48px; }
     body.mobile-mode-active .chest-header h3 { font-size: 16px !important; }
@@ -471,20 +478,22 @@
     /* Mismo fix que inventario: solo flex cuando JS lo abrió. */
     body.mobile-mode-active #quest-panel.quest-frame {
         width: calc(100% - 12px); max-width: none;
-        max-height: calc(100% - 12px); height: auto;
+        height: calc(100% - 12px); max-height: calc(100% - 12px);
+        overflow: hidden;
     }
     body.mobile-mode-active #quest-panel.quest-frame[style*="block"] {
         display: flex; flex-direction: column;
     }
-    body.mobile-mode-active .quest-layout { flex: 1; min-height: 0; max-height: none; width: 100%; }
+    body.mobile-mode-active .quest-layout { flex: 1; min-height: 0; min-width: 0; max-height: none; width: 100%; overflow: hidden; }
     body.mobile-mode-active .quest-titlebar { padding: 8px 10px; }
     body.mobile-mode-active .quest-titlebar h3 { font-size: 16px !important; }
     body.mobile-mode-active #quest-panel #quest-list { font-size: 12px; }
     body.mobile-mode-active .quest-detail { font-size: 12px; }
     @media (orientation: landscape) {
         body.mobile-mode-active .quest-layout { flex-direction: row; overflow: hidden; }
-        body.mobile-mode-active .quest-list-panel { border-right: 2px solid #3d3d3d; min-height: 0; }
-        body.mobile-mode-active .quest-detail { min-height: 0; }
+        body.mobile-mode-active .quest-list-panel { border-right: 2px solid #3d3d3d; min-height: 0; min-width: 0; overflow: hidden; display: flex; flex-direction: column; }
+        body.mobile-mode-active #quest-panel #quest-list { overflow-y: auto; touch-action: pan-y; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+        body.mobile-mode-active .quest-detail { min-height: 0; min-width: 0; overflow-y: auto; touch-action: pan-y; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
         body.mobile-mode-active .quest-rail { flex: 0 0 48px; }
     }
     @media (orientation: portrait) {
