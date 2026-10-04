@@ -5,6 +5,7 @@ import { Inventory, tryConsumeItem } from '../systems/inventory.js';
 import { getCurrentZone } from '../world/map.js';
 import { game } from '../core/gameContext.js';
 import { LevelSystem, MAX_LEVEL } from '../systems/level.js';
+import { normalizeItemName } from '../core/assets.js';
 
 export function buildQuickbarUI() {
     const bar = document.getElementById('quickbar');
@@ -24,7 +25,11 @@ export function refreshQuickbarUI() {
     slots.forEach((slot, i) => {
         const item = Inventory.quickbar[i];
         const keyLabel = i === 9 ? '0' : String(i + 1);
-        if (item) slot.innerHTML = `<span class="key">${keyLabel}</span>${item.name.slice(0,4)}<span class="qty">${item.qty}</span>`;
+        if (item) {
+            const icon = normalizeItemName(item.name);
+            slot.title = item.name;
+            slot.innerHTML = `<span class="key">${keyLabel}</span><img class="slot-icon" src="assets/items/${icon}.png" alt="" draggable="false" onerror="this.remove()"><span class="slot-name">${item.name.slice(0,4)}</span><span class="qty">${item.qty}</span>`;
+        }
         else slot.innerHTML = `<span class="key">${keyLabel}</span>`;
     });
 }
