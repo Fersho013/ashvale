@@ -6,7 +6,7 @@ import { game } from './core/gameContext.js';
 import { Input } from './core/input.js';
 import { ScreenManager } from './core/screenManager.js';
 import { Camera } from './core/camera.js';
-import { drawEntity, drawSprite, hasSprite } from './core/assets.js';
+import { drawEntity, drawSprite, hasSprite, Assets } from './core/assets.js';
 import { drawAtlasAnimation, drawAtlasFrame, drawAtlasTiled, ATLAS_DISPLAY_SIZES } from './core/atlas.js';
 import { Player } from './entities/player.js';
 import { DummyMob, ActiveMob, Slime, Wolf, Deer, GoblinExplorer } from './entities/mobs.js';
@@ -93,13 +93,27 @@ function drawWeaponFrame(frame, x, y, w, h, fallback) {
     if (!drawAtlasFrame(ctx, 'weapons', frame, x, y, w, h)) fallback();
 }
 
+// Mosaico con PNG individual (assets/*.png): evita estirar el tile en
+// zonas/muros grandes. Devuelve false si el PNG aún no cargó, para usar
+// el fallback de color de antes.
+function drawAssetTiled(assetKey, x, y, w, h, tileW, tileH) {
+    const img = Assets.get(assetKey);
+    if (!img) return false;
+    for (let py = y; py < y + h; py += tileH) for (let px = x; px < x + w; px += tileW) {
+        ctx.drawImage(img, px, py, Math.min(tileW, x + w - px), Math.min(tileH, y + h - py));
+    }
+    return true;
+}
+
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     ctx.translate(-camera.x, -camera.y);
 
     for (const z of ZONES) {
-        if (!drawAtlasTiled(ctx, 'world', 'ground', z.x, z.y, z.w, z.h, 48, 48)) { ctx.fillStyle = z.color; ctx.fillRect(z.x, z.y, z.w, z.h); }
+        if (!drawAtlasTiled(ctx, 'world', 'ground', z.x, z.y, z.w, z.h, 48, 48)) {
+            if (!drawAssetTiled('tile_grass', z.x, z.y, z.w, z.h, 48, 48)) { ctx.fillStyle = z.color; ctx.fillRect(z.x, z.y, z.w, z.h); }
+        }
     }
     for (const biome of Object.values(BIOME_AREAS)) {
         ctx.fillStyle = biome.color; ctx.fillRect(biome.x, biome.y, biome.w, biome.h);
@@ -116,7 +130,9 @@ function render() {
 
     ctx.fillStyle = '#3a3a3a'; ctx.strokeStyle = '#555'; ctx.lineWidth = 2;
     for (const w of walls) {
-        drawWorldFrame('wall', w.x, w.y, w.w, w.h, () => ctx.fillRect(w.x, w.y, w.w, w.h));
+        drawWorldFrame('wall', w.x, w.y, w.w, w.h, () => {
+            if (!drawAssetTiled('tile_stone', w.x, w.y, w.w, w.h, 48, 48)) ctx.fillRect(w.x, w.y, w.w, w.h);
+        });
         if (DEBUG.showHitboxes) ctx.strokeRect(w.x, w.y, w.w, w.h);
     }
 
