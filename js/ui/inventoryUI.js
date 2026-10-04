@@ -11,6 +11,17 @@ import { ARMORS } from '../data/armor.js';
 import { CONSUMABLE_EFFECTS } from '../data/recipes.js';
 import { openItemActionMenu } from './itemActionMenu.js';
 import { showDialog } from './dialog.js';
+import { normalizeItemName } from '../core/assets.js';
+
+// Cada slot acepta sprite opcional: sube assets/items/<nombre>.png
+// (ej. assets/items/madera.png, assets/items/espada_oxidada.png).
+// Si el PNG existe se dibuja; si no, se conserva el texto de antes.
+// Normalización: minúsculas, sin acentos, espacios→_ (igual que atlas).
+function slotIconHTML(item) {
+    if (!item) return '';
+    const key = normalizeItemName(item.name);
+    return `<img class="slot-icon" src="assets/items/${key}.png" alt="" draggable="false" onerror="this.remove()">`;
+}
 
 // Varios cofres (punto 2): cuál está abierto ahora mismo en #chest-panel.
 // Lo fija openChestPanel() al interactuar con cada cofre del mundo (ver
@@ -64,7 +75,8 @@ export function refreshInventoryUI() {
         const div = document.createElement('div');
         div.className = 'inv-slot';
         if (item) {
-            div.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
+            div.title = item.name;
+            div.innerHTML = `${slotIconHTML(item)}<span class="slot-name">${item.name.slice(0,6)}</span><span class="qty">${item.qty}</span>`;
             attachSlotTap(div, Inventory.global, i, (it) => buildOwnedItemActions(
                 Inventory.global, i, it,
                 { label: 'Mover a Barra Rápida', onClick: () => { Inventory.moveGlobalToQuickbar(i); refreshAll(); } },
@@ -80,7 +92,8 @@ export function refreshInventoryUI() {
         const div = document.createElement('div');
         div.className = 'inv-slot';
         if (item) {
-            div.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
+            div.title = item.name;
+            div.innerHTML = `${slotIconHTML(item)}<span class="slot-name">${item.name.slice(0,6)}</span><span class="qty">${item.qty}</span>`;
             attachSlotTap(div, Inventory.quickbar, i, (it) => buildOwnedItemActions(
                 Inventory.quickbar, i, it,
                 { label: 'Quitar de Barra Rápida', onClick: () => { Inventory.moveQuickbarToGlobal(i); refreshAll(); } }
@@ -91,7 +104,7 @@ export function refreshInventoryUI() {
 
     const eqWeapon = document.getElementById('eq-weapon');
     const w = Inventory.equipment.weapon ? WEAPONS[Inventory.equipment.weapon] : WEAPONS.desarmado;
-    eqWeapon.innerHTML = `<strong>Arma</strong><br>${w.name}`;
+    eqWeapon.innerHTML = `${slotIconHTML({ name: w.name })}<strong>Arma</strong><br>${w.name}`;
     eqWeapon.onclick = () => {
         if (!Inventory.equipment.weapon) return; // nada equipado, no hay nada que hacer
         openItemActionMenu(eqWeapon, [
@@ -101,7 +114,7 @@ export function refreshInventoryUI() {
 
     const eqTool = document.getElementById('eq-tool');
     const tool = Inventory.equipment.tool ? TOOLS[Inventory.equipment.tool] : null;
-    eqTool.innerHTML = `<strong>Herramienta</strong><br>${tool ? tool.name : 'Ninguna'}`;
+    eqTool.innerHTML = `${slotIconHTML(tool ? { name: tool.name } : null)}<strong>Herramienta</strong><br>${tool ? tool.name : 'Ninguna'}`;
     eqTool.onclick = () => {
         if (!Inventory.equipment.tool) return;
         openItemActionMenu(eqTool, [
@@ -111,7 +124,7 @@ export function refreshInventoryUI() {
 
     const eqArmor = document.getElementById('eq-armor');
     const armor = Inventory.equipment.armor ? ARMORS[Inventory.equipment.armor] : null;
-    eqArmor.innerHTML = `<strong>Armadura</strong><br>${armor ? armor.name : 'Ninguna'}${armor ? `<small>${armor.description}</small>` : ''}`;
+    eqArmor.innerHTML = `${slotIconHTML(armor ? { name: armor.name } : null)}<strong>Armadura</strong><br>${armor ? armor.name : 'Ninguna'}${armor ? `<small>${armor.description}</small>` : ''}`;
     eqArmor.dataset.itemName = armor?.name || '';
     eqArmor.onclick = () => {
         if (!Inventory.equipment.armor) return;
@@ -184,7 +197,8 @@ export function refreshChestUI() {
         const div = document.createElement('div');
         div.className = 'inv-slot';
         if (item) {
-            div.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
+            div.title = item.name;
+            div.innerHTML = `${slotIconHTML(item)}<span class="slot-name">${item.name.slice(0,6)}</span><span class="qty">${item.qty}</span>`;
             div.onclick = () => {
                 renderChestDetail(item, 'Transferir', () => { Inventory.quickMoveToPlayer(currentChestId, i); refreshAll(); });
                 openItemActionMenu(div, [
@@ -201,7 +215,8 @@ export function refreshChestUI() {
         const div = document.createElement('div');
         div.className = 'inv-slot';
         if (item) {
-            div.innerHTML = `${item.name.slice(0,6)}<span class="qty">${item.qty}</span>`;
+            div.title = item.name;
+            div.innerHTML = `${slotIconHTML(item)}<span class="slot-name">${item.name.slice(0,6)}</span><span class="qty">${item.qty}</span>`;
             div.onclick = () => {
                 renderChestDetail(item, 'Transferir', () => { Inventory.quickMoveToChest(currentChestId, i); refreshAll(); });
                 openItemActionMenu(div, buildOwnedItemActions(
