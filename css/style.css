@@ -163,6 +163,12 @@
     .inv-slot:hover { border-color: #f1c40f; }
     .inv-slot.selected { background: #332d15; border-color: #f39c12; box-shadow: 0 0 0 2px rgba(243,156,18,0.5); }
     .inv-slot .qty { position: absolute; bottom: 0; right: 2px; font-size: 8px; color: #f1c40f; pointer-events: none; }
+    /* Iconos de ítems (assets/items/): el <img> se superpone al fondo del
+       slot; si el PNG no existe el <img> se elimina solo (onerror) y queda
+       el texto de antes. Fondo de slot editable vía assets/ui/slot.png. */
+    .inv-slot .slot-icon, .qb-slot .slot-icon { position: absolute; inset: 2px; width: calc(100% - 4px); height: calc(100% - 4px); object-fit: contain; image-rendering: pixelated; pointer-events: none; }
+    .inv-slot .slot-name, .qb-slot .slot-name { position: relative; z-index: 1; text-shadow: 1px 1px 0 #000; pointer-events: none; }
+    .equip-slot .slot-icon { width: 32px; height: 32px; object-fit: contain; image-rendering: pixelated; pointer-events: none; }
 
     .panel-title-row { display: flex; align-items: center; justify-content: space-between; }
     #gold-display { color: #f1c40f; font-size: 13px; font-weight: normal; }
