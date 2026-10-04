@@ -14,14 +14,14 @@ export const CHARACTER_SPRITE_SIZE = { w: 48, h: 64 };
 export const ASSET_MANIFEST = {
     player:            'player.png',
     // Sprites direccionales del jugador (4 direcciones x 2 frames = caminar)
-    player_centro:            'player_centro.png',
-    player_centro_mov:        'player_centro_movimiento.png',
-    player_derecha:           'player_derecha.png',
-    player_derecha_mov:       'player_derecha_movimiento.png',
-    player_arriba:            'player_arriba.png',
-    player_arriba_mov:        'player_arriba_movimiento.png',
-    player_izquierda:         'player_izquierda.png',
-    player_izquierda_mov:     'player_izquierda_movimiento.png',
+    player_centro:            'player/player_centro.png',
+    player_centro_mov:        'player/player_centro_movimiento.png',
+    player_derecha:           'player/player_derecha.png',
+    player_derecha_mov:       'player/player_derecha_movimiento.png',
+    player_arriba:            'player/player_arriba.png',
+    player_arriba_mov:        'player/player_arriba_movimiento.png',
+    player_izquierda:         'player/player_izquierda.png',
+    player_izquierda_mov:     'player/player_izquierda_movimiento.png',
     npc_elder:         'npc_elder.png',
     goblin:            'goblin.png',
     goblin_capataz:    'goblin_capataz.png',
@@ -30,29 +30,50 @@ export const ASSET_MANIFEST = {
     slime_green:       'slime_green.png',
     slime_big:         'slime_big.png',
     dummy:             'dummy.png',
-    campfire:          'campfire.png',
-    alchemy_table:     'alchemy_table.png',
-    build_table:       'build_table.png',
-    bed:               'bed.png',
-    chest:             'chest.png',
-    work_table:        'work_table.png',
-    door:              'door.png',
+    // Props del escenario (carpeta assets/props/)
+    campfire:          'props/campfire.png',
+    alchemy_table:     'props/alchemy_table.png',
+    build_table:       'props/build_table.png',
+    bed:               'props/bed.png',
+    chest:             'props/chest.png',
+    work_table:        'props/work_table.png',
+    // Puertas (carpeta assets/doors/): frontal = vista tal cual, side = perfil.
+    // door = frontal cerrada (compatibilidad con código existente).
+    door:              'doors/door_front.png',
+    door_front:        'doors/door_front.png',
+    door_side:         'doors/door_side.png',
+    door_open_front:   'doors/door_open_front.png',
+    door_open_side:    'doors/door_open_side.png',
     weapon_espada:     'weapon_espada.png',
     weapon_mandoble:   'weapon_mandoble.png',
     weapon_dagas:      'weapon_dagas.png',
     weapon_arco:       'weapon_arco.png',
     weapon_lanza:      'weapon_lanza.png',
     weapon_especial:   'weapon_especial.png',
-    horn:              'bocina_vigia.png',
+    horn:              'props/horn.png',
     tool_hacha:        'tool_hacha.png',
     tool_pico:         'tool_pico.png',
-    resource_tree:     'resource_tree.png',
-    resource_stone:    'resource_stone.png',
-    resource_iron_ore: 'resource_iron_ore.png',
+    resource_tree:     'props/tree.png',
+    resource_stone:    'props/stone.png',
+    resource_iron_ore: 'props/iron_ore.png',
     projectile_arrow:  'projectile_arrow.png',
     projectile_arcane: 'projectile_arcane.png',
-    tile_grass:        'tile_grass.png',
-    tile_stone:        'tile_stone.png'
+    // Pisos (carpeta assets/tiles/): uno por zona/bioma. Los que aún no
+    // existen (madera, metal, cristal, piedritas, alcantarilla) caen al
+    // fallback de su zona hasta que subas el PNG con ese nombre exacto.
+    tile_grass:        'tiles/tile_grass.png',
+    tile_stone:        'tiles/tile_stone.png',
+    tile_wood:         'tiles/tile_wood.png',
+    tile_metal:        'tiles/tile_metal.png',
+    tile_glass:        'tiles/tile_glass.png',
+    tile_pebble:       'tiles/tile_pebble.png',
+    tile_sewer:        'tiles/tile_sewer.png',
+    // UI del inventario (carpeta assets/ui/): fondos de slots y paneles.
+    // Opcionales: si no existen, se conserva el estilo CSS actual.
+    ui_slot:           'ui/slot.png',
+    ui_slot_equip:     'ui/slot_equip.png',
+    ui_panel:          'ui/panel.png',
+    ui_button:         'ui/button.png'
 };
 
 // Catálogo visual: una entidad solo necesita referenciar su "sprite". Al
@@ -156,4 +177,30 @@ export function drawSprite(ctx, spriteKey, x, y, w, h, overrides = {}) {
 export function hasSprite(spriteKey) {
     const sprite = SPRITES[spriteKey];
     return !!sprite && !!Assets.get(sprite.asset);
+}
+
+// Iconos de ítems del inventario (carpeta assets/items/): convención
+// assets/items/<nombre-normalizado>.png, ej. "Espada Oxidada" ->
+// assets/items/espada_oxidada.png, "Madera" -> assets/items/madera.png.
+// Carga perezosa: si el PNG existe se usa, si no se conserva el texto.
+// Normalización igual que atlas.js para que ambos sistemas coincidan.
+export function normalizeItemName(name = '') {
+    return String(name).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+}
+
+const itemIconCache = new Map();
+export function getItemIcon(itemName) {
+    const key = normalizeItemName(itemName);
+    if (!key) return null;
+    if (!itemIconCache.has(key)) {
+        const img = new Image();
+        img._ready = false;
+        img.onload = () => { img._ready = true; };
+        img.onerror = () => { img._ready = false; };
+        img.src = `${ASSET_PATH}items/${key}.png`;
+        itemIconCache.set(key, img);
+    }
+    const img = itemIconCache.get(key);
+    return img && img._ready ? img : null;
 }
