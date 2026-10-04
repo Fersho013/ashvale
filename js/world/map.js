@@ -11,10 +11,12 @@ export const MAP_W = 1200 * TUTORIAL_SCALE, MAP_H = 900 * TUTORIAL_SCALE;
 export const BLOCK_SIZE = 60;
 
 export const ZONES = [
-    { id: 1, name: 'Zona 1: Centro de Mando y Galería de Armas', x: 0,    y: 0,   w: 1600, h: 600,  color: 'rgba(46,204,113,0.05)' },
-    { id: 3, name: 'Zona 3: arena de pruebas y combate', x: 1600, y: 0,   w: 800,  h: 600,  color: 'rgba(231,76,60,0.05)' },
-    { id: 4, name: 'Zona 2: Ecosistema y Bioma vivo', x: 0,    y: 600, w: 1600, h: 1200, color: 'rgba(39,174,96,0.06)' },
-    { id: 5, name: 'Zona 4: Escape y portales', x: 1600, y: 600, w: 800,  h: 1200, color: 'rgba(155,89,182,0.06)' }
+    // floor = tile de assets/tiles/ (sin extensión). Si el PNG no existe,
+    // main.js usa el siguiente fallback de la lista de la zona.
+    { id: 1, name: 'Zona 1: Centro de Mando y Galería de Armas', x: 0,    y: 0,   w: 1600, h: 600,  color: 'rgba(46,204,113,0.05)', floor: 'tile_wood', fallbacks: ['tile_wood', 'tile_grass'] },
+    { id: 3, name: 'Zona 3: arena de pruebas y combate', x: 1600, y: 0,   w: 800,  h: 600,  color: 'rgba(231,76,60,0.05)', floor: 'tile_metal', fallbacks: ['tile_metal', 'tile_stone'] },
+    { id: 4, name: 'Zona 2: Ecosistema y Bioma vivo', x: 0,    y: 600, w: 1600, h: 1200, color: 'rgba(39,174,96,0.06)', floor: 'tile_grass', fallbacks: ['tile_grass'] },
+    { id: 5, name: 'Zona 4: Escape y portales', x: 1600, y: 600, w: 800,  h: 1200, color: 'rgba(155,89,182,0.06)', floor: 'tile_glass', fallbacks: ['tile_glass', 'tile_stone'] }
 ];
 
 export function getCurrentZone(entity) {
@@ -74,9 +76,10 @@ export function clampToZone4(entity, margin = 10) {
 // son el límite de movimiento y el origen de reaparición de cada especie.
 // Mantener estos datos aquí evita coordenadas sueltas al añadir futuros mobs.
 export const BIOME_AREAS = {
-    forest: { id: 'forest', name: 'Bosque', x: 70, y: 680, w: 680, h: 1040, color: 'rgba(39,174,96,0.12)', border: '#2e8b57' },
-    mines: { id: 'mines', name: 'Minas', x: 830, y: 680, w: 690, h: 550, color: 'rgba(127,140,141,0.15)', border: '#7f8c8d' },
-    slimeMarsh: { id: 'slimeMarsh', name: 'Humedal de Slimes', x: 830, y: 1300, w: 690, h: 420, color: 'rgba(46,204,113,0.12)', border: '#27ae60' }
+    // Pasto exclusivo del bosque; minas = piedritas; humedal = alcantarilla.
+    forest: { id: 'forest', name: 'Bosque', x: 70, y: 680, w: 680, h: 1040, color: 'rgba(39,174,96,0.12)', border: '#2e8b57', floor: 'tile_grass', fallbacks: ['tile_grass'] },
+    mines: { id: 'mines', name: 'Minas', x: 830, y: 680, w: 690, h: 550, color: 'rgba(127,140,141,0.15)', border: '#7f8c8d', floor: 'tile_pebble', fallbacks: ['tile_pebble', 'tile_stone'] },
+    slimeMarsh: { id: 'slimeMarsh', name: 'Humedal de Slimes', x: 830, y: 1300, w: 690, h: 420, color: 'rgba(46,204,113,0.12)', border: '#27ae60', floor: 'tile_sewer', fallbacks: ['tile_sewer', 'tile_metal'] }
 };
 
 export function clampToArea(entity, area, margin = 10) {
