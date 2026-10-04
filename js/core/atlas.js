@@ -29,7 +29,7 @@ export const ANIMATION_CONTRACT = {
     arenaMob: { directions: ['down', 'up', 'left', 'right'], animations: ['idle', 'move', 'attack'] },
     deer: { directions: ['down', 'up', 'left', 'right'], animations: ['idle', 'move'] },
     npc: { directions: ['down', 'up', 'left', 'right'], animations: ['idle', 'move'] },
-    world: { frames: ['ground', 'wall', 'door', 'tree', 'stone', 'iron_ore', 'bed', 'campfire', 'alchemy_table', 'build_table', 'chest', 'work_table', 'horn'] },
+    world: { frames: ['ground', 'wall', 'door', 'door_open', 'tree', 'stone', 'iron_ore', 'bed', 'campfire', 'alchemy_table', 'build_table', 'chest', 'work_table', 'horn'] },
     weapons: { frames: ['sword', 'greatsword', 'dual_blades', 'bow', 'spear', 'staff', 'axe', 'pickaxe', 'arrow', 'arcane_bolt'] },
     ui: { frames: ['main_menu_bg', 'panel', 'dialog', 'button', 'slot', 'skill_node', 'tooltip', 'gold_icon', 'hp_bar', 'skill_bar', 'touch_button'] }
 };
