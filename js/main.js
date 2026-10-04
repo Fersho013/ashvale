@@ -110,12 +110,21 @@ function render() {
     ctx.save();
     ctx.translate(-camera.x, -camera.y);
 
-    for (const z of ZONES) {
-        if (!drawAtlasTiled(ctx, 'world', 'ground', z.x, z.y, z.w, z.h, 48, 48)) {
-            if (!drawAssetTiled('tile_grass', z.x, z.y, z.w, z.h, 48, 48)) { ctx.fillStyle = z.color; ctx.fillRect(z.x, z.y, z.w, z.h); }
+    // Piso por zona: intenta atlas, luego tile propio con fallbacks
+    // (ver ZONES/BIOME_AREAS floor+fallbacks en world/map.js), luego color.
+    // OJO cuadrícula visible: el tile_grass actual trae borde oscuro
+    // dibujado; para piso continuo el PNG debe ser seamless sin marco.
+    const paintFloor = (area) => {
+        if (drawAtlasTiled(ctx, 'world', 'ground', area.x, area.y, area.w, area.h, 48, 48)) return;
+        for (const key of (area.fallbacks || [area.floor])) {
+            if (key && drawAssetTiled(key, area.x, area.y, area.w, area.h, 48, 48)) return;
         }
-    }
+        ctx.fillStyle = area.color; ctx.fillRect(area.x, area.y, area.w, area.h);
+    };
+
+    for (const z of ZONES) paintFloor(z);
     for (const biome of Object.values(BIOME_AREAS)) {
+        paintFloor(biome);
         ctx.fillStyle = biome.color; ctx.fillRect(biome.x, biome.y, biome.w, biome.h);
         ctx.strokeStyle = biome.border; ctx.lineWidth = 2; ctx.strokeRect(biome.x, biome.y, biome.w, biome.h);
         ctx.fillStyle = biome.border; ctx.font = 'bold 16px monospace'; ctx.textAlign = 'left';
@@ -136,8 +145,24 @@ function render() {
         if (DEBUG.showHitboxes) ctx.strokeRect(w.x, w.y, w.w, w.h);
     }
 
+    // Puertas: frontal (ancha, w>h, la actual ajustada) vs perfil (alta,
+    // w<h). Abierta usa sprite propio; si falta el PNG cae al de cerrada
+    // y al final al color de antes. Archivos en assets/doors/:
+    // door_front.png, door_side.png, door_open_front.png, door_open_side.png
+    const drawDoor = (d) => {
+        const side = d.w < d.h;
+        const keys = d.open
+            ? (side ? ['door_open_side', 'door_side', 'door'] : ['door_open_front', 'door_front', 'door'])
+            : (side ? ['door_side', 'door'] : ['door_front', 'door']);
+        if (drawAtlasFrame(ctx, 'world', d.open ? 'door_open' : 'door', d.x, d.y, d.w, d.h)) return;
+        for (const key of keys) {
+            if (Assets.get(key)) { drawEntity(ctx, key, d.x, d.y, d.w, d.h); return; }
+        }
+        drawEntity(ctx, 'door', d.x, d.y, d.w, d.h, d.open ? 'rgba(46,204,113,0.35)' : '#6e4b2a', 'rect');
+    };
+
     for (const d of doors) {
-        drawWorldFrame('door', d.x, d.y, d.w, d.h, () => drawEntity(ctx, 'door', d.x, d.y, d.w, d.h, d.open ? 'rgba(46,204,113,0.35)' : '#6e4b2a', 'rect'));
+        drawWorldFrame(d.open ? 'door_open' : 'door', d.x, d.y, d.w, d.h, () => drawDoor(d));
         if (DEBUG.showHitboxes) { ctx.strokeStyle = d.open ? '#2ecc71' : '#e74c3c'; ctx.strokeRect(d.x, d.y, d.w, d.h); }
     }
 
